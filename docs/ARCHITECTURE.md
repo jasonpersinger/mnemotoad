@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Milestone 1A status: the independent host/domain/codec/repository/index/reference/settings/module-shell subset is implemented under Prompt 002. The remaining architecture below retains its Milestone 0 proposal status. See [DEVELOPMENT.md](DEVELOPMENT.md) for exact contracts/deviations and [MILESTONE_1A_REPORT.md](MILESTONE_1A_REPORT.md) for verification. No legacy source was extracted.
+Milestone 1B status: Prompt 003 authorized isolated feasibility experiments following review of the 1A foundation. Production host/domain/storage/module-shell implementation remains unchanged. See [MILESTONE_1B_REPORT.md](MILESTONE_1B_REPORT.md) for measured recommendations, failures and limits; these are not production-adoption approval. Historical proposals below remain proposals unless explicitly adopted in DECISIONS. No legacy source was extracted.
 
 ## Recommended stack
 
@@ -16,6 +16,16 @@ Milestone 1A status: the independent host/domain/codec/repository/index/referenc
 | Version control | Local Git in Milestone 1 after approval | No Git initialization, commits, or remote setup in Milestone 0. |
 
 The [research](TECHNICAL_RESEARCH.md) compares libraries and UI alternatives. The official sample currently demonstrates a TypeScript/esbuild CommonJS build and excludes the host API from the bundle; MNEMOBARD should follow that delivery contract while pinning compatible tools. [Sample build](https://raw.githubusercontent.com/obsidianmd/obsidian-sample-plugin/master/esbuild.config.mjs).
+
+## Milestone 1B evidence and proposed refinement
+
+`experiments/` is a separate dependency graph. `timing.ts` retains exact rational quarter positions derived from integer source PPQ, integrates/inverts tempo maps, and rejects SMPTE timing explicitly. `compiler.ts` produces immutable ordered rational-tick/seconds on/off events with track/channel/patch references. The compiler does not read entity files. `transport.ts` consumes these events through an injected audio-clock sink/timer; `web-audio.ts` supplies only a quiet test tone. Geometry/index/rendering are independent of storage and musical compilation. A separate disabled-by-default experimental plugin verifies ownership in the marked disposable vault, including pending-frame cancellation.
+
+Recommended production direction, pending review: retain 960 editing ticks and original source PPQ; use exact intermediate positions until explicit integer export/quantization. Keep fixed-tempo schema 1; tempo-map support here is a feasibility test, not permission to persist maps or migrate records. Existing endpoint-rounding/minimum-duration/warning rules remain the proposed integer-export contract; the prototype has no complete export preflight/adapter. See [DATA_MODEL.md](DATA_MODEL.md#milestone-1b-timing-boundary).
+
+Prefer a shared culled Canvas 2D grid with native DOM controls/inspectors and a separately designed accessible list. Shared viewport/index/hit geometry can serve note rows and arrangement lanes. Native 20k-total/501-visible Canvas work was small; the dense 20k-visible case approached a frame budget. All-DOM 20k failed the native harness; this is evidence against this all-node implementation, not a universal SVG/DOM limitation. Grid layers, committed-gesture reindexing, visual-density policies, undo/session ownership and accessibility still need production design.
+
+Native audio supports the proposed 25ms poll/100ms horizon with explicit stop on lateness/stall, generation cancellation and owner-close cleanup. Poll wall time and AudioContext time are distinct; measured scheduling lead is not audible latency. A production transport should have one shared owner/focus coordinator rather than the experimental view's own context. Tone.js, rendering frameworks and legacy extraction remain unnecessary for these experiments. `midi-file` is dev-only and provisionally preferred behind a strict outer parser validator; no runtime dependency was added.
 
 ## Boundaries and dependency direction
 

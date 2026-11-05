@@ -20,15 +20,15 @@ Keep musical knowledge in the vault, accessible without the plugin. Prefer Markd
 
 ## Current status
 
-**Milestone 1A foundation implemented and tested; musical editors remain planned.**
+**Milestone 1A foundation preserved; Milestone 1B feasibility experiments completed. Production musical editors remain planned.**
 
-The plugin now has three theme-compatible workspace shells, module settings, typed patch/motif/composition contracts, Markdown/YAML/JSON parsing, a shared identity/reference index, conditional vault writes and recovery copies. There is no piano roll, audio synthesis, MIDI processing or arrangement timeline.
+The production plugin has three theme-compatible workspace shells, module settings, typed patch/motif/composition contracts, Markdown/YAML/JSON parsing, a shared identity/reference index, conditional vault writes and recovery copies. Production musical editing/playback/export are not implemented. Separate `experiments/` prototypes test timing, event compilation, a quiet tone and grid rendering using synthetic data only; they do not connect to production records.
 
 `pnpm check` runs typecheck, lint, tests and a production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow, and [MILESTONE_1A_REPORT.md](docs/MILESTONE_1A_REPORT.md) for exact validation and limitations. Linux Obsidian 1.15.0 native smoke validation was performed; Windows/macOS and musical capabilities are unverified.
 
 The kickoff’s `/home/troubadour` path was corrected by the user to `~/troubadour` (`/home/jason/troubadour`). The [Milestone 0 audit](docs/TROUBADOUR_AUDIT.md) remains the read-only reference. No legacy source/tests/assets were copied, and no legacy reuse has been authorized. All foundation code was implemented independently.
 
-The existing root contained only documentation at the start of 1A. A local Git repository and a marked project-local `dev-vault` were created. No remote, publication, system install or personal-vault changes occurred. Milestone 1B requires a separate prompt and review.
+The existing root contained only documentation at the start of 1A. A local Git repository and a marked project-local `dev-vault` were created. Signed commit `70f45df` preserves the completed 1A baseline. See the [Milestone 1B report](docs/MILESTONE_1B_REPORT.md) for native measurements, limitations and proposed production choices. No remote, publication, system install or personal-vault changes occurred. Further implementation requires a separate prompt and review.
 
 ## Read the proposal
 

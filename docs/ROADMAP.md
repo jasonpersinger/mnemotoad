@@ -1,6 +1,6 @@
 # Development roadmap
 
-Milestone 1A status: Prompt 002 authorized the foundation and a project-local disposable vault. That scope is implemented; see [MILESTONE_1A_REPORT.md](MILESTONE_1A_REPORT.md). G0 is satisfied for 1A only. Milestone 1B remains a separate authorization boundary; all later steps below are plans.
+Milestone 1B status: Prompt 003 authorized feasibility experiments following 1A review. The foundation has a signed Git baseline; isolated timing/compiler/playback/rendering findings are in [MILESTONE_1B_REPORT.md](MILESTONE_1B_REPORT.md). No production editors or legacy imports were implemented. Human review of 1B and a separate prompt are required before any subsequent implementation. All later steps below remain plans.
 
 This plan follows the [product acceptance criteria](PRODUCT_SPEC.md#integrated-mvp-acceptance-criteria), [architecture](ARCHITECTURE.md), [data contracts](DATA_MODEL.md), [risk experiments](RISKS.md), and [decision register](DECISIONS.md). It is not an executable implementation plan or permission to modify a vault.
 
@@ -44,9 +44,15 @@ Build common schema validation/codec, identity index, conditional repository wri
 
 Build bounded experiments for R2/R3/R4: source-PPQ import fixtures and a minimal Type1 event writer adapter; a lazy oscillator transport with underrun/seek/cancellation; a culled dense-grid renderer/hit-test harness with keyboard list; a pure repeated-clip compiler. Measure and document limits without building advanced features.
 
+**Implemented experiment scope:** exact rational timing and tempo inversion; deterministic note-event compiler; explicit integer projection helper; candidate-library Type0/1 fixture round trips (not a production writer adapter); lazy test-tone transport with pause/resume and cancellation; shared culled grid with pointer/keyboard preview probes; native note and arrangement rectangle benchmarks. The complete accessible list, arbitrary seek UI, production codec, sessions/undo and stored tempo-map editing are deferred. This narrower prototype scope follows Prompt 003's instruction to avoid complete editors/codecs solely for feasibility.
+
+**Evidence:** all original foundation tests plus new feasibility contracts; actual Linux Obsidian native resource checks and bounded benchmarks. All-DOM 20k caused a timeout; SVG-all 20k and dense DOM 20k remain unverified. Cross-platform, screen-reader and long-duration loopback remain open, not implied passes.
+
 **Exit:** decide whether the proposed dependency, PPQ policy, frame budget and supported envelope are defensible. **Human gate G1:** approve material changes to architecture/scope or lowered support targets. Routine implementation decisions within an already approved milestone do not require repeated permission.
 
 **Legacy adoption proposal:** after L1/L2/L3/L4 authorization in [DECISIONS.md](DECISIONS.md), refactor selected helpers/tests into the new boundaries and validate in isolation. Otherwise independently implement contracts; no schedule assumes source import.
+
+**Proposed adoption sequence after review:** first approve PPQ/export warning and fixed-tempo MVP policies, rendering envelope, and strict MIDI adapter evaluation. Build production document-session/undo ownership before musical gestures write data. Proceed to separately authorized PATCHBOOK, then harden shared compiler/codec/transport and accessible grid for MOTIF; CANVAS should consume those same services. Independent implementation is now preferred for the small math/transport modules; no legacy import is needed to proceed. Do not promote `experiments/` wholesale.
 
 ## Milestone 2 — PATCHBOOK
 

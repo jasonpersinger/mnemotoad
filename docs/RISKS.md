@@ -61,3 +61,17 @@ Status: proposed, not measured. Likelihood/impact are qualitative engineering es
 **Pass target:** no sustained sound after stop/disable, no stale post-dispose mutations, no growing resource count or unbounded retained memory, correct restart and fallback, and documented platform/codec results. No distribution until all adopted sources have a recorded authorization and license/provenance disposition. **Gate:** foundation cleanup tests, then beta cross-platform/license review.
 
 **Legacy work:** shared `Transport.stop/dispose`, abort/generation guards and UI destroy/race tests are valuable. Optional iPhone audio-session mutation is unnecessary initially; existing historical Linux/phone evidence does not certify Windows/macOS or MNEMOBARD. Runtime source has minimal dependencies; ownership remains unresolved.
+
+## Milestone 1B risk update
+
+The five risks above remain active. [MILESTONE_1B_REPORT.md](MILESTONE_1B_REPORT.md) and its benchmark evidence distinguish measured reductions from remaining work.
+
+| Risk | Evidence gained | Remaining mitigation / next validation |
+| --- | --- | --- |
+| R1 data integrity | No foundation code/schema changed; foundation regressions retained and native smoke rerun. | Production sessions/export snapshots are still absent. Test competing saved edits during captured export before musical integration. |
+| R2 timing/scheduling | Exact source PPQ fractions; tested tempo integration/inversion; deterministic off-before-on/repeat compilation; native pause/cancellation/stall stop; offline onset probe. | No acoustic loopback, 10-minute drift, DAW or Windows/macOS certification. Quantized collapse/overlap warning preflight and strict malformed SMF checks remain required. The library accepts a header-only declared track. |
+| R3 rendering | Native comparison at 100/1k/5k; culled 20k, dense 20k-visible Canvas and DPR2 measured. All-DOM 20k timed out. | Dense Canvas approaches a frame budget; per-gesture reindexing, group edits, accessibility/list, theme matrix, narrow widths and hardware acceleration unverified. Bound visible work and measure combined audio/UI load. |
+| R4 timeline | One rational compiler expands full-length repeated clips with offsets, channels and bounds; same rectangle infrastructure handles 16/64-lane fixtures. | Rectangles do not validate full timeline UX, live motif revisions, labels/markers or MIDI arrangement interoperability. Keep current simple full-length semantics; require captured snapshot/quantization preflight before export. |
+| R5 ownership/adoption | Native 50 start/stop, 20 play/view-close cycles, pending benchmark cancellation and unload cleanup pass; legacy tracked hash unchanged. | Short process-global heap samples are not a leak proof. OS sleep/device changes/pop-outs and 3-OS tests remain. No legacy rights clearance; prefer independent code and keep experimental dependencies dev-only until reviewed. |
+
+The old p95 audible lateness/drift and 16.7ms frame targets remain proposed acceptance goals, not guarantees established by 1B. Wall-clock poll intervals, audio-clock deltas, scheduled lead time and perceived output latency are different quantities.

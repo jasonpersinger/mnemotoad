@@ -44,3 +44,15 @@ Stop after Milestone 1A. Await a separate prompt/review before Milestone 1B; no 
 
 - Final runtime lexical check initially matched the English word “any” in an error message; refined to explicit type annotations/assertions and passed. No type rule was bypassed.
 - Native harness settings-window assertion failures were diagnosed and corrected; final workload and cold restart passed.
+
+# Milestone 1B (Prompt 003 authorization)
+
+11. Preparation and signed baseline — complete: 74 foundation tests/typecheck/lint/build passed; signing key unlocked by user; baseline 70f45df has good signature.
+12. Pure timing/event compiler experiments — complete; source resolution/rational endpoints, inverse tempo maps, SMPTE rejection and deterministic bounds/order tested.
+13. Transport/audio cancellation experiment — complete; fake-clock tests and native Web Audio/offline onset checks; 50 start/stop and 20 close cycles.
+14. Native renderer/arrangement benchmarks — complete with documented failed all-DOM20k and unverified SVG20k. Successful bounded suite21 cases; reviewed evidence retained.
+15. Dependency review, regression verification and report — complete;123 tests/13 files, typecheck/lint/build and native foundation regression pass. See docs/MILESTONE_1B_REPORT.md.
+
+Execution plan: docs/superpowers/plans/2026-11-05-milestone-1b.md. Prompt 003 supersedes the historical 1B stop for experiments only; production adoption and legacy copying remain gated. No additional permission is required for routine authorized experiments.
+
+1B errors/limits: initial GPG signing unavailable until user unlocked key; signed baseline succeeded. Initial native all-DOM20k caused CDP timeout; only the verified isolated instance restarted, workload retained as failed. Bounded suite now saves results incrementally. Strict typecheck found an unchecked fixture byte access, corrected using DataView. No type/lint/test rule weakened. Stop here pending human review and a separate implementation prompt.

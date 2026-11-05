@@ -1,6 +1,6 @@
 import js from '@eslint/js';
 import ts from 'typescript-eslint';
 export default ts.config(js.configs.recommended, ts.configs.recommended, {
-  files: ['src/**/*.ts', 'tests/**/*.ts'],
+  files: ['src/**/*.ts', 'tests/**/*.ts', 'experiments/**/*.ts'],
   rules: { '@typescript-eslint/no-explicit-any': 'error', '@typescript-eslint/no-non-null-assertion': 'error' },
 });

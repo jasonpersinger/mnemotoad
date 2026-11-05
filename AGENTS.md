@@ -4,7 +4,7 @@
 
 Read README and the relevant documents in `docs/` before implementation: PRODUCT_SPEC, ARCHITECTURE, DATA_MODEL, ROADMAP, DECISIONS, TROUBADOUR_AUDIT and RISKS. DESIGN_DIRECTION and TECHNICAL_RESEARCH inform UI/dependency work. Read the decision approval log and current user instructions; do not confuse a proposal with approval. Parent workspace rules also apply.
 
-Current authority: Prompt 002 explicitly authorized **Milestone 1A only**, superseding the kickoff’s Milestone 0 stop. Its foundation is implemented; read docs/MILESTONE_1A_REPORT.md and docs/DEVELOPMENT.md for actual behavior and verification. **Do not begin Milestone 1B without a separate user prompt/review.** Legacy code extraction, musical editors, sequencing, synthesis, timeline implementation, publication, remotes and personal-vault changes remain unauthorized. Routine tests/builds/local dependencies inside authorized scope do not require repeated approval.
+Current authority: Prompt 003 authorizes **Milestone 1B feasibility experiments only**, following review of the implemented 1A foundation. Read docs/MILESTONE_1A_REPORT.md, docs/DEVELOPMENT.md and the 1B report when present. Isolated timing/compiler/test-tone/rendering prototypes are authorized; production musical editors, full synthesis and timeline implementation remain unauthorized. Legacy extraction, publication, remotes and personal-vault changes remain prohibited. Stop after 1B; recommendations are not production-adoption approval. Routine tests/builds/local dependencies inside authorized scope do not require repeated approval.
 
 ## Preserve work and user data
 

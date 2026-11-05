@@ -73,3 +73,13 @@ User explicitly corrected TROUBADOUR location to ~/troubadour, authorizing /home
 1A implementation: full-source string is the optimistic revision (no probabilistic hash). Public Vault.process callback compares exact source. Pre-save recovery JSON contains original and draft/candidate; failures after an uncertain commit are reported with recovery path, never retried automatically. Index startup bounded to four reads, file events supersede obsolete work; no all-vault refresh on each edit.
 
 1A native findings: Obsidian1.15.0 supports actual foundation workflow; settings use a separate document/window. Runtime API package1.14.4 supplies typing, but conservative manifest floor raised to the observed host1.15.0. Host itself checked for updates during isolated launch; MNEMOBARD source makes no runtime network request. YAML runtime notice retained; project distribution remains unlicensed/private pending separate decision.
+# Milestone 1B findings (2026-11-05)
+
+- Signed restoration point70f45df preserves all60 original files. Source/foundation contracts remain unchanged.
+- Exact rational transient time retains PPQ1000 offsets (tick1 ->24/25 at960) without rounding. Explicit integer projection reports errors; tempo-map integration/inversion and SMPTE rejection tested.
+- One pure compiler supplies rational ticks/seconds to playback and a candidate MIDI writer test. Ambiguous same-channel same-pitch overlaps rejected; repeats do not accumulate conversion rounding.
+- Native scheduling uses a25ms wall timer,100ms lookahead and explicit stall/late-event stop. Audio-clock deltas can be coarser than wall intervals. Real-time acoustic latency is unmeasured.
+- Native bounded rendering21cases supports a culled Canvas/DOM hybrid. All-DOM20k failed; sparse20k and dense20k Canvas differ materially. See tracked docs/benchmarks/milestone-1b-native.json rather than extrapolating a universal guarantee.
+- midi-file1.2.4 candidate is dev-only,10,700 minified/3,155gzip browser bytes. Header-only declared tracks are accepted; production requires outer validation. No legacy extraction or new runtime dependency.
+- Legacy121 tracked hashes/HEAD/clean status unchanged; current reference path remains user-corrected ~/troubadour. No legacy execution/copy or personal-vault change.
+- Final report: docs/MILESTONE_1B_REPORT.md. Production recommendations B01–B04 remain unapproved; next milestone requires a separate prompt.

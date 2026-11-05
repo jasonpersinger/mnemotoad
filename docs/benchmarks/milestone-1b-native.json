@@ -1,0 +1,899 @@
+{
+  "measuredAt": "2026-11-05T20:35:29.824989+00:00",
+  "baseline": "70f45df",
+  "experimental": true,
+  "hardware": {
+    "cpu": "AMD Ryzen 7 5700G with Radeon Graphics",
+    "logicalCpus": 16,
+    "ramBytes": 29300412416,
+    "os": "linux",
+    "kernel": "7.3.1-1-cachyos"
+  },
+  "environment": {
+    "title": "MNEMOBARD \u00b7 PATCHBOOK - dev-vault - Obsidian 1.15.0",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+    "width": 1053,
+    "height": 827,
+    "dpr": 1.046875,
+    "defaultEnabled": false
+  },
+  "launch": "--disable-gpu; isolated profile; native desktop, no personal vault",
+  "checks": [
+    "Experimental plugin disabled by default",
+    "OfflineAudioContext onsets match requested sample frames (algorithm only)",
+    "No AudioContext before playback",
+    "Real AudioContext playback and repeated cycles running",
+    "Several real scheduling cycles observed",
+    "Pause cancels voices and timer",
+    "Resume succeeds",
+    "50 real start/stop cycles release every created voice and timer",
+    "250 ms main-thread stall stops transport without late burst",
+    "Window blur policy cancels playback (synthetic event)",
+    "21 bounded rendering cases completed in native Obsidian",
+    "20 native play/view-close cycles close contexts and release resources",
+    "Closing benchmark view cancels pending animation frame/work",
+    "Experimental plugin unload closes audio and removes command",
+    "No observed renderer exceptions in native experiment workload"
+  ],
+  "offlineAudio": {
+    "sampleRate": 48000,
+    "expectedFrames": [
+      6000,
+      24000,
+      72000
+    ],
+    "observedFrames": [
+      6000,
+      24000,
+      72000
+    ],
+    "scope": "OfflineAudioContext scheduling only; no audible-output latency claim"
+  },
+  "audio": {
+    "state": "running",
+    "sampleRate": 48000,
+    "baseLatency": 0.042666666666666665,
+    "outputLatency": 0.128
+  },
+  "schedulingLeadMs": {
+    "count": 15,
+    "min": 50.0,
+    "median": 84.66666666666667,
+    "p95": 98.66666666666646,
+    "max": 98.66666666666646
+  },
+  "wallPollIntervalsMs": {
+    "count": 128,
+    "min": 24.700000002951583,
+    "median": 24.999999999977263,
+    "p95": 25.10000000893342,
+    "max": 25.299999997059786
+  },
+  "audioClockDeltaMs": {
+    "count": 129,
+    "min": 0,
+    "median": 42.66666666666641,
+    "p95": 42.666666666666856,
+    "max": 85.33333333333333
+  },
+  "nativeInputDispatchToLayoutMs": {
+    "count": 41,
+    "min": 0.19999998807907104,
+    "median": 1.1000000089406967,
+    "p95": 8.700000002980232,
+    "max": 8.700000002980232
+  },
+  "startStop": {
+    "cycles": 50,
+    "createdVoices": 59,
+    "releasedVoices": 59,
+    "remainingVoices": 0,
+    "remainingTimers": 0
+  },
+  "viewCloseCycles": 20,
+  "heapAfterGCReopenDeltaBytes": 316305,
+  "stallDiagnostic": "Playback stopped: scheduler stalled for 256.0 ms",
+  "exceptions": [],
+  "rendering": [
+    {
+      "label": "piano",
+      "mode": "dom-all",
+      "count": 100,
+      "dpr": 1.046875,
+      "indexMs": 0.09999999403953552,
+      "initialMs": 2.2999999970197678,
+      "redrawMs": {
+        "median": 0.10000000894069672,
+        "p95": 0.30000001192092896,
+        "max": 0.5999999940395355
+      },
+      "scrollMs": {
+        "median": 1.3999999910593033,
+        "p95": 1.5999999940395355,
+        "max": 1.5999999940395355
+      },
+      "zoomMs": {
+        "median": 1.6000000089406967,
+        "p95": 1.7999999970197678,
+        "max": 1.7999999970197678
+      },
+      "interactionWorkMs": {
+        "median": 0.10000000894069672,
+        "p95": 0.30000001192092896,
+        "max": 0.30000001192092896
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 3,
+      "nodes": 101,
+      "backingBytes": 0,
+      "heapDeltaBytes": 154149
+    },
+    {
+      "label": "piano",
+      "mode": "svg-all",
+      "count": 100,
+      "dpr": 1.046875,
+      "indexMs": 0.09999999403953552,
+      "initialMs": 1.7999999970197678,
+      "redrawMs": {
+        "median": 0.6000000089406967,
+        "p95": 0.7999999970197678,
+        "max": 1
+      },
+      "scrollMs": {
+        "median": 1.3999999910593033,
+        "p95": 1.5999999940395355,
+        "max": 1.5999999940395355
+      },
+      "zoomMs": {
+        "median": 1.4000000059604645,
+        "p95": 1.5999999940395355,
+        "max": 1.5999999940395355
+      },
+      "interactionWorkMs": {
+        "median": 1,
+        "p95": 1.2999999970197678,
+        "max": 1.2999999970197678
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 3,
+      "nodes": 102,
+      "backingBytes": 0,
+      "heapDeltaBytes": -295805
+    },
+    {
+      "label": "piano",
+      "mode": "dom-culled",
+      "count": 100,
+      "dpr": 1.046875,
+      "indexMs": 0,
+      "initialMs": 0.4000000059604645,
+      "redrawMs": {
+        "median": 0,
+        "p95": 0.09999999403953552,
+        "max": 0.10000000894069672
+      },
+      "scrollMs": {
+        "median": 0.20000000298023224,
+        "p95": 0.5,
+        "max": 0.5
+      },
+      "zoomMs": {
+        "median": 0.20000000298023224,
+        "p95": 0.4000000059604645,
+        "max": 0.4000000059604645
+      },
+      "interactionWorkMs": {
+        "median": 0,
+        "p95": 0.09999999403953552,
+        "max": 0.10000000894069672
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.099999999976717,
+        "max": 10.099999999976717
+      },
+      "visible": 3,
+      "nodes": 4,
+      "backingBytes": 0,
+      "heapDeltaBytes": -93128
+    },
+    {
+      "label": "piano",
+      "mode": "canvas-culled",
+      "count": 100,
+      "dpr": 1.046875,
+      "indexMs": 0.09999999403953552,
+      "initialMs": 1,
+      "redrawMs": {
+        "median": 0,
+        "p95": 0.09999999403953552,
+        "max": 0.10000000894069672
+      },
+      "scrollMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "zoomMs": {
+        "median": 0.10000000894069672,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "interactionWorkMs": {
+        "median": 0,
+        "p95": 0.09999999403953552,
+        "max": 0.10000000894069672
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 3,
+      "nodes": 2,
+      "backingBytes": 1515540,
+      "heapDeltaBytes": -132144
+    },
+    {
+      "label": "piano",
+      "mode": "dom-all",
+      "count": 1000,
+      "dpr": 1.046875,
+      "indexMs": 0.5,
+      "initialMs": 19.600000008940697,
+      "redrawMs": {
+        "median": 1.7000000029802322,
+        "p95": 1.9000000059604645,
+        "max": 5.9000000059604645
+      },
+      "scrollMs": {
+        "median": 17,
+        "p95": 17.200000002980232,
+        "max": 17.200000002980232
+      },
+      "zoomMs": {
+        "median": 18.200000002980232,
+        "p95": 19.200000002980232,
+        "max": 19.200000002980232
+      },
+      "interactionWorkMs": {
+        "median": 1.2000000029802322,
+        "p95": 1.5,
+        "max": 1.5
+      },
+      "frameIntervalsMs": {
+        "median": 20,
+        "p95": 20.100000000034925,
+        "max": 20.100000000034925
+      },
+      "visible": 26,
+      "nodes": 1001,
+      "backingBytes": 0,
+      "heapDeltaBytes": 9363316
+    },
+    {
+      "label": "piano",
+      "mode": "svg-all",
+      "count": 1000,
+      "dpr": 1.046875,
+      "indexMs": 0.19999998807907104,
+      "initialMs": 17.299999997019768,
+      "redrawMs": {
+        "median": 10.199999988079071,
+        "p95": 10.599999994039536,
+        "max": 10.799999997019768
+      },
+      "scrollMs": {
+        "median": 17,
+        "p95": 19.5,
+        "max": 19.5
+      },
+      "zoomMs": {
+        "median": 16.69999998807907,
+        "p95": 23,
+        "max": 23
+      },
+      "interactionWorkMs": {
+        "median": 15,
+        "p95": 15.700000002980232,
+        "max": 15.799999997019768
+      },
+      "frameIntervalsMs": {
+        "median": 20,
+        "p95": 20.099999999976717,
+        "max": 20.099999999976717
+      },
+      "visible": 26,
+      "nodes": 1002,
+      "backingBytes": 0,
+      "heapDeltaBytes": -3747747
+    },
+    {
+      "label": "piano",
+      "mode": "dom-culled",
+      "count": 1000,
+      "dpr": 1.046875,
+      "indexMs": 0.4000000059604645,
+      "initialMs": 1.0999999940395355,
+      "redrawMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "scrollMs": {
+        "median": 0.7999999970197678,
+        "p95": 1.5,
+        "max": 1.5
+      },
+      "zoomMs": {
+        "median": 0.5999999940395355,
+        "p95": 1.1000000089406967,
+        "max": 1.1000000089406967
+      },
+      "interactionWorkMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 26,
+      "nodes": 27,
+      "backingBytes": 0,
+      "heapDeltaBytes": -2350616
+    },
+    {
+      "label": "piano",
+      "mode": "canvas-culled",
+      "count": 1000,
+      "dpr": 1.046875,
+      "indexMs": 0.29999999701976776,
+      "initialMs": 1.2000000029802322,
+      "redrawMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "scrollMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "zoomMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "interactionWorkMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 26,
+      "nodes": 2,
+      "backingBytes": 1515540,
+      "heapDeltaBytes": 1004428
+    },
+    {
+      "label": "piano",
+      "mode": "dom-all",
+      "count": 5000,
+      "dpr": 1.046875,
+      "indexMs": 0.7999999970197678,
+      "initialMs": 176,
+      "redrawMs": {
+        "median": 5.899999991059303,
+        "p95": 6.5,
+        "max": 6.5
+      },
+      "scrollMs": {
+        "median": 165.6000000089407,
+        "p95": 174.30000001192093,
+        "max": 174.30000001192093
+      },
+      "zoomMs": {
+        "median": 174.19999998807907,
+        "p95": 185,
+        "max": 185
+      },
+      "interactionWorkMs": {
+        "median": 5.700000002980232,
+        "p95": 6.0999999940395355,
+        "max": 6.200000002980232
+      },
+      "frameIntervalsMs": {
+        "median": 170.10000000003492,
+        "p95": 180.20000000001164,
+        "max": 180.20000000001164
+      },
+      "visible": 129,
+      "nodes": 5001,
+      "backingBytes": 0,
+      "heapDeltaBytes": 5752021
+    },
+    {
+      "label": "piano",
+      "mode": "svg-all",
+      "count": 5000,
+      "dpr": 1.046875,
+      "indexMs": 0.7999999970197678,
+      "initialMs": 158.40000000596046,
+      "redrawMs": {
+        "median": 136,
+        "p95": 143,
+        "max": 165.3999999910593
+      },
+      "scrollMs": {
+        "median": 166.59999999403954,
+        "p95": 172.40000000596046,
+        "max": 172.40000000596046
+      },
+      "zoomMs": {
+        "median": 169.20000000298023,
+        "p95": 174,
+        "max": 174
+      },
+      "interactionWorkMs": {
+        "median": 163,
+        "p95": 164.79999999701977,
+        "max": 165.69999998807907
+      },
+      "frameIntervalsMs": {
+        "median": 170.10000000003492,
+        "p95": 180.20000000001164,
+        "max": 180.20000000001164
+      },
+      "visible": 129,
+      "nodes": 5002,
+      "backingBytes": 0,
+      "heapDeltaBytes": 1400557
+    },
+    {
+      "label": "piano",
+      "mode": "dom-culled",
+      "count": 5000,
+      "dpr": 1.046875,
+      "indexMs": 0.7000000029802322,
+      "initialMs": 2.9000000059604645,
+      "redrawMs": {
+        "median": 0.19999998807907104,
+        "p95": 0.29999999701976776,
+        "max": 0.30000001192092896
+      },
+      "scrollMs": {
+        "median": 2.5,
+        "p95": 2.7999999970197678,
+        "max": 2.7999999970197678
+      },
+      "zoomMs": {
+        "median": 1.800000011920929,
+        "p95": 2.7999999970197678,
+        "max": 2.7999999970197678
+      },
+      "interactionWorkMs": {
+        "median": 0.19999998807907104,
+        "p95": 0.20000000298023224,
+        "max": 0.29999999701976776
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 129,
+      "nodes": 130,
+      "backingBytes": 0,
+      "heapDeltaBytes": -6279472
+    },
+    {
+      "label": "piano",
+      "mode": "canvas-culled",
+      "count": 5000,
+      "dpr": 1.046875,
+      "indexMs": 0.7000000029802322,
+      "initialMs": 1.7000000029802322,
+      "redrawMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.20000000298023224
+      },
+      "scrollMs": {
+        "median": 0.10000000894069672,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "zoomMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "interactionWorkMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 129,
+      "nodes": 2,
+      "backingBytes": 1515540,
+      "heapDeltaBytes": 3295752
+    },
+    {
+      "label": "piano",
+      "mode": "dom-culled",
+      "count": 20000,
+      "dpr": 1.046875,
+      "indexMs": 2.6000000089406967,
+      "initialMs": 10.800000011920929,
+      "redrawMs": {
+        "median": 0.6000000089406967,
+        "p95": 0.7999999970197678,
+        "max": 0.7999999970197678
+      },
+      "scrollMs": {
+        "median": 10.400000005960464,
+        "p95": 11.900000005960464,
+        "max": 11.900000005960464
+      },
+      "zoomMs": {
+        "median": 6.9000000059604645,
+        "p95": 14,
+        "max": 14
+      },
+      "interactionWorkMs": {
+        "median": 0.6000000089406967,
+        "p95": 0.7999999970197678,
+        "max": 0.8999999910593033
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 20.100000000034925,
+        "max": 20.100000000034925
+      },
+      "visible": 501,
+      "nodes": 502,
+      "backingBytes": 0,
+      "heapDeltaBytes": -1041026
+    },
+    {
+      "label": "piano",
+      "mode": "canvas-culled",
+      "count": 20000,
+      "dpr": 1.046875,
+      "indexMs": 2.0999999940395355,
+      "initialMs": 3.4000000059604645,
+      "redrawMs": {
+        "median": 0.10000000894069672,
+        "p95": 0.5,
+        "max": 0.6000000089406967
+      },
+      "scrollMs": {
+        "median": 0.29999999701976776,
+        "p95": 0.4000000059604645,
+        "max": 0.4000000059604645
+      },
+      "zoomMs": {
+        "median": 0.20000000298023224,
+        "p95": 0.30000001192092896,
+        "max": 0.30000001192092896
+      },
+      "interactionWorkMs": {
+        "median": 0.10000000894069672,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 501,
+      "nodes": 2,
+      "backingBytes": 1515540,
+      "heapDeltaBytes": -395720
+    },
+    {
+      "label": "piano-dense",
+      "mode": "dom-culled",
+      "count": 1000,
+      "dpr": 1.046875,
+      "indexMs": 0.20000000298023224,
+      "initialMs": 17.599999994039536,
+      "redrawMs": {
+        "median": 1.0999999940395355,
+        "p95": 1.2000000029802322,
+        "max": 1.2000000029802322
+      },
+      "scrollMs": {
+        "median": 13.199999988079071,
+        "p95": 19.400000005960464,
+        "max": 19.400000005960464
+      },
+      "zoomMs": {
+        "median": 14.399999991059303,
+        "p95": 19.900000005960464,
+        "max": 19.900000005960464
+      },
+      "interactionWorkMs": {
+        "median": 1.1000000089406967,
+        "p95": 1.2999999970197678,
+        "max": 1.6000000089406967
+      },
+      "frameIntervalsMs": {
+        "median": 19.900000000023283,
+        "p95": 20.100000000034925,
+        "max": 20.100000000034925
+      },
+      "visible": 1000,
+      "nodes": 1001,
+      "backingBytes": 0,
+      "heapDeltaBytes": -305752
+    },
+    {
+      "label": "piano-dense",
+      "mode": "canvas-culled",
+      "count": 20000,
+      "dpr": 1.046875,
+      "indexMs": 1.5,
+      "initialMs": 8.599999994039536,
+      "redrawMs": {
+        "median": 13.599999994039536,
+        "p95": 14.599999994039536,
+        "max": 15.099999994039536
+      },
+      "scrollMs": {
+        "median": 3.699999988079071,
+        "p95": 4.4000000059604645,
+        "max": 4.4000000059604645
+      },
+      "zoomMs": {
+        "median": 3.7999999970197678,
+        "p95": 4.5,
+        "max": 4.5
+      },
+      "interactionWorkMs": {
+        "median": 13.699999988079071,
+        "p95": 17.399999991059303,
+        "max": 18.600000008940697
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 20,
+        "max": 20
+      },
+      "visible": 20000,
+      "nodes": 2,
+      "backingBytes": 1515540,
+      "heapDeltaBytes": 24086069
+    },
+    {
+      "label": "piano-dpr2",
+      "mode": "canvas-culled",
+      "count": 20000,
+      "dpr": 2,
+      "indexMs": 2.1000000089406967,
+      "initialMs": 4,
+      "redrawMs": {
+        "median": 0.10000000894069672,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "scrollMs": {
+        "median": 0.29999999701976776,
+        "p95": 0.4000000059604645,
+        "max": 0.4000000059604645
+      },
+      "zoomMs": {
+        "median": 0.29999999701976776,
+        "p95": 0.4000000059604645,
+        "max": 0.4000000059604645
+      },
+      "interactionWorkMs": {
+        "median": 0.10000000894069672,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 501,
+      "nodes": 2,
+      "backingBytes": 5529600,
+      "heapDeltaBytes": -22147116
+    },
+    {
+      "label": "arrangement-16",
+      "mode": "dom-culled",
+      "count": 1000,
+      "dpr": 1.046875,
+      "indexMs": 0.20000000298023224,
+      "initialMs": 1.2000000029802322,
+      "redrawMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "scrollMs": {
+        "median": 1.2000000029802322,
+        "p95": 1.5,
+        "max": 1.5
+      },
+      "zoomMs": {
+        "median": 0.7999999970197678,
+        "p95": 1.2000000029802322,
+        "max": 1.2000000029802322
+      },
+      "interactionWorkMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.10000000894069672,
+        "max": 0.20000000298023224
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 48,
+      "nodes": 49,
+      "backingBytes": 0,
+      "heapDeltaBytes": 2281768
+    },
+    {
+      "label": "arrangement-16",
+      "mode": "canvas-culled",
+      "count": 1000,
+      "dpr": 1.046875,
+      "indexMs": 0.09999999403953552,
+      "initialMs": 1,
+      "redrawMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "scrollMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "zoomMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "interactionWorkMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 48,
+      "nodes": 2,
+      "backingBytes": 1515540,
+      "heapDeltaBytes": 1198084
+    },
+    {
+      "label": "arrangement-64",
+      "mode": "dom-culled",
+      "count": 5000,
+      "dpr": 1.046875,
+      "indexMs": 0.6000000089406967,
+      "initialMs": 1.800000011920929,
+      "redrawMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "scrollMs": {
+        "median": 1.2000000029802322,
+        "p95": 1.2999999970197678,
+        "max": 1.2999999970197678
+      },
+      "zoomMs": {
+        "median": 0.7999999970197678,
+        "p95": 1.0999999940395355,
+        "max": 1.0999999940395355
+      },
+      "interactionWorkMs": {
+        "median": 0,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.100000000034925,
+        "max": 10.100000000034925
+      },
+      "visible": 48,
+      "nodes": 49,
+      "backingBytes": 0,
+      "heapDeltaBytes": 2782732
+    },
+    {
+      "label": "arrangement-64",
+      "mode": "canvas-culled",
+      "count": 5000,
+      "dpr": 1.046875,
+      "indexMs": 0.5999999940395355,
+      "initialMs": 1.5,
+      "redrawMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "scrollMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.20000000298023224,
+        "max": 0.20000000298023224
+      },
+      "zoomMs": {
+        "median": 0.09999999403953552,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "interactionWorkMs": {
+        "median": 0,
+        "p95": 0.10000000894069672,
+        "max": 0.10000000894069672
+      },
+      "frameIntervalsMs": {
+        "median": 10,
+        "p95": 10.099999999976717,
+        "max": 10.099999999976717
+      },
+      "visible": 48,
+      "nodes": 2,
+      "backingBytes": 1515540,
+      "heapDeltaBytes": 1669816
+    }
+  ],
+  "failedWorkloads": [
+    {
+      "mode": "dom-all",
+      "count": 20000,
+      "result": "Native CDP unresponsive; 20s Runtime.evaluate timeout; no completed timing metrics; isolated application restarted"
+    }
+  ],
+  "unverified": [
+    "SVG-all 20000",
+    "dense DOM 20000",
+    "hardware-accelerated rendering",
+    "Windows/macOS",
+    "screen reader",
+    "physical audio loopback and long-run drift"
+  ],
+  "midi": {
+    "candidate": "midi-file@1.2.4",
+    "minifiedBrowserBytes": 10700,
+    "gzipBytes": 3155,
+    "fixtureBytes": 35,
+    "exactRoundTrip": true,
+    "productionDependency": false
+  }
+}

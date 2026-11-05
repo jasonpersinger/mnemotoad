@@ -1,6 +1,6 @@
-# Milestone 1A development guide
+# Development guide
 
-Current implementation: strict domain/data contracts, source-preserving documents, shared safe repository/index/references, settings and three workspace shells. No musical editing, MIDI codec, timing engine, audio, or timeline exists. [Milestone 0](MILESTONE_0_REPORT.md) remains a historical planning report; [Milestone 1A](MILESTONE_1A_REPORT.md) records actual verification.
+Production implementation: strict domain/data contracts, source-preserving documents, shared safe repository/index/references, settings and three workspace shells. Production musical capabilities remain planned. [Milestone 0](MILESTONE_0_REPORT.md) and [Milestone 1A](MILESTONE_1A_REPORT.md) remain historical reports; [Milestone 1B](MILESTONE_1B_REPORT.md) records isolated experiments and their limits.
 
 ## Setup and commands
 
@@ -96,8 +96,33 @@ Runtime: `yaml` 2.9.1, ISC, no runtime dependencies. Source ranges, strict dupli
 
 Development: Obsidian typings/esbuild/Vitest/jsdom/ESLint/typescript-eslint/@types/node are MIT; TypeScript is Apache-2.0. Node 26 satisfies the selected tool engines. TypeScript 6 was preferred to a new major compiler while the linter ecosystem stabilizes. The known minimatch advisory was confined to dev lint tooling; pnpm pins all minimatch paths to patched 11.0.1 (BlueOak-1.0.0). Lint/tests and audit validate this override; revisit when upstream ranges update. [Maintainer advisory](https://github.com/isaacs/minimatch/security/advisories/GHSA-g3hv-75wg-m249).
 
-No MIDI/waveform/rendering/UI framework is installed. Installation used `--ignore-scripts`; no system packages, global tools, remote repository, publication, or legacy dependency directory was introduced. MNEMOBARD remains private/UNLICENSED pending the distribution decision.
+`midi-file` 1.2.4 (MIT) is installed as a pinned devDependency for candidate contract/size experiments only. It is not bundled into production or the test-tone lab. No waveform/rendering/UI framework was added. Installation used `--ignore-scripts`; no system packages, global tools, remote repository, publication, or legacy dependency directory was introduced. MNEMOBARD remains private/UNLICENSED pending the distribution decision.
 
 ## Remaining boundaries
 
-Document sessions, autosave/undo, link-summary generation/automatic asset relinking, migrations, backup retention UI and musical cross-reference compilation are deferred. The foundational APIs retain/reject/report data safely, but no editor promises these future behaviors. Pop-out musical editing, cross-platform media, performance targets, filesystem crash durability and actual multi-device conflicts are unverified. Milestone 1B requires a separate prompt; do not start timing/rendering/MIDI experiments from this guide.
+Document sessions, autosave/undo, link-summary generation/automatic asset relinking, migrations, backup retention UI and production musical cross-reference compilation are deferred. The foundational APIs retain/reject/report data safely, but no editor promises these future behaviors. Pop-out musical editing, cross-platform media, guaranteed performance targets, filesystem crash durability and actual multi-device conflicts are unverified. Stop after the authorized 1B experiments; this guide does not authorize the next implementation phase.
+
+## Isolated Milestone 1B experiments
+
+`experiments/timing.ts` and `compiler.ts` are pure transient contracts. `transport.ts` depends only on an injected sink/clock/timer; `web-audio.ts` implements a test tone. `geometry.ts` and `rendering.ts` share musical-coordinate rectangles, row/time indexing, culling and preview probes. `offline-audio.ts` checks requested onset frames without a device. `plugin.ts` is a separate development entry; `src/main.ts` never imports it. Normal `pnpm check` includes experiment tests/typecheck/lint, but the normal production build excludes all experiments.
+
+```sh
+pnpm check
+pnpm dev:vault
+pnpm experiments:build
+pnpm dev:obsidian
+# In a second terminal, with ONLY the isolated app at localhost:9227:
+pnpm test:obsidian
+pnpm experiments:midi
+pnpm experiments:native
+```
+
+The experimental build writes only its own main.js/manifest into `dev-vault/.obsidian/plugins/mnemobard-experiments`, rejects symlink destinations and requires the exact disposable-vault marker. It does not enable itself. Its runtime also checks the designated vault path/marker before registering its view/command. Only the separate experimental bundle embeds the build-time development path; production contains no user-specific absolute path.
+
+For manual inspection, enable **MNEMOBARD Experiments (disposable only)** in this vault's Community Plugins, then run its **Open disposable feasibility lab** command. Play/Pause/Resume/Stop use synthetic notes; selection ID and arrow/Shift-arrow/pointer gestures are ephemeral preview probes, not saved editor commands. Do not enable this plugin in another vault. Disable it again before running the automated default-disabled assertion. The runner enables it temporarily through guarded test-only host controls and disables it in finally; it does not save enablement. MIDI tests never read or write vault MIDI files.
+
+Raw results/screenshot are ignored at `output/experiments/native.json`, `native-partial.json`, `native.png` and `midi.json`. A reviewed measurement summary is retained in `docs/benchmarks/`. The runner records completed cases incrementally and cancels pending frames/work when its view closes. Cancellation cannot interrupt the middle of synchronous browser layout; the failed 20k all-DOM workload is deliberately not repeated. All-node DOM/SVG comparisons stop at 5k; culled approaches reach 20k, dense Canvas reaches 20k visible and dense DOM is limited to 1k. Run an explicitly isolated new experiment to expand that envelope.
+
+Each render case uses the same 960×360 CSS-pixel viewport, five warmups, 30 redraw samples, 20 pan frames, 20 zoom frames and 30 hit/preview/redraw samples. Initial time includes building the static index. Forced layout and frame-interval data are distinct metrics; neither measures physical display latency. Node counts/backing bytes are deterministic approximate resource indicators, while heap deltas are global/noisy. The full report explains hardware and software rendering. No arbitrary CI timing threshold is enforced.
+
+On close/disable the test transport cancels timers/voices, guards pending resumes, disconnects nodes and closes its context. Blur/pagehide/hidden-document policy stops playback. A >100ms audio/wall polling gap or a late event stops instead of catching up. Pause cancels sound; resume retriggers still-held notes for the remaining duration. The normal production plugin has no transport yet. A future shared transport will need explicit focus ownership, sessions, export preflight and platform/latency validation before adoption.
