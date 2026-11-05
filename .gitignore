@@ -1,0 +1,10 @@
+node_modules/
+main.js
+main.js.map
+coverage/
+dist/
+.runtime/
+dev-vault/
+output/
+*.tsbuildinfo
+.DS_Store
