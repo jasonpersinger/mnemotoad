@@ -1,6 +1,6 @@
 # Development roadmap
 
-Milestone3A status: Prompt006 authorizes the basic production MOTIF editor after2B review. Signed baselinec63125b preserves2B. Editor/audition/save/recovery and native workflow evidence are in [MILESTONE_3A_REPORT.md](MILESTONE_3A_REPORT.md). Stop for3A review;3B, CANVAS, release and legacy adoption remain gated.
+Milestone3B status: Prompt007 authorizes MIDI interchange and targeted musical/integration work after3A engineering/visual review. Signed baseline90eed00 preserves3A. Implementation/tests/native evidence are in [MILESTONE_3B_REPORT.md](MILESTONE_3B_REPORT.md). Stop for3B review; CANVAS, release and legacy adoption remain gated.
 
 This plan follows the [product acceptance criteria](PRODUCT_SPEC.md#integrated-mvp-acceptance-criteria), [architecture](ARCHITECTURE.md), [data contracts](DATA_MODEL.md), [risk experiments](RISKS.md), and [decision register](DECISIONS.md). It is not an executable implementation plan or permission to modify a vault.
 
@@ -84,9 +84,11 @@ Implemented: UUID browser; exact source-tick note editing/chords; Canvas culling
 
 **Exit/review G3A:** review actual musical usability/screenshots and supported envelope. Broader OS/device/accessibility testing and full-view/aggregate-memory profiling remain necessary. No3B work is authorized by passing these checks.
 
-### 3B — Proposed interchange and extended editing
+### 3B — Interchange and targeted editing (Prompt007)
 
-Requires a separate prompt. Evaluate/adopt the bounded codec only after explicit B04 decision; preserve input files/source PPQ, report unsupported timing/events, independently verify exported MIDI. Add selected transformations with history and explicit PATCHBOOK UUID assignment controls. Scope and acceptance fixtures require review; loops, advanced transport and harmony tools are not automatically included.
+Implemented under Prompt007: strict bounded Type0/1 preview/selection and worker decoding; deterministic Type1 export with independent Python/raw-fixture verification; transpose/start quantize/velocity; exact musical-position editing and PATCHBOOK UUID association/navigation.349 tests/30 files, native workflow/cold restart/regressions,14 screenshots and full-view100/1000/5000 profiles support review. Stateful/unknown events and maps remain blocked; no hardware or multitrack editor.
+
+**Exit/review G3B:** inspect actual interchange fidelity/warnings, musical usability and the5k latency/resource bounds. Milestone4 needs a separate prompt for lane/clip/repetition/channel/export preflight design; passing3B does not authorize CANVAS.
 
 The following original Milestone3 outline describes the eventual combined scope; it does not widen3A authorization.
 

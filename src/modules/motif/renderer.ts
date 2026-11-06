@@ -45,8 +45,9 @@ export function renderRoll(context: CanvasRenderingContext2D, motif: Motif, inde
   context.fillStyle = colors.faint;
   for (let pitch = Math.min(127, Math.ceil(view.topPitch)); pitch >= Math.max(0, Math.floor(view.topPitch - height / rowHeight)); pitch--) {
     const y = RULER_HEIGHT + (view.topPitch - pitch) * rowHeight + rowHeight / 2;
-    if (y > RULER_HEIGHT) context.fillText(noteName(pitch), 9, y);
+    if (y > RULER_HEIGHT) { context.font = pitch % 12 === 0 ? 'bold 12px sans-serif' : '12px sans-serif';context.fillStyle = pitch % 12 === 0 ? colors.text : colors.faint;context.fillText(noteName(pitch), 9, y); }
   }
+  context.font = '12px sans-serif';
   for (let tick = Math.floor(view.startTick / bar) * bar; tick < view.startTick + width / pixelsPerQuarter * ppq; tick += bar) {
     const x = PITCH_GUTTER + (tick - view.startTick) / ppq * pixelsPerQuarter;
     if (x >= PITCH_GUTTER) { context.fillStyle = colors.text; context.fillText(String(Math.round(tick / bar) + 1), x + 5, RULER_HEIGHT / 2); }

@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      midi-file:
+        specifier: 1.2.4
+        version: 1.2.4
       yaml:
         specifier: 2.9.1
         version: 2.9.1
@@ -30,9 +33,6 @@ importers:
       jsdom:
         specifier: 30.1.3
         version: 30.1.3
-      midi-file:
-        specifier: 1.2.4
-        version: 1.2.4
       obsidian:
         specifier: 1.14.4
         version: 1.14.4(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)

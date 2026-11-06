@@ -105,3 +105,13 @@ The old p95 audible lateness/drift and 16.7ms frame targets remain proposed acce
 | R5: lifecycle/platform | Native ten start/stop cycles and owner/view/module/plugin cleanup, focus-bound keys, isolated cold restarts; all baseline tests pass. No new dependency/legacy adoption. | Windows/macOS, musical popouts, long sessions and aggregate clean-session cache memory remain unverified. Per-session bounds are not a global heap bound. |
 
 See [3A report](MILESTONE_3A_REPORT.md) for exact environment, bounds and measurements; these observations refine the original estimates without removing their risks.
+
+## Milestone3B production update
+
+- **R1 integrity:** MIDI preview/selection never writes an authoritative entity; normal protected Save and append-only recovery remain shared. New export paths reject collisions/traversal/config destinations. Failed acknowledgments may leave derivative files; inspection replaces automatic retry/delete. Native originals were hash-identical; conflict/recovery/cold workflows passed. Sync/crash guarantees remain limited.
+- **R2 interoperability:** independent raw scanner before pinned codec, deterministic pairing/order, source PPQ and track ending retained. Stateful/unknown events/maps/ambiguity block; named metadata losses require acknowledgment. Python verifies actual export bytes; no external DAW/hardware test. Conservative rejection can exclude otherwise valid complex files; never solve that by silent flattening.
+- **R3 interaction cost:** full-view5k pointer p95≈60.8ms after targeted refresh reduction (earlier165.2ms); transpose61.1ms/quantize73.4ms p95.1k pointer16ms. These differ from3A's roll-only test and exceed the old50ms hypothesis at5k. Profile storage/heap/long history further before a delta-history rewrite or wider support claim.
+- **R4 arrangement:** proven single-part interchange/patch IDs/compiler do not implement clip repetition/channel allocation/export snapshots. Same-channel/same-pitch collisions across future clips remain a required preflight decision. CANVAS remains gated.
+- **R5 resources/platform:**2MiB/50k events/10s owned worker, termination/URL cleanup, bounded selection options and8 clean unowned cache entries address concrete bounds. Dirty/owned sessions/history/recovery still consume memory; no actual aggregate heap certification. Browser CSP, Windows/macOS, musical popouts and long sessions remain open.
+
+[3B report](MILESTONE_3B_REPORT.md) records the full bounds, methodology and tested limits. No package audit vulnerabilities were reported; that does not prove parser safety beyond validation/fault evidence.

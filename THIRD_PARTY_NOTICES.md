@@ -18,9 +18,9 @@ OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
 TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 
-## midi-file (experiment only)
+## midi-file (production MIDI codec and isolated experiments)
 
-`midi-file` 1.2.4 is a pinned development dependency used only by Milestone 1B contract tests and its candidate-size experiment. It is absent from both production and test-tone plugin bundles. Source package also credits earlier parser projects; review provenance and retain its MIT notice before any production adoption.
+`midi-file` 1.2.4 is pinned for production MIDI byte decoding/serialization under Prompt007, behind independent strict validation and a cancellable import worker. The existing1B experiments also use it. It has no runtime dependencies or installation scripts. Upstream credits midi-file-parser and jasmid as parser references and describes a rewrite; their source was not separately copied into MNEMOBARD. The package MIT notice follows and must accompany distribution.
 
 Copyright © 2016 Carter Thaxton
 

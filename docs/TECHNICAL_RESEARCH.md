@@ -129,3 +129,9 @@ Vitest supports unit and browser testing; jsdom/happy-dom simulate only portions
 Open empirical questions: achievable dense-grid frame budget; scheduler under host stalls; Type1 DAW interoperability; vault conflict/backup behavior under external writes; module disable/reopen cleanup; desktop codec differences; whether source PPQ and live motif references are understandable. Exact experiments are in [RISKS.md](RISKS.md).
 
 Static TROUBADOUR analysis provides promising code and regression knowledge, not fresh benchmark/coverage results. Its historical 134-test report and limited device/REAPER results are labeled in [the audit](TROUBADOUR_AUDIT.md). Approve and perform isolated validation before source adoption. No automatic legacy import is recommended.
+
+## Milestone3B codec implementation evidence (2026-11-06)
+
+Prompt007's B04 evaluation adopted pinned midi-file1.2.4 only behind strict independent framing, bounded selected-part validation and a cancellable worker. Registry inspection reported MIT,47239-byte unpacked package, no runtime dependencies and release date2023-03-15. Sparse release activity is a maintenance risk, not an active-maintenance guarantee. Upstream byte-array parser/writer, TypeScript declarations, permissive truncation and attribution were reviewed; no legacy code was copied. Current [upstream](https://github.com/carter-thaxton/midi-file) and [license](https://raw.githubusercontent.com/carter-thaxton/midi-file/master/LICENSE.md) remain primary references.
+
+Native public-API integration verified deferred view loading, new-file binary output and existing conditional entity persistence. Independent Python/raw fixtures verified supported MIDI events rather than relying only on candidate round trips. Exact bounds/measurements/known exclusions are in the [3B report](MILESTONE_3B_REPORT.md); no general SMF/DAW or physical-latency certification is implied.

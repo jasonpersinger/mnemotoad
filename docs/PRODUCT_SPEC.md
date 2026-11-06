@@ -1,6 +1,6 @@
 # Product specification
 
-Milestone3A status: PATCHBOOK's sound library remains implemented; MOTIF now supports basic graphical/numeric composition, undo/redo, sine audition, protected saving/reopening and explicit recovery in the tested Linux host. MIDI interchange, advanced transforms and CANVAS remain planned, so the integrated MIDI-export MVP is not complete. See [MILESTONE_3A_REPORT.md](MILESTONE_3A_REPORT.md) for exact validation/support limits.
+Milestone3B status: PATCHBOOK remains implemented; MOTIF now adds supported selected-part MIDI import/export, essential transformations, patch context and musical-position editing to its production editor/history/audition/recovery. Advanced transforms/maps and CANVAS remain planned; the integrated arrangement-export MVP is not complete. See [MILESTONE_3B_REPORT.md](MILESTONE_3B_REPORT.md) for exact fidelity/support limits.
 
 ## Purpose and users
 
@@ -46,7 +46,7 @@ These personas are product hypotheses from the brief, not validated interviews. 
 ### MVP MIDI contract
 
 - MIDI 1.0 SMF Types 0 and 1 with PPQ timing; user chooses one track/channel with notes to create a motif. Reject Type 2, SMPTE division, and files with changes of tempo or meter in this initial importer. Report the reason before creating a motif.
-- Retain note pitch, start, duration, attack velocity and explicit source PPQ without snapping or normalizing imported ticks. New authored motifs default to 960 PPQ. Arrangement export converts to its 960 PPQ with explicit rounding warnings when necessary. Explicitly detect and report controllers, sustain, pitch bend, aftertouch, program changes, lyrics, or other events that the editable motif will not reproduce. Permit a clearly labeled note-only import after acknowledgement; otherwise cancel. SysEx is never transmitted or executed.
+- Retain note pitch, start, duration, attack velocity and explicit source PPQ without snapping or normalizing imported ticks. New authored motifs default to 960 PPQ. Arrangement export converts to its 960 PPQ with explicit rounding warnings when necessary. Explicitly detect and report controllers, sustain, pitch bend, aftertouch, program changes, lyrics, or other events that the editable motif will not reproduce. In3B, permit explicitly acknowledged omissions of known annotations/instrument selection/release velocity/metronome clicks. Controllers/bends/aftertouch, unknown stateful metadata and SysEx block the selected operation; do not label their effects harmless. See the report for the conservative implementation policy. SysEx is never transmitted or executed.
 - Global tempo defaults to 120 quarter notes/minute and meter to 4/4 only when absent. Importer reports assumed defaults. Repeated identical tempo/meter declarations are not changes.
 - Export motifs and arrangements with notes, tempo, meter, track names, and section markers. No promise of lossless arbitrary-MIDI round-trip. MIDI export does not carry proprietary patch sound, audio references, or rendered audio.
 - Full event rules, clip expansion, channel allocation, and ambiguity policies belong to [DATA_MODEL.md](DATA_MODEL.md).

@@ -28,9 +28,12 @@
     "test:assets-native": "node scripts/patchbook-assets-native.mjs",
     "test:asset-fixtures": "node scripts/patchbook-test-assets.mjs",
     "benchmark:patchbook": "node scripts/patchbook-benchmark.mjs",
-    "test:motif-native": "node scripts/motif-native.mjs"
+    "test:motif-native": "node scripts/motif-native.mjs",
+    "test:motif-midi-native": "node scripts/motif-midi-native.mjs",
+    "benchmark:motif-midi": "node scripts/motif-midi-profile.mjs"
   },
   "dependencies": {
+    "midi-file": "1.2.4",
     "yaml": "2.9.1"
   },
   "pnpm": {
@@ -44,7 +47,6 @@
     "esbuild": "0.28.2",
     "eslint": "10.14.0",
     "jsdom": "30.1.3",
-    "midi-file": "1.2.4",
     "obsidian": "1.14.4",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.1",

@@ -9,8 +9,8 @@ export interface MusicalEvent {
 export interface MusicalPlan { readonly events: readonly MusicalEvent[]; readonly durationSeconds: number; readonly maxPolyphony: number }
 const lexical = (a: string, b: string): number => a < b ? -1 : a > b ? 1 : 0;
 /** Pure source-PPQ compiler. No clip/timeline/codec or host dependency. */
-export function compileSequence(sequence: MusicalSequence): MusicalPlan {
-  ppq(sequence.ppq); integer(sequence.lengthTicks, 'sequence length', 1, 1e9);
+export function compileSequence(sequence: MusicalSequence, polyphonyLimit = 64): MusicalPlan {
+  integer(polyphonyLimit, 'polyphony limit', 1, 128); ppq(sequence.ppq); integer(sequence.lengthTicks, 'sequence length', 1, 1e9);
   const tempo = new TempoMap(sequence.ppq, sequence.tempos), end = quarters(sequence.lengthTicks, sequence.ppq);
   if (sequence.tempos.some(change => change.tick > sequence.lengthTicks) || sequence.tracks.length > 16) throw new MusicalInputError('Tempo map or track count exceeds the sequence bounds');
   const events: MusicalEvent[] = [], tracks = new Set<string>();
@@ -38,6 +38,6 @@ export function compileSequence(sequence: MusicalSequence): MusicalPlan {
       active.add(key); maxPolyphony = Math.max(maxPolyphony, active.size);
     } else active.delete(key);
   }
-  if (maxPolyphony > 64) throw new MusicalInputError('Audition supports at most64 simultaneous notes; no notes were dropped.');
+  if (maxPolyphony > polyphonyLimit) throw new MusicalInputError(`This consumer supports at most${polyphonyLimit} simultaneous notes; no notes were dropped.`);
   return Object.freeze({ events: Object.freeze(events), durationSeconds: tempo.seconds(end), maxPolyphony });
 }

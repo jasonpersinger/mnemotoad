@@ -2,7 +2,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 import { connect, expectedVault } from './obsidian-cdp.mjs';
-const directory='output/motif/milestone-3a';await mkdir(directory,{recursive:true});const client=await connect(),stamp=String(Date.now());
+const directory=process.env.MNEMOBARD_MOTIF_REVIEW_DIR??'output/motif/milestone-3a';if(!/^output\/[a-zA-Z0-9_/-]+$/.test(directory)||directory.split('/').some(part=>!part))throw Error('Invalid project review directory');await mkdir(directory,{recursive:true});const client=await connect(),stamp=String(Date.now());
 let report={stamp,vault:expectedVault,checks:[],screenshots:[]};
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const prefix=`const plugin=app.plugins.getPlugin('mnemobard'),services=plugin.services,library=services.motifs;

@@ -1,6 +1,6 @@
 # Data model proposal
 
-Milestone3A status: schema1 motifs are now editable/savable through MOTIF with source-tick preservation, compatible description/notes fields and musical recovery. Library/asset contracts remain intact; no migration was introduced. See the implemented3A section below and [MILESTONE_3A_REPORT.md](MILESTONE_3A_REPORT.md). MIDI interchange, maps and arrangement semantics below remain future contracts.
+Milestone3B status: schema1 motifs now support selected-part MIDI interchange, optional provenance, existing UUID patch relationships and exact bar/beat/tick UI conversion. Library/asset/Markdown contracts remain intact; no migration or tick normalization occurred. See the3B section and [MILESTONE_3B_REPORT.md](MILESTONE_3B_REPORT.md). Maps and arrangement contracts remain future work.
 
 ## Storage and authority
 
@@ -330,3 +330,19 @@ Editing uses quarter/eighth/sixteenth/eighth-triplet grids or off; unsupported f
 Recognized `tempoMap`, `tempos`, `tempoChanges`, `meterChanges`, `timeSignatures`, `mnemobard_tempo_map` and `mnemobard_meter_map` metadata prevents editing/audition in3A; it is never silently removed. Unknown future schemas remain read-only. A future map/codec design must define additional semantics before changing these policies.
 
 Musical checkpoints reuse existing append-only formats and conditional repository saving. A MOTIF-only validator/entry point loads reviewed recovery into an unsaved session; explicit Save is still required. Undo/selection/viewport/history are not authoritative musical data or persistent recovery history. See the [3A report](MILESTONE_3A_REPORT.md#f-persistence-and-recovery) for dirty/save/conflict/session behavior and limits.
+
+## Milestone3B MIDI provenance and musical positions
+
+Schema1 remains authoritative with no migration. Import preserves source PPQ, integer note starts/durations/attack velocities and selected-track end silence; `importSourceChannel` retains the chosen channel0–15. New imports receive fresh motif/note UUIDs. Optional `data.midiImport` is a portable extension object with bounded basename, format, zero-based track/channel and explicitly acknowledged issue codes:
+
+```json
+{ "filename": "study.mid", "format": 1, "track": 1, "channel": 3, "acknowledgedIssues": ["program-change"] }
+```
+
+No absolute source path, original binary copy, proprietary preset or external runtime dependency is authoritative. The original file remains unchanged; the extension is provenance, not a full retained MIDI event stream. Existing unknown fields/prose survive Save.
+
+`patchId` remains the authoritative PATCHBOOK UUID; `patchLink` is a companion wikilink. New associations require an active unique patch. Existing missing/archived/ambiguous references remain stored during musical edits. Explicit reassociation/removal uses history; Save refreshes a uniquely active target's current path. No patch entity is copied or modified.
+
+The UI convention is one-based `bar:beat:tick-offset`; a beat is the written denominator, not always a quarter.6/8 at960PPQ: beat480 ticks, bar2880, position2:1:0→2880. Exact fractional offsets are accepted where the total is an integer source tick (PPQ3/6-8:1:2:1/2→2). Unrepresentable positions are rejected, never rounded. Storage remains unchanged; numeric Apply/transformations are ordinary session edits.
+
+3B MIDI policy: Types0/1 PPQ only, constant representable tempo/meter, one explicitly chosen track/channel. Timing maps, same-pitch ambiguity, stateful/unknown events and nonstandard notated beat scaling are blocked. Known annotation/instrument/release-velocity/click omissions require acknowledgment. Type1 export retains source resolution and exact endpoints, includes explicit track endings and reports excluded metadata/sound. Bounds and precise policies are in [MILESTONE_3B_REPORT](MILESTONE_3B_REPORT.md#b-midi-import). No arrangement or multi-part stored schema is implemented.

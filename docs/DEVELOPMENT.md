@@ -1,6 +1,6 @@
 # Development guide
 
-Current implementation: shared safe persistence, PATCHBOOK library/assets/recorded preview and production basic MOTIF piano-roll editing/history/audition/recovery. CANVAS remains a shell. Historical reports are preserved; [Milestone3A](MILESTONE_3A_REPORT.md) records current behavior and validation.
+Current implementation: shared safe persistence, PATCHBOOK library/assets/recorded preview, and MOTIF piano roll/history/audition/recovery plus3B MIDI interchange, transformations, patch context and exact musical positions. CANVAS remains a shell. Historical reports are preserved; [Milestone3B](MILESTONE_3B_REPORT.md) records current behavior and validation.
 
 ## Setup and commands
 
@@ -96,11 +96,11 @@ Runtime: `yaml` 2.9.1, ISC, no runtime dependencies. Source ranges, strict dupli
 
 Development: Obsidian typings/esbuild/Vitest/jsdom/ESLint/typescript-eslint/@types/node are MIT; TypeScript is Apache-2.0. Node 26 satisfies the selected tool engines. TypeScript 6 was preferred to a new major compiler while the linter ecosystem stabilizes. The known minimatch advisory was confined to dev lint tooling; pnpm pins all minimatch paths to patched 11.0.1 (BlueOak-1.0.0). Lint/tests and audit validate this override; revisit when upstream ranges update. [Maintainer advisory](https://github.com/isaacs/minimatch/security/advisories/GHSA-g3hv-75wg-m249).
 
-`midi-file` 1.2.4 (MIT) is installed as a pinned devDependency for candidate contract/size experiments only. It is not bundled into production or the test-tone lab. No waveform/rendering/UI framework was added. Installation used `--ignore-scripts`; no system packages, global tools, remote repository, publication, or legacy dependency directory was introduced. MNEMOBARD remains private/UNLICENSED pending the distribution decision.
+`midi-file`1.2.4 (MIT) was evaluated in1B and promoted to a pinned production dependency under Prompt007.3B wraps its byte-array parser/writer with strict validation, an isolated import worker and independent exported-event checks; the legacy test-tone lab is still separate. No waveform/rendering/UI framework was added. Installation used `--ignore-scripts`; no system packages, global tools, remote repository, publication, or legacy dependency directory was introduced. MNEMOBARD remains private/UNLICENSED pending the distribution decision.
 
 ## Remaining boundaries
 
-PATCHBOOK and MOTIF share typed draft sessions, explicit Save and recovery checkpoints. MOTIF adds bounded undo and musical compilation/audition. Automatic asset relinking, migrations and recovery retention remain deferred. Cross-platform media, universal performance targets, crash durability and multi-device conflicts remain unverified. Stop after3A; this guide does not authorize3B or CANVAS.
+PATCHBOOK and MOTIF share typed draft sessions, explicit Save and recovery checkpoints. MOTIF adds bounded undo and musical compilation/audition. Automatic asset relinking, migrations and recovery retention remain deferred. Cross-platform media, universal performance targets, crash durability and multi-device conflicts remain unverified. Stop after3B; this guide does not authorize CANVAS or later work.
 
 ## PATCHBOOK development and validation
 
@@ -200,3 +200,28 @@ MNEMOBARD_ASSET_REVIEW_DIR=output/motif/milestone-3a/patchbook-regression node s
 ```
 
 See the [3A report](MILESTONE_3A_REPORT.md) for benchmark methodology, measured hardware/latencies, tests and unresolved OS/accessibility/memory risks. All native control is development-only and path-guarded; public APIs alone are used in plugin persistence/workspace code. This does not authorize3B, MIDI interchange, CANVAS or publication.
+
+## MIDI interchange development and validation (3B)
+
+`src/midi/` contains the strict scanner, selected-part adapter/fidelity model, deterministic writer, derivative file store and isolated worker job. `midi-file`1.2.4 is the only promoted dependency; installation used `--ignore-scripts`, with no new transitive runtime package. The worker is compiled into main.js as local text and instantiated through a temporary Blob URL. No remote or extra installed worker artifact exists. **Restart `pnpm dev` after editing the worker/parser dependency graph**: the current watcher embeds its worker once at startup; `pnpm build`/`build:dev` always rebuild it freshly.
+
+```sh
+pnpm check
+pnpm dev:vault
+pnpm dev:obsidian
+# Separate terminal; only the marked isolated app at9227:
+pnpm test:motif-midi-native
+pnpm benchmark:motif-midi
+# After a deliberate guarded cold stop/relaunch of ONLY this profile:
+node scripts/motif-midi-native.mjs --verify-restart
+```
+
+The native runner creates synthetic local fixtures under `.runtime/synthetic/milestone-3b`, uses actual file input/preview/selection controls, writes only new synthetic notes/exports/checkpoints in dev-vault and invokes `python scripts/verify-midi.py <synthetic-export>` for independent verification. Python3 standard library is a development-verification requirement, never a plugin runtime dependency. REAPER is not launched or configured. Repeated runs create fresh IDs/files; no automatic cleanup deletes earlier test data. Raw results/14 screenshots and before/after full-view profiles are under ignored `output/motif/milestone-3b/`; a reviewed summary is in docs/validation.
+
+Manual workflow: draw/save a motif → Export MIDI → choose saved vault read or current draft → review exclusions → confirm a new visible vault `.mid` path. Repeating the destination must reject a collision. Import MIDI → choose local or search an existing vault file → inspect format/PPQ/tracks/channels/timing/issues → explicitly select one part → acknowledge only named permitted omissions → Create selected part as unsaved motif → review/edit → Save normally. Controllers/bends/SysEx/maps/unknown state cannot be bypassed by acknowledgment. Original files remain unchanged.
+
+Transform notes groups selected semitone/octave and velocity commands plus selected/whole-motif start quantization. Visible grid changes do not quantize. The inspector supports exact bar:beat:tick and raw source ticks; beats use the meter denominator. Apply pending numeric fields first. Bounds/collisions reject the entire command with one-history-entry semantics on success. PATCHBOOK context requires an explicit unique active choice; missing references stay stored. Navigation loads a deferred host view before selecting the UUID. No patch sound is hosted or exported.
+
+The cache retains up to8 clean idle unowned sessions; attached views pin their sessions. Eviction clears only in-memory clean history, never saved data, dirty/owned sessions or checkpoint files. For large phrases inspect actual full-view measurements rather than the3A roll-only result;5k interactions remain slower and no universal guarantee is made.
+
+Native regressions can use `MNEMOBARD_MOTIF_REVIEW_DIR`, `MNEMOBARD_ASSET_REVIEW_DIR` and `MNEMOBARD_FOUNDATION_REVIEW_DIR` under a designated output subfolder; defaults preserve original milestone paths. The [3B report](MILESTONE_3B_REPORT.md#j-testing) lists exact commands and native results. Stop at3B; CANVAS, maps, hardware MIDI, advanced transforms and publication require separate authorization.

@@ -44,3 +44,17 @@ export function duplicateNotes(motif: Motif, ids: ReadonlySet<string>): { motif:
   return { motif: editableMotif({ ...motif, data: { ...motif.data, notes: [...motif.data.notes, ...copies] } }), ids: copies.map(note => note.id) };
 }
 export function noteName(pitch: number): string { return `${['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][pitch % 12]}${Math.floor(pitch / 12) - 1}`; }
+
+/** Explicit transformations preserve identity; full candidate validation rejects all collisions/bounds together. */
+export function transposeNotes(motif: Motif, ids: ReadonlySet<string>, semitones: number): Motif {
+  if (!Number.isSafeInteger(semitones) || Math.abs(semitones) > 127) throw new FoundationError('invalid', 'Transpose by an integer -127..127 semitones.');
+  return changeNotes(motif, ids, note => ({ ...note, pitch: note.pitch + semitones }));
+}
+export function quantizeNotes(motif: Motif, ids: ReadonlySet<string>, grid: Exclude<Grid, 'off'>): Motif {
+  if (!['quarter','eighth','sixteenth','triplet'].includes(grid)) throw new FoundationError('invalid', 'Choose a quantization grid.');
+  gridTicks(motif.data.ppq, grid); return changeNotes(motif, ids, note => ({ ...note, startTick: snapped(note.startTick, motif.data.ppq, grid) }));
+}
+export function velocityNotes(motif: Motif, ids: ReadonlySet<string>, velocity: number): Motif {
+  if (!Number.isSafeInteger(velocity) || velocity < 1 || velocity > 127) throw new FoundationError('invalid', 'Velocity must be an integer1..127.');
+  return changeNotes(motif, ids, note => ({ ...note, velocity }));
+}

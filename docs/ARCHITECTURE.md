@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Milestone3A status: Prompt006 authorizes basic production MOTIF and B01–B03 timing/Canvas/audition directions. Its editor, session/history, shared compiler and musical recovery are implemented; PATCHBOOK remains intact and CANVAS remains a placeholder. Existing repository/contracts are authoritative. See [MILESTONE_3A_REPORT.md](MILESTONE_3A_REPORT.md). Historical proposals below are qualified by the implemented3A section; B04 codec, later modules and release remain gated.
+Milestone3B status: Prompt007 authorizes MIDI interoperability/essential transformations/patch integration. B04's pinned codec is adopted behind strict validation and an isolated worker; the production3A architecture remains authoritative. See [MILESTONE_3B_REPORT.md](MILESTONE_3B_REPORT.md). Historical proposals below are qualified by implemented3A/3B sections; CANVAS, maps, final branding and release remain gated.
 
 ## Recommended stack
 
@@ -197,3 +197,13 @@ flowchart LR
 Main owns one musical transport and one recorded-preview service, coordinating exclusive focus. The musical context is created on Play and closed on Stop/error/owner change/close/module disable/unload. Notes receive automatic audio-thread end scheduling when started, with explicit off events retained in the compiler. View observers, frames, pointer/key listeners and focus-bound key scopes are disposed. Ordinary view transitions retain shared drafts/history; plugin unload disposes sessions and never promises a final durable save.
 
 Unsupported map metadata is retained and diagnosed, not flattened. Same-pitch overlaps retain the existing rejection rule; different-pitch polyphony works. No MIDI codec, tempo-map editor or arrangement feature is implemented. The own1B lab stays unchanged and outside the production import graph. See the [3A report](MILESTONE_3A_REPORT.md) for adoption decisions, tested bounds, actual performance and remaining lifecycle/platform limits.
+
+## Implemented MIDI and integration boundary (3B)
+
+Prompt007 evaluates/adopts B04 within a conservative SMF subset. `src/midi/structure.ts` strictly bounds/frames bytes before `import.ts` invokes pinned midi-file decoding and pairs selected track/channel notes. `worker.ts`/`job.ts` keep untrusted decoding in a cancellable10-second local worker; its bundle is embedded in main.js and URLs are revoked. No source bytes/remote assets execute. Preview selection and classified blocking/acknowledgment precede a fresh unsaved MotifSession; the normal repository Save alone creates the musical note.
+
+`export.ts` consumes the existing pure compiler at source PPQ, produces deterministic Type1 conductor/note tracks and rechecks framing. Its consumer polyphony bound128 is separate from audition's existing64 default. `MidiFiles` creates only new visible vault `.mid` derivatives through public APIs; no competing entity writer or overwrite exists. Independent Python/raw-byte fixtures validate events rather than trusting the same codec in both directions.
+
+MOTIF commands implement validated group transpose/quantize/velocity within existing history. `positions.ts` uses exact fractions for one-based denominator-beat notation, retaining zero-based source ticks. `PatchAssociation` uses existing patchId/patchLink fields and index; public loadIfDeferred precedes PATCHBOOK navigation. No PATCHBOOK UI redesign or sound hosting occurs.
+
+Attached views pin sessions. Eviction removes only clean idle unowned in-memory sessions until eight remain; dirty/busy/owned sessions and all files/checkpoints stay intact. Measured refresh optimization captures one immutable draft per update and leaves library refreshes index-driven. Existing validation/snapshot history are unchanged. See the [3B report](MILESTONE_3B_REPORT.md) for bounds, resource ownership, fidelity rules, before/after full-view measurements and limits. CANVAS/tempo-map/multitrack editor design remains separately gated.

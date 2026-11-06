@@ -1,6 +1,6 @@
 # Decision register
 
-Updated: 2026-11-06. **Proposed is not approved.** Prompt006 authorizes Milestone3A production MOTIF and B01–B03 architectural directions subject to implementation verification. It supersedes older stops only within that scope.3B, CANVAS, B04 codec adoption, final branding, release and legacy copying remain unapproved. Approval-log entries retain their historical authority.
+Updated: 2026-11-06. **Proposed is not approved.** Prompt007 authorizes Milestone3B after3A engineering/visual review, including evaluated codec adoption and targeted musical/PATCHBOOK integration. The scoped B04 implementation decision is recorded below. CANVAS, maps, final branding/release and legacy copying remain unapproved. Older approval-log entries retain historical authority.
 
 ## Confirmed requirements and authority
 
@@ -21,7 +21,7 @@ Updated: 2026-11-06. **Proposed is not approved.** Prompt006 authorizes Mileston
 | D02 | Pure domain/application/host adapters; independent module UIs sharing services and IDs. | Whole TROUBADOUR fork/broad refactor would retain song ownership and UI coupling. | Foundation adopted in1A; shared typed draft/recovery extracted for PATCHBOOK and production MOTIF in3A. |
 | D03 | One authoritative Markdown entity with YAML and an owned versioned JSON block; explicit standard MIDI exports. | `.mid` authority + sidecar improves immediate interoperability but introduces binary/metadata consistency and overwrite concerns. Separate JSON/Markdown pair and opaque database rejected initially. Legacy preservation experience supports single-file ownership. | Foundation format adopted under Prompt 002; MIDI export deferred. |
 | D04 | New motifs default960PPQ; source PPQ retained; exact transient timing; fixed-tempo/meter editing. | Normalizing imports discards source timing; map storage and export conversion need later contracts. | B01 direction approved in Prompt006 and verified for3A. No MIDI interchange or map storage/editing approved. |
-| D05 | `midi-file` adapter provisionally preferred; reference TROUBADOUR parser rules/tests. | `@tonejs/midi` higher-level alternative; MidiWriterJS generation only; custom legacy parser has maintenance/model cost. Benchmark and fixtures decide. | Dev-only 1.2.4 candidate installed/tested in 1B. Production adapter/adoption B04 deferred. |
+| D05 | `midi-file` adapter provisionally preferred; reference TROUBADOUR parser rules/tests. | `@tonejs/midi` higher-level alternative; MidiWriterJS generation only; custom legacy parser has maintenance/model cost. Benchmark and fixtures decide. | Pinned1.2.4 adopted under Prompt007/B04 in3B with independent strict validation, cancellable worker, explicit fidelity policy and independent exported-event verification. No broad event-lossless claim. |
 | D06 | Shared lazy Web Audio transport + basic oscillator audition; media-element recording previews. | Tone.js/sample/native hosting unnecessary; quiet local sine is sufficient. | B03 direction approved in Prompt006; reviewed production start/stop and exclusive audio focus verified in3A. Pause/loop remain deferred. |
 | D07 | Vanilla/native DOM shell; Canvas2D culled grids plus accessible lists. | React/Preact/Svelte remain possible; no demonstrated need. All-note DOM incurs unnecessary work. | B02 direction approved in Prompt006; production MOTIF Canvas/list implemented and measured in3A. Final visual identity remains unapproved. |
 | D08 | Standalone patches/motifs; composition forward ID links; live motif instances. | Legacy same-song ownership rejected. Snapshot/pinned motifs provide stability but add version management; defer pending user feedback. Length edits show downstream effects. | Standalone IDs/references implemented; live musical effects remain unimplemented. |
@@ -117,3 +117,20 @@ Authority: user explicitly authorizes the production basic MOTIF editor after2B 
 - Verified278 tests/26 files,24 native MOTIF groups plus foundation/PATCHBOOK regressions and actual screenshots. Evidence/limits: [3A report](MILESTONE_3A_REPORT.md), [retained summary](validation/milestone-3a-native.json). No new dependencies.
 
 Stop after3A. Human review must authorize3B scope and B04 production codec adoption separately; final branding, distribution license, release, legacyL1–L5 and destructive migrations remain unapproved.
+
+### Prompt007 / Milestone3B
+
+Authority: user explicitly approves3B after3A engineering/visual review and permits adoption of the evaluated parser with justification. Signed3A baseline90eed00 verifies good;278 baseline tests passed before changes.
+
+| Decision | Implementation/status |
+| --- | --- |
+| B04 scoped production codec | Adopt midi-file1.2.4 MIT with independent strict framing/limits, separate selected-part semantics and a cancellable worker. Its permissive truncation is not accepted as validation. No arbitrary-event lossless claim; final independent checks cover the documented subset. |
+| Import fidelity | Preserve source PPQ/end silence, choose track/channel explicitly, then create only an unsaved fresh draft. Block timing changes, same-pitch ambiguity, controllers/bends/aftertouch/SysEx and unknown state/device semantics. Known named annotation/timbre losses require acknowledgment. |
+| Export | Deterministic Type1 conductor+note track, shared compiler, source-integer endpoints, new visible vault path only. Independent Python/raw expected-event validation; no DAW/device claim. |
+| Bounds |2MiB/128tracks/50000events/64KiB payload/1e9ticks,10s worker; selected10000notes/4096quarters. Tighter than the original10MiB/100k proposal to bound untrusted allocation/host work. Larger support requires further evidence. |
+| Musical edits/position | Existing one-entry session history for transpose/start quantization/velocity and UUID patch associations. Denominator-beat bar:beat:tick notation with exact fractional offsets when representable; no stored timing change. |
+| Session retention/performance | Pin attached sessions; retain at most8 clean idle unowned sessions in creation order. Never evict dirty/busy/owned sessions or delete recovery. Reuse one snapshot per status refresh and avoid library rebuilds on each note edit; validation/history remain intact. |
+
+Verified349 tests/30 files, native MIDI/cold recovery/conflicts and existing MOTIF/PATCHBOOK/foundation regressions;14 real screenshots and actual full-editor profiles. See the [report](MILESTONE_3B_REPORT.md) and [retained evidence](validation/milestone-3b-native.json).5k full-view latency remains above the old50ms hypothesis.
+
+Stop after3B. CANVAS needs a separate Prompt008 or equivalent explicit scope; maps, overlap-policy/schema changes, final visual identity/release license/publication and all legacy copying remain unapproved. No L1–L5 adoption is requested.

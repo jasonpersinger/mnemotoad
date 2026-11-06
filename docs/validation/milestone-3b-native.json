@@ -1,0 +1,615 @@
+{
+  "milestone": "3B",
+  "date": "2026-11-06",
+  "baseline": {
+    "commit": "90eed00",
+    "signature": "good",
+    "tests": 278,
+    "testFiles": 26
+  },
+  "verification": {
+    "tests": 349,
+    "testFiles": 30,
+    "typecheck": "passed",
+    "lint": "passed",
+    "productionBuild": "passed",
+    "dependencyAuditReportedVulnerabilities": 0
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+    "dpr": 0.9999999767169356,
+    "width": 1280,
+    "height": 1000,
+    "cpu": "AMD Ryzen 7 5700G with Radeon Graphics",
+    "logicalCpus": 16,
+    "memoryBytes": 29300412416
+  },
+  "native": {
+    "midiChecks": [
+      "Created and saved a native melody/chord motif for exchange without bypassing piano-roll controls",
+      "Type1 export independently parsed by Python; pitches/ticks/durations/velocities/PPQ/tempo/meter/end silence match; existing-file collision refused",
+      "Exported MIDI imported as a separate preview-confirmed motif with exact musical events and fresh identities",
+      "Independent Type0 and multi-track Type1 fixtures imported explicit channels at PPQ1000 without normalization or track merging",
+      "Sustain/controller and tempo-map imports blocked; program/instrument loss requires acknowledgment; previews created no authoritative records",
+      "Explicit selected-note quantization, transpose, velocity and existing one-operation Undo/Redo work through native controls",
+      "Keyboard-entered bar:beat:tick position uses eighth-note beats in6/8 while preserving exact source ticks",
+      "PATCHBOOK UUID association survives Save/reopen and navigates to the existing library record without changing its sound/data",
+      "Actual import/export/transform/patch/position and light/dark/narrow screenshots captured",
+      "Confirmed recoverable musical draft created without replacing the saved imported motif",
+      "All explicitly selected external synthetic MIDI source files remain byte-identical",
+      "Cold application restart preserved imported notes, source PPQ, stable identity and PATCHBOOK association",
+      "Musical checkpoint discovery/inspection/loading preserved source until explicit protected Save",
+      "External modification rejected stale musical Save and retained source plus recoverable draft",
+      "MOTIF disable/re-enable released playback and retained imported authoritative records",
+      "Plugin unload/reload retained exactly three module commands and CANVAS placeholder"
+    ],
+    "motifRegressionChecks": [
+      "Created and named a motif; set100BPM/6-8; drew a four-note melody and three-note chord using native pointer events",
+      "Graphical movement/resizing preserve starts, map pitch/time accurately and commit one undo entry per drag",
+      "Native keyboard numeric editing, duplication with independent identity, deletion, Undo and Redo passed",
+      "Grid selection, anchored zoom and two-axis scrolling retain musical notes and selection",
+      "Audio-clock audition produced simultaneous chord voices and a live playhead; Stop released voices/context/timer",
+      "Saved motif reopened through the same stable UUID with exact note/settings data",
+      "Unsaved musical checkpoint confirmed before cold restart without replacing the saved motif",
+      "Cold application restart preserved exact saved note bytes, IDs, PPQ/tempo/meter and motif reopening",
+      "MOTIF-only checkpoint discovery/inspection/loading remained unsaved until explicit normal Save",
+      "Native Delete/Ctrl-Z/Ctrl-Shift-Z/Ctrl-S preserve musical history and active-editor keyboard scope",
+      "Trusted modifier group selection/movement and Escape cancellation preserve one-entry history and source notes",
+      "External edit rejected stale Save, retained both versions, undo history and recoverable musical draft",
+      "MOTIF disable/re-enable released voices, scheduler and audio context while preserving records",
+      "Owning editor close released musical playback and reopened cleanly",
+      "Plugin unload/reload released musical services and retained exactly three commands",
+      "Actual light/dark and narrow-pane screenshots captured without pane overflow",
+      "Native DPR2 backing and CSS coordinate separation verified",
+      "Native production Canvas benchmarks completed at100/1000/5000/10000 notes",
+      "Trusted native pointer gestures measured production roll/history latency at100/1000/5000 notes"
+    ],
+    "patchbookRegressionChecks": [
+      "Created instrument/patch, selected audio/preset/screenshot, imported confirmed local copy and persisted eight portable references; original hash unchanged",
+      "Arbitrary preset opens in inert native inspection; text is read only after explicit request",
+      "Native WAV/MP3/OGG/FLAC decoder probes, unsupported-file error, pause/resume/seek and stop/release verified",
+      "Simulated file move without link maintenance; missing reference repaired by explicit file selection and protected Save",
+      "Record navigation/reopen retains associations",
+      "Confirmed unsaved draft checkpoint is durable before application restart; authoritative source unchanged",
+      "Cold restart preserved authoritative assets; discovery/inspection/load wrote nothing; explicit recovered Save succeeded and checkpoint remained byte-identical",
+      "Disabling and re-enabling PATCHBOOK releases playback and retains records",
+      "Closing owning native view stops and releases preview",
+      "Plugin unload/reload releases media and listeners without duplicate commands",
+      "Actual light/dark and narrow-pane layouts captured; no horizontal overflow in measured pane",
+      "Native renderer ran production index/query/navigation/reference benchmarks at100/1000/5000 synthetic in-memory records"
+    ],
+    "foundationChecks": [
+      "native load and three commands",
+      "three view shells and repeated open deduplication",
+      "native settings rendering",
+      "native Vault create/update and prose retention",
+      "identity after native rename",
+      "stale-write rejection",
+      "original/draft recovery copy",
+      "all three typed entity records and reference resolution",
+      "module-disable view cleanup and data preservation",
+      "plugin unload command cleanup and closed old repository",
+      "re-enable settings/data persistence and no command/view duplicates"
+    ],
+    "observedRendererExceptions": [],
+    "narrow": {
+      "clientWidth": 565,
+      "scrollWidth": 565
+    }
+  },
+  "independentVerification": {
+    "implementation": "scripts/verify-midi.py; independently authored Python stdlib SMF reader, no midi-file dependency",
+    "result": {
+      "format": 1,
+      "ppq": 960,
+      "tracks": [
+        {
+          "name": "MNEMOBARD conductor",
+          "endTick": 15360,
+          "events": []
+        },
+        {
+          "name": "MIDI exchange study 1793961305444",
+          "endTick": 15360,
+          "events": [
+            [
+              0,
+              "on",
+              0,
+              60,
+              96
+            ],
+            [
+              480,
+              "off",
+              0,
+              60,
+              0
+            ],
+            [
+              960,
+              "on",
+              0,
+              62,
+              96
+            ],
+            [
+              1440,
+              "off",
+              0,
+              62,
+              0
+            ],
+            [
+              1920,
+              "on",
+              0,
+              64,
+              96
+            ],
+            [
+              2400,
+              "off",
+              0,
+              64,
+              0
+            ],
+            [
+              2880,
+              "on",
+              0,
+              65,
+              96
+            ],
+            [
+              3360,
+              "off",
+              0,
+              65,
+              0
+            ],
+            [
+              3840,
+              "on",
+              0,
+              60,
+              96
+            ],
+            [
+              3840,
+              "on",
+              0,
+              64,
+              96
+            ],
+            [
+              3840,
+              "on",
+              0,
+              67,
+              96
+            ],
+            [
+              4320,
+              "off",
+              0,
+              60,
+              0
+            ],
+            [
+              4320,
+              "off",
+              0,
+              64,
+              0
+            ],
+            [
+              4320,
+              "off",
+              0,
+              67,
+              0
+            ]
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "channel": 0,
+          "pitch": 60,
+          "startTick": 0,
+          "durationTicks": 480,
+          "velocity": 96
+        },
+        {
+          "channel": 0,
+          "pitch": 62,
+          "startTick": 960,
+          "durationTicks": 480,
+          "velocity": 96
+        },
+        {
+          "channel": 0,
+          "pitch": 64,
+          "startTick": 1920,
+          "durationTicks": 480,
+          "velocity": 96
+        },
+        {
+          "channel": 0,
+          "pitch": 65,
+          "startTick": 2880,
+          "durationTicks": 480,
+          "velocity": 96
+        },
+        {
+          "channel": 0,
+          "pitch": 60,
+          "startTick": 3840,
+          "durationTicks": 480,
+          "velocity": 96
+        },
+        {
+          "channel": 0,
+          "pitch": 64,
+          "startTick": 3840,
+          "durationTicks": 480,
+          "velocity": 96
+        },
+        {
+          "channel": 0,
+          "pitch": 67,
+          "startTick": 3840,
+          "durationTicks": 480,
+          "velocity": 96
+        }
+      ],
+      "tempos": [
+        [
+          0,
+          500000
+        ]
+      ],
+      "meters": [
+        [
+          0,
+          6,
+          8
+        ]
+      ]
+    },
+    "externalDawTested": false
+  },
+  "profile": {
+    "methodology": "Native isolated Obsidian; real worker+preview and full MotifView/history/list/Canvas subscriptions. Fixture generation excluded. Initial confirmation observation includes CDP/poll overhead. Two warmups/seven command samples; six trusted pointer gestures; no disk saving during benchmark. No physical presentation/heap guarantees.",
+    "results": [
+      {
+        "bytes": 895,
+        "workerAndPreviewMs": 54,
+        "confirmationToObservedFrameMs": 19.099999994039536,
+        "historyRetention": {
+          "operations": 12,
+          "kept": 12,
+          "commit": {
+            "medianMs": 2.7000000178813934,
+            "p95Ms": 3.5
+          }
+        },
+        "notes": 100,
+        "method": "Two warmups/seven samples; full production MotifView + Canvas/list/session subscriptions, validation and history in actual Electron; synchronous command work, separate native pointer next-frame probe.",
+        "metrics": {
+          "export": {
+            "medianMs": 0.8999999761581421,
+            "p95Ms": 0.9000000059604645
+          },
+          "parse": {
+            "medianMs": 0.4000000059604645,
+            "p95Ms": 0.5
+          },
+          "transpose": {
+            "medianMs": 4.0999999940395355,
+            "p95Ms": 4.699999988079071
+          },
+          "quantize": {
+            "medianMs": 2.7999999821186066,
+            "p95Ms": 2.9000000059604645
+          },
+          "undo": {
+            "medianMs": 2.300000011920929,
+            "p95Ms": 2.4000000059604645
+          },
+          "redo": {
+            "medianMs": 2.199999988079071,
+            "p95Ms": 2.399999976158142
+          }
+        },
+        "historyEntries": 12,
+        "fullEditorPointerUpToFrame": {
+          "samples": 6,
+          "medianMs": 9.5,
+          "p95Ms": 10.199999988079071
+        }
+      },
+      {
+        "bytes": 8096,
+        "workerAndPreviewMs": 60.19999998807907,
+        "confirmationToObservedFrameMs": 27.399999976158142,
+        "historyRetention": {
+          "operations": 12,
+          "kept": 12,
+          "commit": {
+            "medianMs": 12.199999988079071,
+            "p95Ms": 13.599999994039536
+          }
+        },
+        "notes": 1000,
+        "method": "Two warmups/seven samples; full production MotifView + Canvas/list/session subscriptions, validation and history in actual Electron; synchronous command work, separate native pointer next-frame probe.",
+        "metrics": {
+          "export": {
+            "medianMs": 5.200000017881393,
+            "p95Ms": 5.9000000059604645
+          },
+          "parse": {
+            "medianMs": 2,
+            "p95Ms": 2.800000011920929
+          },
+          "transpose": {
+            "medianMs": 14,
+            "p95Ms": 15.199999988079071
+          },
+          "quantize": {
+            "medianMs": 13.300000011920929,
+            "p95Ms": 21.5
+          },
+          "undo": {
+            "medianMs": 6.800000011920929,
+            "p95Ms": 7.700000017881393
+          },
+          "redo": {
+            "medianMs": 6.5999999940395355,
+            "p95Ms": 7.5999999940395355
+          }
+        },
+        "historyEntries": 12,
+        "fullEditorPointerUpToFrame": {
+          "samples": 6,
+          "medianMs": 15.599999994039536,
+          "p95Ms": 16
+        }
+      },
+      {
+        "bytes": 40097,
+        "workerAndPreviewMs": 72.90000000596046,
+        "confirmationToObservedFrameMs": 77.69999998807907,
+        "historyRetention": {
+          "operations": 12,
+          "kept": 7,
+          "commit": {
+            "medianMs": 57.900000005960464,
+            "p95Ms": 59.400000005960464
+          }
+        },
+        "notes": 5000,
+        "method": "Two warmups/seven samples; full production MotifView + Canvas/list/session subscriptions, validation and history in actual Electron; synchronous command work, separate native pointer next-frame probe.",
+        "metrics": {
+          "export": {
+            "medianMs": 25.5,
+            "p95Ms": 28.599999994039536
+          },
+          "parse": {
+            "medianMs": 8.599999994039536,
+            "p95Ms": 9.199999988079071
+          },
+          "transpose": {
+            "medianMs": 58.70000001788139,
+            "p95Ms": 61.099999994039536
+          },
+          "quantize": {
+            "medianMs": 57.19999998807907,
+            "p95Ms": 73.40000000596046
+          },
+          "undo": {
+            "medianMs": 28,
+            "p95Ms": 29.5
+          },
+          "redo": {
+            "medianMs": 27.299999982118607,
+            "p95Ms": 28.099999994039536
+          }
+        },
+        "historyEntries": 7,
+        "fullEditorPointerUpToFrame": {
+          "samples": 6,
+          "medianMs": 57.29999998211861,
+          "p95Ms": 60.80000001192093
+        }
+      }
+    ],
+    "exceptions": []
+  },
+  "profileBeforeOptimization": {
+    "methodology": "Native isolated Obsidian; real worker+preview and full MotifView/history/list/Canvas subscriptions. Fixture generation excluded. Initial confirmation observation includes CDP/poll overhead. Two warmups/seven command samples; six trusted pointer gestures; no disk saving during benchmark. No physical presentation/heap guarantees.",
+    "results": [
+      {
+        "bytes": 895,
+        "workerAndPreviewMs": 59.30000001192093,
+        "confirmationToObservedFrameMs": 24.099999994039536,
+        "notes": 100,
+        "method": "Two warmups/seven samples; full production MotifView + Canvas/list/session subscriptions, validation and history in actual Electron; synchronous command work, separate native pointer next-frame probe.",
+        "metrics": {
+          "export": {
+            "medianMs": 0.8999999761581421,
+            "p95Ms": 1
+          },
+          "parse": {
+            "medianMs": 0.4000000059604645,
+            "p95Ms": 0.5999999940395355
+          },
+          "transpose": {
+            "medianMs": 6.9000000059604645,
+            "p95Ms": 7.199999988079071
+          },
+          "quantize": {
+            "medianMs": 6.199999988079071,
+            "p95Ms": 12.599999994039536
+          },
+          "undo": {
+            "medianMs": 5.300000011920929,
+            "p95Ms": 6.199999988079071
+          },
+          "redo": {
+            "medianMs": 5.699999988079071,
+            "p95Ms": 5.800000011920929
+          }
+        },
+        "historyEntries": 0,
+        "fullEditorPointerUpToFrame": {
+          "samples": 6,
+          "medianMs": 10.400000005960464,
+          "p95Ms": 11.799999982118607
+        }
+      },
+      {
+        "bytes": 8096,
+        "workerAndPreviewMs": 61.099999994039536,
+        "confirmationToObservedFrameMs": 40.099999994039536,
+        "notes": 1000,
+        "method": "Two warmups/seven samples; full production MotifView + Canvas/list/session subscriptions, validation and history in actual Electron; synchronous command work, separate native pointer next-frame probe.",
+        "metrics": {
+          "export": {
+            "medianMs": 5.299999982118607,
+            "p95Ms": 7.0999999940395355
+          },
+          "parse": {
+            "medianMs": 2,
+            "p95Ms": 2.4000000059604645
+          },
+          "transpose": {
+            "medianMs": 25.5,
+            "p95Ms": 30.099999994039536
+          },
+          "quantize": {
+            "medianMs": 25.400000005960464,
+            "p95Ms": 26.80000001192093
+          },
+          "undo": {
+            "medianMs": 19,
+            "p95Ms": 21.19999998807907
+          },
+          "redo": {
+            "medianMs": 19.5,
+            "p95Ms": 20.19999998807907
+          }
+        },
+        "historyEntries": 0,
+        "fullEditorPointerUpToFrame": {
+          "samples": 6,
+          "medianMs": 37,
+          "p95Ms": 37.400000005960464
+        }
+      },
+      {
+        "bytes": 40097,
+        "workerAndPreviewMs": 74.40000000596046,
+        "confirmationToObservedFrameMs": 128.30000001192093,
+        "notes": 5000,
+        "method": "Two warmups/seven samples; full production MotifView + Canvas/list/session subscriptions, validation and history in actual Electron; synchronous command work, separate native pointer next-frame probe.",
+        "metrics": {
+          "export": {
+            "medianMs": 24.900000005960464,
+            "p95Ms": 25.900000005960464
+          },
+          "parse": {
+            "medianMs": 8.799999982118607,
+            "p95Ms": 9
+          },
+          "transpose": {
+            "medianMs": 115,
+            "p95Ms": 125.5
+          },
+          "quantize": {
+            "medianMs": 115.2000000178814,
+            "p95Ms": 124.09999999403954
+          },
+          "undo": {
+            "medianMs": 81.59999999403954,
+            "p95Ms": 105.59999999403954
+          },
+          "redo": {
+            "medianMs": 82.2999999821186,
+            "p95Ms": 83.60000002384186
+          }
+        },
+        "historyEntries": 0,
+        "fullEditorPointerUpToFrame": {
+          "samples": 6,
+          "medianMs": 160.69999998807907,
+          "p95Ms": 165.19999998807907
+        }
+      }
+    ],
+    "exceptions": []
+  },
+  "screenshots": [
+    "06-midi-export.png",
+    "01-midi-selection.png",
+    "02-midi-preview.png",
+    "03-track-channel-selection.png",
+    "05-imported-piano-roll.png",
+    "04-unsupported-event.png",
+    "07-transformations.png",
+    "09-musical-position.png",
+    "08-patch-association.png",
+    "10-dark-theme.png",
+    "11-light-theme.png",
+    "12-narrow-pane.png",
+    "13-recovery.png",
+    "14-conflict.png"
+  ],
+  "screenshotDirectory": "output/motif/milestone-3b/",
+  "preservation": {
+    "root": "/home/jason/troubadour",
+    "trackedFiles": 121,
+    "aggregateSha256": "4e217cc4f22b1a049470feb31d5955ece52542619497e97c0924e592f6928ff2",
+    "head": "bc2749e2877738bd443a1d3ace66f919d23fe837",
+    "matchesBaseline": true,
+    "clean": true
+  },
+  "bundle": {
+    "bytes": 312322,
+    "sha256": "0b5030b016f153b9663846aa4c9f8c58846aa79d32ccfe5c8d1fc8640bd07b14"
+  },
+  "limits": {
+    "inputBytes": 2097152,
+    "tracks": 128,
+    "events": 50000,
+    "eventPayloadBytes": 65536,
+    "ticks": 1000000000,
+    "selectedNotes": 10000,
+    "editorQuarterNotes": 4096,
+    "workerDeadlineSeconds": 10,
+    "idleCleanSessionCache": 8
+  },
+  "unverified": [
+    "External DAW/MIDI hardware; physical audible latency; Windows/macOS; screen-reader certification; sustained stress/sync/crash durability; real high-DPI/popout matrix"
+  ],
+  "repository": {
+    "baselineCommit": "90eed00",
+    "signature": "good",
+    "pendingPaths": 49,
+    "modified": 27,
+    "untracked": 22,
+    "staged": 0,
+    "remotes": 0,
+    "credentialPatternScan": "no matches",
+    "generatedPathsIgnored": true,
+    "historicalReportsExperimentsUnchanged": true,
+    "deployedBundleMatches": true,
+    "isolatedShutdown": {
+      "guardedIsolatedProfile": true,
+      "port": 9227,
+      "musicalResourcesReleased": true,
+      "stoppedAt": "2026-11-06T10:47:44.754Z"
+    }
+  }
+}

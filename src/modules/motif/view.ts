@@ -11,6 +11,10 @@ import { addNote, deleteNotes, duplicateNotes, editableMotif, gridTicks, moveNot
 import type { MotifSession } from './session';
 import { PianoRoll } from './piano-roll';
 import { NoteInspector } from './inspector';
+import { MidiImportDialog, MidiExportDialog } from './midi-dialog';
+import { PatchAssociation } from './patch-association';
+import { transformPanel } from './transform-panel';
+import { PatchbookView } from '../patchbook/view';
 
 export class MotifView extends ModuleView {
   private active = false; private epoch = 0; private lifetime = new AbortController(); private cleanups: (() => void)[] = [];
@@ -19,6 +23,7 @@ export class MotifView extends ModuleView {
   private browser?: HTMLElement; private editor?: HTMLElement; private feedback?: HTMLElement; private drafts?: HTMLElement; private browserDetails?: HTMLDetailsElement;
   private saveStatus?: HTMLElement; private position?: HTMLElement; private undoButton?: HTMLButtonElement; private redoButton?: HTMLButtonElement;
   private editorScope?: Scope;
+  private midiDialog?: MidiImportDialog | MidiExportDialog; private patchAssociation?: PatchAssociation;
   private recoveryPanel?: RecoveryInspector<Motif, MotifSession>; private recoveryRoot?: HTMLElement;
   private tickMap?: TempoMap; private animation?: number;
   constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) { super(leaf, 'motif', foundation); this.scope = new Scope(this.app.scope); }
@@ -32,6 +37,7 @@ export class MotifView extends ModuleView {
     const create = button(actions, 'New motif', () => { void this.newMotif().catch(error => this.fail(error)); }, 'mod-cta'); create.disabled = true;
     button(actions, 'Browse motifs', () => { if (this.browserDetails) this.browserDetails.open = !this.browserDetails.open; });
     button(actions, 'Motif recovery', () => this.recovery());
+    button(actions, 'Import MIDI', () => { if(services.settings.readOnly)return;this.midiDialog?.close();this.midiDialog=new MidiImportDialog(this.app,services.motifs,async session=>{await this.leave();if(this.active)this.attach(session);});this.midiDialog.open(); });
     this.feedback = element(root, 'p', '', 'mnemobard-feedback'); this.feedback.setAttribute('role', 'status'); this.feedback.setAttribute('aria-live', 'polite');
     this.drafts = element(root, 'div', undefined, 'mnemobard-drafts');
     this.recoveryRoot = element(root, 'section', undefined, 'mnemobard-recovery');
@@ -42,7 +48,7 @@ export class MotifView extends ModuleView {
     root.ownerDocument.defaultView?.addEventListener('blur', () => services.musical.stop(this), { signal: this.lifetime.signal });
     root.ownerDocument.defaultView?.addEventListener('pagehide', () => services.musical.stop(this), { signal: this.lifetime.signal });
     root.ownerDocument.addEventListener('visibilitychange', () => { if (root.ownerDocument.hidden) services.musical.stop(this); }, { signal: this.lifetime.signal });
-    this.cleanups.push(services.index.subscribe(() => { if (this.active) { this.renderBrowser(); this.updateStatus(); } }), services.musical.subscribe(() => { if (this.active) { this.updateTransport(); this.roll?.request(); } }));
+    this.cleanups.push(services.index.subscribe(() => { if (this.active) { this.renderBrowser(); this.updateStatus(); this.patchAssociation?.refresh(); } }), services.musical.subscribe(() => { if (this.active) { this.updateTransport(); this.roll?.request(); } }));
     const scope = new Scope(this.scope ?? this.app.scope); this.editorScope = scope;
     const focusScope = (): void => {
       queueMicrotask(() => {
@@ -101,19 +107,19 @@ export class MotifView extends ModuleView {
     if (services.settings.readOnly) { this.fail(services.settings.diagnostic ?? Error('Settings are read-only.')); return; }
     const epoch = ++this.epoch;
     try { const session = await services.motifs.open(id, this.lifetime.signal); if (this.active && epoch === this.epoch) this.attach(session); }
-    catch (error) { if (this.active && epoch === this.epoch) { this.unsubscribeSession?.(); this.unsubscribeSession = undefined; this.session = undefined; this.selectedId = id; this.renderEditor(); this.fail(error); } }
+    catch (error) { if (this.active && epoch === this.epoch) { this.unsubscribeSession?.(); this.unsubscribeSession = undefined; if(this.session)this.foundation()?.motifs.release(this.session,this);this.session = undefined; this.selectedId = id; this.renderEditor(); this.fail(error); } }
   }
   private attach(session: MotifSession): void {
-    this.available?.musical.stop(this); this.epoch++; this.unsubscribeSession?.(); this.session = session; this.selectedId = session.draft.id;
+    this.available?.musical.stop(this); this.epoch++; this.unsubscribeSession?.(); if(this.session)this.foundation()?.motifs.release(this.session,this);this.session = session;this.available?.motifs.retain(session,this); this.selectedId = session.draft.id;
     let lastDraft = JSON.stringify(session.draft);
-    this.unsubscribeSession = session.subscribe(() => { if (this.active) { const signature = JSON.stringify(session.draft); if (signature !== lastDraft) { this.available?.musical.stop(this); lastDraft = signature; } this.updateStatus(); this.renderBrowser(); this.inspector?.refresh(); this.tickMap = new TempoMap(session.draft.data.ppq, [{ tick: 0, microsecondsPerQuarter: session.draft.data.tempoMicrosecondsPerQuarter }]); } });
+    this.unsubscribeSession = session.subscribe(() => { if (this.active) { const draft=session.draft,signature = JSON.stringify(draft); if (signature !== lastDraft) { this.available?.musical.stop(this); lastDraft = signature; } this.updateStatus(); this.renderDrafts(); this.inspector?.refresh(); this.patchAssociation?.refresh(draft); this.tickMap = new TempoMap(draft.data.ppq, [{ tick: 0, microsecondsPerQuarter: draft.data.tempoMicrosecondsPerQuarter }]); } });
     if (this.browserDetails) this.browserDetails.open = false; this.renderEditor(); this.renderDrafts(); this.say(''); this.remember();
   }
   private act(action: () => void): boolean { try { this.available?.musical.stop(this); action(); this.selectionChanged(); this.say(''); return true; } catch (error) { this.fail(error); return false; } }
   private selectionChanged(): void { this.inspector?.refresh(); this.roll?.refreshSelection(); this.updateStatus(); }
   private openNote(path: string): void { void this.app.workspace.openLinkText(path, '', true).catch(error => this.fail(error)); }
   private renderEditor(): void {
-    this.roll?.dispose(); this.roll = undefined; this.inspector = undefined;
+    this.roll?.dispose(); this.roll = undefined; this.inspector = undefined; this.patchAssociation = undefined;
     const root = this.editor, services = this.available; if (!root || !services || !this.active) return; root.replaceChildren();
     const session = this.session;
     if (!session) { element(root, 'h3', 'Remember a phrase.'); element(root, 'p', this.selectedId ? 'This motif is unavailable or read-only. Inspect its source in the library.' : 'Create or open a motif. Notes, timing and context stay in your vault.', 'mnemobard-hint'); if (this.selectedId) { const state = services.index.resolve(this.selectedId); if (state.status === 'invalid') button(root, 'Open original motif source', () => this.openNote(state.entry.path)); if (state.status === 'duplicate') for (const path of state.paths) button(root, `Inspect duplicate: ${path}`, () => this.openNote(path)); if (state.status === 'ready') button(root, 'Open original motif source', () => this.openNote(state.path)); } return; }
@@ -123,6 +129,7 @@ export class MotifView extends ModuleView {
     this.saveStatus = element(header, 'p', session.status, 'mnemobard-save-status'); this.saveStatus.setAttribute('role', 'status');
     const actions = element(header, 'div', undefined, 'mnemobard-actions');
     button(actions, 'Save motif', () => { void this.save(); }, 'mod-cta');
+    button(actions,'Export MIDI',()=>{if(this.editor?.querySelector('form[data-pending="true"]')){this.say('Apply or discard pending properties before choosing an export snapshot.');return;}this.midiDialog?.close();this.midiDialog=new MidiExportDialog(this.app,services.motifs,session,async()=>{const record=await services.repository.read(session.draft.id);if(record.entity.kind!=='motif')throw Error('Expected a saved motif.');return record.entity;},services.settings.current.creationRoot);this.midiDialog.open();});
     if (session.base) { button(actions, 'Open Markdown record', () => { const state = services.index.resolve(motif.id); if (state.status === 'ready') this.openNote(state.path); }); button(actions, 'Reload saved motif', () => { if (session.dirty) this.say('Save or explicitly discard this draft before reloading. Recovery is retained.'); else void this.select(motif.id).catch(error => this.fail(error)); }); }
     button(actions, 'Discard draft…', () => {
       const confirm = element(root, 'div', undefined, 'mnemobard-confirm'); element(confirm, 'p', 'Discard the working draft and its undo history? Saved notes and checkpoints are retained.');
@@ -142,9 +149,11 @@ export class MotifView extends ModuleView {
       let id = ''; session.edit('Add note', value => { const next = addNote(value, { pitch: selected?.pitch ?? 60, startTick: tick, durationTicks: value.data.ppq * Number(duration.value), velocity: 96 }); id = next.data.notes.at(-1)?.id ?? ''; return next; }); session.select([id]);
     }));
     this.undoButton = button(toolbar, 'Undo', () => this.act(() => session.undo())); this.redoButton = button(toolbar, 'Redo', () => this.act(() => session.redo()));
-    button(toolbar, 'Duplicate selected', () => this.act(() => { const copy = duplicateNotes(session.draft, session.selected); session.edit('Duplicate notes', () => copy.motif); session.select(copy.ids); }));
+    const selectionTools=element(toolbar,'details',undefined,'mnemobard-selection-tools');element(selectionTools,'summary','Selection actions');
+    button(selectionTools, 'Duplicate selected', () => this.act(() => { const copy = duplicateNotes(session.draft, session.selected); session.edit('Duplicate notes', () => copy.motif); session.select(copy.ids); }));
     button(toolbar, 'Delete selected', () => this.removeNotes());
-    button(toolbar, 'Clear selection', () => { session.select([]); this.selectionChanged(); });
+    button(selectionTools, 'Clear selection', () => { session.select([]); this.selectionChanged(); });
+    transformPanel(root,session,action=>this.act(action));
     const zoom = element(root, 'div', undefined, 'mnemobard-actions');
     button(zoom, 'Time −', () => this.roll?.zoom(1 / 1.25)); button(zoom, 'Time +', () => this.roll?.zoom(1.25)); button(zoom, 'Pitch −', () => this.roll?.zoomPitch(1 / 1.15)); button(zoom, 'Pitch +', () => this.roll?.zoomPitch(1.15));
     button(zoom, 'Previous note', () => this.navigateNote(-1)); button(zoom, 'Next note', () => this.navigateNote(1));
@@ -157,6 +166,7 @@ export class MotifView extends ModuleView {
     this.inspector = new NoteInspector(inspector, session, () => { services.musical.stop(this); this.selectionChanged(); }, (id, additive) => {
       const selected = new Set(additive ? session.selected : []); if (additive && selected.has(id)) selected.delete(id); else selected.add(id); session.select(selected); this.selectionChanged(); const note = session.draft.data.notes.find(note => note.id === id); if (note) this.roll?.reveal(note);
     }, error => this.fail(error)); this.inspector.refresh();
+    const patchRoot=element(root,'section');this.patchAssociation=new PatchAssociation(patchRoot,services,session,action=>this.act(action),id=>{void this.navigatePatch(id).catch(error=>this.fail(error));});
     const metadata = element(root, 'details'); element(metadata, 'summary', 'Description, tags and notes');
     this.text(metadata, 'Description', motif.description ?? '', value => session.edit('Edit description', next => ({ ...next, description: value.trim() ? value : undefined }), 'description'), true);
     this.text(metadata, 'Motif tags', motif.tags?.join(', ') ?? '', value => session.edit('Edit tags', next => ({ ...next, tags: value.split(',').map(tag => tag.trim()).filter(Boolean) }), 'tags'));
@@ -199,17 +209,18 @@ export class MotifView extends ModuleView {
     this.inspector?.focusNote(next.id);
   }
   private updateStatus(): void {
-    const session = this.session; if (!session) return;
+    const session = this.session; if (!session) return; const motif=session.draft;
     if (this.saveStatus) {
-      const state = this.available?.index.resolve(session.draft.id);
+      const state = this.available?.index.resolve(motif.id);
       this.saveStatus.textContent = state?.status === 'duplicate' || state?.status === 'invalid' || (state?.status === 'missing' && session.base) ? `${session.status} · source ${state.status}; saving blocked` : session.status;
     }
-    const settingsSummary = this.editor?.querySelector('.mnemobard-score-settings > summary'); if (settingsSummary) settingsSummary.textContent = `Musical settings · ${(60000000 / session.draft.data.tempoMicrosecondsPerQuarter).toFixed(1)} BPM · ${session.draft.data.meter.numerator}/${session.draft.data.meter.denominator} · PPQ ${session.draft.data.ppq}`;
+    const settingsSummary = this.editor?.querySelector('.mnemobard-score-settings > summary'); if (settingsSummary) settingsSummary.textContent = `Musical settings · ${(60000000 / motif.data.tempoMicrosecondsPerQuarter).toFixed(1)} BPM · ${motif.data.meter.numerator}/${motif.data.meter.denominator} · PPQ ${motif.data.ppq}`;
     if (this.undoButton) this.undoButton.disabled = !session.canUndo; if (this.redoButton) this.redoButton.disabled = !session.canRedo;
-    const values: Record<string, string> = { 'Motif name': session.draft.title, 'Description': session.draft.description ?? '', 'Motif tags': session.draft.tags?.join(', ') ?? '', 'User notes': session.draft.notes ?? '', 'Tempo BPM': String(60000000 / session.draft.data.tempoMicrosecondsPerQuarter), 'Meter numerator': String(session.draft.data.meter.numerator), 'Meter denominator': String(session.draft.data.meter.denominator), 'PPQ': String(session.draft.data.ppq), 'Length ticks': String(session.draft.data.lengthTicks) };
+    const values: Record<string, string> = { 'Motif name': motif.title, 'Description': motif.description ?? '', 'Motif tags': motif.tags?.join(', ') ?? '', 'User notes': motif.notes ?? '', 'Tempo BPM': String(60000000 / motif.data.tempoMicrosecondsPerQuarter), 'Meter numerator': String(motif.data.meter.numerator), 'Meter denominator': String(motif.data.meter.denominator), 'PPQ': String(motif.data.ppq), 'Length ticks': String(motif.data.lengthTicks) };
     for (const [label, value] of Object.entries(values)) { const control = this.editor?.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[aria-label="${label}"]`); if (control && control !== this.contentEl.ownerDocument.activeElement && control.closest('form')?.dataset.pending !== 'true') control.value = value; }
-    const ppq = this.editor?.querySelector<HTMLInputElement>('[aria-label="PPQ"]'); if (ppq) ppq.disabled = session.draft.data.notes.length > 0;
+    const ppq = this.editor?.querySelector<HTMLInputElement>('[aria-label="PPQ"]'); if (ppq) ppq.disabled = motif.data.notes.length > 0;
   }
+  private async navigatePatch(id:string):Promise<void>{const services=this.available;if(!services)return;const state=services.index.resolve(id);if(state.status!=='ready'||state.entity.kind!=='patch')throw Error(`Associated patch is ${state.status}; reference retained.`);await this.leave();if(!services.modules.enabled('patchbook')){this.openNote(state.path);return;}await services.modules.open('patchbook');const leaf=this.app.workspace.getLeavesOfType('mnemobard-patchbook')[0];await leaf?.loadIfDeferred();if(!this.active)return;const view=leaf?.view;if(!(view instanceof PatchbookView))throw Error('PATCHBOOK view is not ready. Reopen it or inspect the linked Markdown.');await view.setState({kind:'patch',selectedId:id,archived:'all',search:''});}
   private async save(): Promise<void> {
     if (!this.session) return; if (this.editor?.querySelector('form[data-pending="true"]')) { this.say('Apply or discard pending note/musical properties before saving. The motif was not written.'); return; } try { await this.session.save(); if (this.active) { this.updateStatus(); this.renderBrowser(); this.say('Motif saved in the vault.'); } } catch (error) { this.fail(error); }
   }
@@ -233,7 +244,7 @@ export class MotifView extends ModuleView {
   override getState(): Record<string, unknown> { return { selectedId: this.selectedId, search: this.search }; }
   override async setState(value: unknown): Promise<void> { if (!value || typeof value !== 'object') return; const state = value as Record<string, unknown>; if (typeof state.search === 'string') this.search = state.search.slice(0, 1000); if (typeof state.selectedId === 'string') this.selectedId = state.selectedId; if (this.active) { const search = this.contentEl.querySelector<HTMLInputElement>('[aria-label="Search motifs"]'); if (search) search.value = this.search; this.renderBrowser(); if (this.selectedId) await this.select(this.selectedId); } }
   override release(): void {
-    this.active = false; if (this.editorScope) this.app.keymap.popScope(this.editorScope); this.editorScope = undefined; this.epoch++; this.lifetime.abort(); this.foundation()?.musical.stop(this); this.roll?.dispose(); this.roll = undefined;
+    this.active = false; this.midiDialog?.close();this.midiDialog=undefined;if(this.session)this.foundation()?.motifs.release(this.session,this); if (this.editorScope) this.app.keymap.popScope(this.editorScope); this.editorScope = undefined; this.epoch++; this.lifetime.abort(); this.foundation()?.musical.stop(this); this.roll?.dispose(); this.roll = undefined;
     this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.unsubscribeSession?.(); this.unsubscribeSession = undefined;
     if (this.animation !== undefined) cancelAnimationFrame(this.animation); this.animation = undefined; for (const cleanup of this.cleanups.splice(0)) cleanup(); super.release();
   }

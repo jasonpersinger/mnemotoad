@@ -12,6 +12,7 @@ import { PatchbookAssets } from '../src/modules/patchbook/assets';
 import { AudioPreview } from '../src/modules/patchbook/preview';
 import { PatchbookRecovery } from '../src/modules/patchbook/recovery';
 import { MotifLibrary } from '../src/modules/motif/library';
+import { PatchbookView } from '../src/modules/patchbook/view';
 import { MotifView } from '../src/modules/motif/view';
 import { MusicalTransport } from '../src/music/transport';
 import { createEntity } from '../src/domain/entities';
@@ -72,4 +73,17 @@ it('refreshes metadata controls after Undo and Redo without overwriting active t
   const control=input(view.contentEl,label,'first');control.focus();input(view.contentEl,label,'second');expect(control.value).toBe('second');
   view.contentEl.querySelector('canvas')?.focus();click(view.contentEl,'Undo');expect(control.value).toBe('');click(view.contentEl,'Redo');expect(control.value).toBe('second');
  }
+});
+
+it('exposes explicit transformations and exact musical-position editing in the existing history',async()=>{
+ const{view,services}=await fixture();click(view.contentEl,'New motif');await settle();click(view.contentEl,'Add note');input(view.contentEl,'Position (bar:beat:tick)','2:1:17');click(view.contentEl,'Apply to primary note');const session=services.motifs.drafts()[0];expect(session?.draft.data.notes[0]?.startTick).toBe(3857);click(view.contentEl,'Undo');expect(session?.draft.data.notes[0]?.startTick).toBe(0);click(view.contentEl,'Redo');expect(session?.draft.data.notes[0]?.startTick).toBe(3857);
+ input(view.contentEl,'Transpose semitones','7');const before=session?.historySize;click(view.contentEl,'Transpose selected');expect(session?.draft.data.notes[0]?.pitch).toBe(67);expect(session?.historySize).toBe(Number(before)+1);click(view.contentEl,'Undo');expect(session?.draft.data.notes[0]?.pitch).toBe(60);click(view.contentEl,'Quantize starts');expect(session?.draft.data.notes[0]?.startTick).toBe(3840);input(view.contentEl,'Set selected velocity','42');click(view.contentEl,'Set velocity');expect(session?.draft.data.notes[0]?.velocity).toBe(42);
+});
+it('associates an active PATCHBOOK UUID explicitly and preserves missing-reference diagnostics',async()=>{
+ const{view,services,repository,vault}=await fixture();const patch=await repository.create(createEntity('patch','Patch context'));click(view.contentEl,'New motif');await settle();input(view.contentEl,'Find PATCHBOOK patch','Patch context');const choice=view.contentEl.querySelector<HTMLSelectElement>('[aria-label="Choose active patch"]');if(!choice)throw Error();choice.value=patch.entity.id;click(view.contentEl,'Associate chosen patch');const session=services.motifs.drafts()[0];expect(session?.draft.patchId).toBe(patch.entity.id);click(view.contentEl,'Save motif');await settle();expect(view.contentEl.textContent).toContain('Patch context');vault.files.delete(patch.path);await services.index.refresh(patch.path);expect(view.contentEl.textContent).toContain('Stored reference retained');click(view.contentEl,'Remove patch association');expect(services.motifs.drafts()[0]?.draft.patchId).toBeUndefined();click(view.contentEl,'Undo');expect(session?.draft.patchId).toBe(patch.entity.id);
+});
+
+
+it('loads a deferred PATCHBOOK leaf before explicit UUID navigation',async()=>{
+ const{view,services,repository}=await fixture();const patch=await repository.create(createEntity('patch','Navigate context'));click(view.contentEl,'New motif');await settle();const session=services.motifs.drafts()[0];if(!session)throw Error();services.motifs.associate(session,patch.entity.id);const patchView=new PatchbookView({} as WorkspaceLeaf,()=>services);closers.push(()=>patchView.release());await patchView.onOpen();let loaded=0;const leaf={view:patchView,loadIfDeferred:async()=>{loaded++;}};Object.assign(view.app.workspace,{getLeavesOfType:()=>[leaf]});click(view.contentEl,'Open associated PATCHBOOK record');await settle();expect(loaded).toBe(1);expect(patchView.getState().selectedId).toBe(patch.entity.id);
 });

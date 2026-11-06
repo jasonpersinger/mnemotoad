@@ -1,6 +1,6 @@
 # Design direction
 
-Status: final palette, typography, icons/artwork and ornamental treatment remain unapproved. Prompt006's functional MOTIF interface is implemented with culled Canvas and host controls/themes; PATCHBOOK was not redesigned. The3A review section distinguishes actual screenshots from remaining exploratory concepts. Functional scope is in [PRODUCT_SPEC.md](PRODUCT_SPEC.md).
+Status: final palette, typography, icons/artwork and ornamental treatment remain unapproved. Prompt006's functional MOTIF interface is implemented with culled Canvas and host controls/themes; PATCHBOOK was not redesigned. The3A/3B review sections distinguish actual screenshots from remaining exploratory concepts. Functional scope is in [PRODUCT_SPEC.md](PRODUCT_SPEC.md).
 
 ## Identity and legibility
 
@@ -95,3 +95,9 @@ Actual editor screenshots: [3A review directory](../output/motif/milestone-3a/) 
 Bars/beat subdivisions carry different contrast; pitch rows alternate subtly; notes remain legible with velocity shading. Selection adds a strong border/marker and textual count. The playhead is distinct without animation unrelated to playback. Light/dark and425px pane were exercised; high-DPI backing was emulated. Numeric controls and a bounded note list provide an alternative to pointer gestures. Screen-reader/community-theme/popout certification remains open.
 
 Proposals for later shared visual review: retain consistent register labels, explicit Saved/Unsaved/Conflict terminology and grouped transport/edit controls; evaluate density with musicians before applying these patterns to PATCHBOOK. PATCHBOOK was not redesigned in3A. No recommendation here approves final typography, icons, artwork or broad styling changes.
+
+## Milestone3B targeted review
+
+Actual [3B screenshots](../output/motif/milestone-3b/) add native import-preview/fidelity and export-snapshot/destination dialogs, Transform notes and Selection actions disclosures, searchable PATCHBOOK context and exact musical-position entry. The note list is collapsible; C-octave labels are clearer. Controls stay theme-native with visible focus and text diagnostics. No PATCHBOOK redesign, new fonts/artwork or final brand system was introduced.
+
+Dark/light/narrow and keyboard position entry were tested in the disposable Linux host. Review the warning hierarchy and selected-part wording with musicians; the5k latency and dense numeric inspector still warrant usability work. Screen-reader/popout/community-theme certification remains open. Broader redesign and final identity remain proposals requiring review.

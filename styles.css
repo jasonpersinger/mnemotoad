@@ -125,3 +125,17 @@
 .mnemobard-score-settings summary { color: var(--text-muted); font-size: var(--font-small); }
 .mnemobard-motif .mnemobard-score-heading { padding-bottom: var(--size-4-2); }
 .mnemobard-motif .mnemobard-motif-toolbar { padding: var(--size-4-2) 0; }
+
+/* MOTIF3B provisional controls: native theme, bounded groups, no brand redesign. */
+.mnemobard-midi-dialog { max-width: 760px; }
+.mnemobard-midi-dialog label, .mnemobard-motif-patch label { display: grid; gap: 4px; margin-block: 8px; }
+.mnemobard-midi-dialog select, .mnemobard-midi-dialog input:not([type=checkbox]), .mnemobard-motif-patch select { max-width: 100%; min-width: 0; }
+.mnemobard-midi-preview, .mnemobard-midi-issues { overflow-wrap: anywhere; }
+.mnemobard-transforms, .mnemobard-motif-patch { border-block-start: 1px solid var(--background-modifier-border); padding-block: 8px; }
+.mnemobard-transform-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; padding-block: 8px; }
+.mnemobard-transform-controls label { display: grid; gap: 4px; }
+.mnemobard-transform-controls input { width: 100px; }
+.mnemobard-note-register { font-size: var(--font-small); margin-block: 8px; }
+.mnemobard-midi-status { white-space: pre-wrap; overflow-wrap: anywhere; }
+.mnemobard-motif-toolbar { border-inline-start: 2px solid var(--background-modifier-border); padding-inline-start: 8px; }
+.mnemobard-midi-dialog [hidden] { display: none; }
