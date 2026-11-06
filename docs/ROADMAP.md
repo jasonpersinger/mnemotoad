@@ -1,6 +1,6 @@
 # Development roadmap
 
-Milestone2B status: Prompt005 authorizes PATCHBOOK assets, recorded previews and non-destructive recovery. Signed baseline300eba2 preserves2A;2B implementation/testing is described in [MILESTONE_2B_REPORT.md](MILESTONE_2B_REPORT.md). MOTIF/CANVAS, release and legacy adoption remain gated.
+Milestone3A status: Prompt006 authorizes the basic production MOTIF editor after2B review. Signed baselinec63125b preserves2B. Editor/audition/save/recovery and native workflow evidence are in [MILESTONE_3A_REPORT.md](MILESTONE_3A_REPORT.md). Stop for3A review;3B, CANVAS, release and legacy adoption remain gated.
 
 This plan follows the [product acceptance criteria](PRODUCT_SPEC.md#integrated-mvp-acceptance-criteria), [architecture](ARCHITECTURE.md), [data contracts](DATA_MODEL.md), [risk experiments](RISKS.md), and [decision register](DECISIONS.md). It is not an executable implementation plan or permission to modify a vault.
 
@@ -66,7 +66,7 @@ Exit evidence: existing/new checks, native create/edit of all three record types
 
 Implemented: native vault-file selector; destination-confirmed external copy; asset/preset/image inspection and repair; one owned recorded-media preview; explicit checkpoint discovery/inspection/loading and reviewed conflict handling. Existing repository remains authoritative. Native disposable Linux workflow, cold restart, screenshots and100/1000/5000 in-memory benchmarks are recorded in the2B report. No automatic deletion, preset execution or musical editor.
 
-**Exit/review G2:** inspect the actual screenshots and workflows, codec/size/recovery limits and remaining OS/accessibility/stress risks. PATCHBOOK's initial library feature set is present; beta readiness still needs broader compatibility and user review. A new prompt must authorize any MOTIF work. B01–B04 musical production recommendations, legacy extraction, final branding and release remain unapproved.
+**Exit/review G2:**2B passed report-level review and initial visual review before Prompt006. PATCHBOOK's initial library feature set is present; beta readiness still needs broader compatibility and user review. Prompt006 approves B01–B03 directions for3A, with implementation review; B04, legacy extraction, final branding and release remain unapproved.
 
 Implement patch create/edit, instrument/preset descriptions, parameter/effect lists, custom tags/search, native note navigation, safe vault attachment links and explicit audio preview. No proprietary preset parser or external instruments. Reuse foundation storage; do not create a separate patch database.
 
@@ -77,6 +77,18 @@ Implement patch create/edit, instrument/preset descriptions, parameter/effect li
 **Human review G2:** confirm patch workflow and approve the visual direction before final styling. Existing TROUBADOUR style approval does not approve a MNEMOBARD brand. Legacy `searchIdeas` may inform filters; Sound Design Lab is not imported as PATCHBOOK.
 
 ## Milestone 3 — MOTIF
+
+### 3A — Basic production editor (Prompt006)
+
+Implemented: UUID browser; exact source-tick note editing/chords; Canvas culling and DOM numeric/list alternative; drag/resize/group selection; bounded session undo/redo; grid/off/triplets, zoom/scroll; basic audio-clock sine audition; protected Save and module-specific explicit recovery. Native melody/chord/keyboard/drag workflow survived cold restart.278 tests/26 files and24 native MOTIF groups pass. Twelve screenshots and100/1000/5000/10000-note measurements support review. Same-pitch overlaps and map editing remain unsupported; see the report for all limits.
+
+**Exit/review G3A:** review actual musical usability/screenshots and supported envelope. Broader OS/device/accessibility testing and full-view/aggregate-memory profiling remain necessary. No3B work is authorized by passing these checks.
+
+### 3B — Proposed interchange and extended editing
+
+Requires a separate prompt. Evaluate/adopt the bounded codec only after explicit B04 decision; preserve input files/source PPQ, report unsupported timing/events, independently verify exported MIDI. Add selected transformations with history and explicit PATCHBOOK UUID assignment controls. Scope and acceptance fixtures require review; loops, advanced transport and harmony tools are not automatically included.
+
+The following original Milestone3 outline describes the eventual combined scope; it does not widen3A authorization.
 
 Implement note model/controller/UI, note and multiselect commands, keyboard/numeric equivalence, undo/redo, snap/quantization/transposition, fixed tempo/meter, source-PPQ import, explicit motif export, simple synth playback, patch links, and persistence. Render the approved dense-grid design with an accessible list. Defer harmonic engines, additional transforms and recording.
 

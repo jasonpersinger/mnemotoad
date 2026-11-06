@@ -73,7 +73,9 @@ try {
   })()`);
   if(result.vault!==expectedVault)throw new Error('Unexpected evidence vault');
   if(client.exceptions.length)throw new Error('Renderer exceptions: '+client.exceptions.join('\n'));
-  const directory=new URL('../output/playwright/',import.meta.url);await mkdir(directory,{recursive:true});
+  const review=process.env.MNEMOBARD_FOUNDATION_REVIEW_DIR??'output/playwright';
+  if(!/^output\/[a-zA-Z0-9_/-]+$/.test(review)||review.split('/').some(part=>!part))throw Error('Invalid project review directory');
+  const directory=new URL('../'+review+'/',import.meta.url);await mkdir(directory,{recursive:true});
   const shot=await client.command('Page.captureScreenshot',{format:'png'});
   await writeFile(new URL('milestone-1a-native.png',directory),Buffer.from(shot.data,'base64'));
   await writeFile(new URL('milestone-1a-native.json',directory),JSON.stringify({...result,rendererExceptions:client.exceptions,recordedAt:new Date().toISOString()},null,2)+'\n');

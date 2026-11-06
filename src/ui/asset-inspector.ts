@@ -1,6 +1,6 @@
 import { Modal, TFile, type App } from 'obsidian';
 import { messageOf } from '../domain/errors';
-import { button, element } from '../modules/patchbook/form';
+import { button, element } from './dom';
 
 /** Unknown/preset files are inspected as inert text, never sent to an OS opener. */
 export class AssetInspector extends Modal {

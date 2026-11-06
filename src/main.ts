@@ -15,8 +15,12 @@ import { PatchbookAssets } from './modules/patchbook/assets';
 import { AudioPreview } from './modules/patchbook/preview';
 import { PatchbookRecovery } from './modules/patchbook/recovery';
 
+import { MotifLibrary } from './modules/motif/library';
+import { MotifView } from './modules/motif/view';
+import { MusicalTransport } from './music/transport';
+
 export default class MnemobardPlugin extends Plugin {
-  /** Shared foundation and production library. Musical editors remain deferred. */
+  /** Shared foundation, PATCHBOOK library and production basic MOTIF services. */
   services?: FoundationServices;
   private active = false;
   private generation = 0;
@@ -44,9 +48,12 @@ export default class MnemobardPlugin extends Plugin {
     });
     const patchbook = new PatchbookLibrary(index, repository);
     const assets = new PatchbookAssets(vault, (target, source) => this.app.metadataCache.getFirstLinkpathDest(target, source)?.path ?? null, () => !settings.readOnly);
-    this.services = { settings, modules, index, repository, references, patchbook, assets, preview: new AudioPreview(), recovery: new PatchbookRecovery(vault, index, repository) };
+    const preview = new AudioPreview(undefined, () => musical.stop());
+    const musical = new MusicalTransport(() => preview.stop());
+    const motifs = new MotifLibrary(index, repository, vault);
+    this.services = { settings, modules, index, repository, references, patchbook, assets, preview, recovery: new PatchbookRecovery(vault, index, repository), motifs, musical };
     for (const module of MODULES) {
-      this.registerView(VIEW_TYPES[module], leaf => module === 'patchbook' ? new PatchbookView(leaf, () => this.active ? this.services : undefined) : new ModuleView(leaf, module, () => this.active ? this.services : undefined));
+      this.registerView(VIEW_TYPES[module], leaf => module === 'patchbook' ? new PatchbookView(leaf, () => this.active ? this.services : undefined) : module === 'motif' ? new MotifView(leaf, () => this.active ? this.services : undefined) : new ModuleView(leaf, module, () => this.active ? this.services : undefined));
       this.addCommand({ id: `open-${module}`, name: `Open ${MODULE_LABELS[module]}`,
         checkCallback: checking => {
           if (!modules.enabled(module)) return false;
@@ -62,6 +69,7 @@ export default class MnemobardPlugin extends Plugin {
   async setModule(id: ModuleId, enabled: boolean): Promise<void> {
     const services = this.services; if (!this.active || !services) return;
     if (id === 'patchbook' && !enabled) { services.preview.stop(); await services.patchbook.checkpointAll(); }
+    if (id === 'motif' && !enabled) { services.musical.stop(); await services.motifs.checkpointAll(); }
     const confirmed = await services.settings.update({ modules: { [id]: enabled } });
     if (this.active) services.modules.setEnabled(id, confirmed.modules[id]);
   }
@@ -70,7 +78,7 @@ export default class MnemobardPlugin extends Plugin {
     this.generation++;
     const services = this.services;
     if (services) {
-      services.preview.dispose(); services.assets.dispose(); services.recovery.dispose();
+      services.musical.dispose(); services.motifs.dispose(); services.preview.dispose(); services.assets.dispose(); services.recovery.dispose();
       services.modules.dispose(); services.repository.dispose(); services.settings.dispose();
       for (const type of Object.values(VIEW_TYPES)) for (const leaf of this.app.workspace.getLeavesOfType(type)) {
         if (leaf.view instanceof ModuleView) leaf.view.release();

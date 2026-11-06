@@ -22,8 +22,13 @@ export class Scope {
   register(modifiers: unknown, key: unknown, callback: () => boolean) { const handler = { modifiers, key, callback }; this.handlers.add(handler); return handler; }
   unregister(handler: { modifiers: unknown; key: unknown; callback: () => boolean }): void { this.handlers.delete(handler); }
 }
+export class Keymap {
+  scopes = new Set<Scope>();
+  pushScope(scope: Scope): void { this.scopes.add(scope); }
+  popScope(scope: Scope): void { this.scopes.delete(scope); }
+}
 export class ItemView extends Component {
-  app = { scope: new Scope(), workspace: { requestSaveLayout: () => {} } };
+  app = { keymap: new Keymap(), scope: new Scope(), workspace: { requestSaveLayout: () => {} } };
   contentEl = document.createElement('div');
   constructor(public leaf: unknown) { super(); }
 }

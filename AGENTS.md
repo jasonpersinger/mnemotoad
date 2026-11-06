@@ -4,7 +4,7 @@
 
 Read README and the relevant documents in `docs/` before implementation: PRODUCT_SPEC, ARCHITECTURE, DATA_MODEL, ROADMAP, DECISIONS, TROUBADOUR_AUDIT and RISKS. DESIGN_DIRECTION and TECHNICAL_RESEARCH inform UI/dependency work. Read the decision approval log and current user instructions; do not confuse a proposal with approval. Parent workspace rules also apply.
 
-Current authority: Prompt 005 authorizes **Milestone 2B PATCHBOOK only**, after report-level 2A review. Asset selection/import, recorded-audio auditioning, explicit reference repair, non-destructive recovery discovery/loading, scalability assessment and disposable-vault review are authorized. Preserve existing library services and MIDI experiments. No musical editing/playback/export, synthesis, timeline, recording/effects/waveform, cloud, final branding, legacy copying/modification, publication, remotes or personal-vault changes. Production musical technology recommendations remain separately gated.
+Current authority: Prompt006 authorizes **Milestone3A MOTIF only**, following report-level2B review. Production culled Canvas piano roll, note commands/history, exact timing/event compiler, basic sine auditioning, motif browser and shared safe persistence/recovery are authorized. Preserve PATCHBOOK and isolated experiments; CANVAS stays a placeholder. No MIDI import/export, advanced transformations/quantization, recording, external instruments/controllers, sample libraries, PATCHBOOK redesign, cloud, publication or legacy copying. B01–B03 directions are approved for3A with implementation verification; B04 codec adoption remains deferred. Final branding and future milestones require separate review.
 
 ## Preserve work and user data
 

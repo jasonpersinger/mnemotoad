@@ -2,13 +2,8 @@ import type { LibraryEntity, EffectStep, Patch } from '../../domain/entities';
 import type { PatchbookLibrary } from './library';
 import type { LibrarySession } from './session';
 
-export function element<K extends keyof HTMLElementTagNameMap>(parent: HTMLElement, tag: K, text?: string, className?: string): HTMLElementTagNameMap[K] {
-  const node = parent.ownerDocument.createElement(tag); if (text !== undefined) node.textContent = text;
-  if (className) node.className = className; parent.append(node); return node;
-}
-export function button(parent: HTMLElement, text: string, action: () => void, className?: string): HTMLButtonElement {
-  const node = element(parent, 'button', text, className); node.type = 'button'; node.addEventListener('click', action); return node;
-}
+import { element, button } from '../../ui/dom';
+export { element, button } from '../../ui/dom';
 type TextControl = HTMLInputElement | HTMLTextAreaElement;
 function field(parent: HTMLElement, label: string, value: string, change: (value: string) => void, multiline = false): TextControl {
   const wrapper = element(parent, 'label', undefined, 'mnemobard-field'); element(wrapper, 'span', label);

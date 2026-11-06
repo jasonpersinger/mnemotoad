@@ -20,15 +20,17 @@ Keep musical knowledge in the vault, accessible without the plugin. Prefer Markd
 
 ## Current status
 
-**Milestone 2B: PATCHBOOK includes asset selection/import, recorded-audio auditioning and explicit draft recovery. Musical editors remain planned.**
+**Milestone3A: MOTIF now has a production piano roll, bounded undo/redo, basic audition, explicit Save and musical draft recovery.** PATCHBOOK retains its library/assets/recorded preview workflows; CANVAS remains planned.
 
 The instrument/patch/effects-chain registers retain search/filter/sort, stable relationships, Markdown access, explicit Save, conflict protection and reversible archiving. **Manage assets** selects existing vault files, imports a confirmed local copy, repairs a missing reference or removes an association while keeping the file. **Play preview** auditions one recording at a time; no instrument is hosted or synthesized. **Recovery register** discovers checkpoints and loads a reviewed draft without saving it automatically.
 
 Open **MNEMOBARD: Open PATCHBOOK**, create an instrument and patch, select assets, then **Save record** (or Ctrl/Cmd+S). Preview recording support depends on the host; synthetic WAV/MP3/OGG/FLAC passed Linux Obsidian1.15.0. Import limit100MiB; preview limit250MiB. Unknown/preset files open in inert inspection rather than an external executable. See the [2B report](docs/MILESTONE_2B_REPORT.md) for exact tests, screenshots and limitations.
 
-Signed commit `300eba2` preserves the reviewed2A foundation. MOTIF/CANVAS remain shells; the independent MIDI/rendering experiments are unchanged. Further implementation, legacy copying and publication require separate authorization. Final branding is unapproved.
+Open **MNEMOBARD: Open MOTIF** → New motif. Draw notes/chords, drag or resize, use the note register for precise pitch/start/duration/velocity, then Play and Save motif. Defaults are120BPM,4/4,960PPQ. Existing source ticks remain exact. Different-pitch polyphony works; same-pitch overlaps are explicitly rejected. Recovery checkpoints are separate from saved notes. See the [3A report](docs/MILESTONE_3A_REPORT.md) and [actual screenshots](output/motif/milestone-3a/) for controls, validation and limits. MIDI import/export and advanced transformations remain deferred.
 
-`pnpm check` runs typecheck, lint, tests and a production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow, and [MILESTONE_1A_REPORT.md](docs/MILESTONE_1A_REPORT.md) for exact validation and limitations. Linux Obsidian 1.15.0 native smoke validation was performed; Windows/macOS and musical capabilities are unverified.
+Signed commit `c63125b` preserves the reviewed2B foundation. The independent MIDI/rendering experiments are unchanged. Stop after3A: further implementation, legacy copying and publication require separate authorization. Final branding is unapproved.
+
+`pnpm check` passes278 tests across26 files, typecheck, lint and production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow. The basic musical workflow, cold restart, conflicts and recovery were validated in Linux Obsidian1.15.0; Windows/macOS, physical audio latency and screen-reader behavior remain unverified.
 
 The kickoff’s `/home/troubadour` path was corrected by the user to `~/troubadour` (`/home/jason/troubadour`). The [Milestone 0 audit](docs/TROUBADOUR_AUDIT.md) remains the read-only reference. No legacy source/tests/assets were copied, and no legacy reuse has been authorized. All foundation code was implemented independently.
 

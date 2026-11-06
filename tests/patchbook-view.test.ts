@@ -14,6 +14,8 @@ import { installDomHelpers, Scope as MockScope } from './support/obsidian';
 import { MemoryVault, deferred } from './support/memory-vault';
 import { PatchbookAssets } from '../src/modules/patchbook/assets';
 import { AudioPreview } from '../src/modules/patchbook/preview';
+import { MotifLibrary } from '../src/modules/motif/library';
+import { MusicalTransport } from '../src/music/transport';
 import { PatchbookRecovery } from '../src/modules/patchbook/recovery';
 const cleanup: (() => void)[] = [];
 beforeEach(() => installDomHelpers());
@@ -22,7 +24,7 @@ async function fixture() {
   const vault = new MemoryVault(), index = new EntityIndex(vault), repository = new EntityRepository(vault, index), library = new PatchbookLibrary(index, repository);
   const settings = new SettingsService({ load: async () => null, save: async () => {} }); await settings.load();
   const services: FoundationServices = { repository, index, patchbook: library, references: new ReferenceResolver(index, p => vault.exists(p)), settings,
-    assets: new PatchbookAssets(vault), preview: new AudioPreview(), recovery: new PatchbookRecovery(vault, index, repository),
+    motifs: new MotifLibrary(index, repository, vault), musical: new MusicalTransport(), assets: new PatchbookAssets(vault), preview: new AudioPreview(), recovery: new PatchbookRecovery(vault, index, repository),
     modules: new ModuleController(settings.current.modules, { open: async () => {}, close: () => {} }) };
   const view = new PatchbookView({} as WorkspaceLeaf, () => services); document.body.append(view.contentEl);
   cleanup.push(() => { view.release(); library.dispose(); repository.dispose(); index.dispose(); settings.dispose(); });

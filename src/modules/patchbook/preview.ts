@@ -20,7 +20,7 @@ export class AudioPreview {
   private timeout?: ReturnType<typeof setTimeout>;
   private listeners = new Set<() => void>();
   private state: PreviewState = { status: 'stopped', position: 0, duration: 0 };
-  constructor(private readonly factory: () => PreviewMedia = () => new Audio()) {}
+  constructor(private readonly factory: () => PreviewMedia = () => new Audio(), private readonly beforePlay: () => void = () => {}) {}
   get current(): PreviewState { return { ...this.state }; }
   ownedBy(owner: object): boolean { return this.owner === owner; }
   subscribe(listener: () => void): () => void { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
@@ -39,7 +39,7 @@ export class AudioPreview {
   }
   async play(owner: object, path: string, url: string): Promise<void> {
     if (this.closed) throw new FoundationError('disposed', 'Audio preview is closed.');
-    this.stop();
+    this.stop(); this.beforePlay();
     // Only the asset service supplies these ephemeral URLs; no remote fetch path.
     if (!url.startsWith('app://') && !url.startsWith('blob:')) throw new FoundationError('invalid', 'Preview requires a local vault resource.');
     this.owner = owner; this.requested = 'playing'; const generation = this.generation;

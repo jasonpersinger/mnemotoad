@@ -1,0 +1,385 @@
+{
+  "milestone": "3A",
+  "date": "2026-11-06",
+  "scope": "Production basic MOTIF only; synthetic marked disposable vault",
+  "baseline": {
+    "commit": "c63125b",
+    "signature": "G (good)",
+    "tests": 209,
+    "files": 21
+  },
+  "verification": {
+    "tests": 278,
+    "testFiles": 26,
+    "typecheck": "passed",
+    "lint": "passed",
+    "productionBuild": "passed",
+    "dependencyAuditReportedVulnerabilities": 0
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+    "width": 1280,
+    "height": 1000,
+    "dpr": 0.9999999767169356,
+    "concurrency": 16,
+    "cpu": "AMD Ryzen 7 5700G",
+    "logicalProcessors": 16,
+    "memoryGiB": 27.3,
+    "kernel": "7.3.1-1-cachyos",
+    "launcherGpu": "--disable-gpu"
+  },
+  "native": {
+    "motifChecks": [
+      "Created and named a motif; set100BPM/6-8; drew a four-note melody and three-note chord using native pointer events",
+      "Graphical movement/resizing preserve starts, map pitch/time accurately and commit one undo entry per drag",
+      "Native keyboard numeric editing, duplication with independent identity, deletion, Undo and Redo passed",
+      "Grid selection, anchored zoom and two-axis scrolling retain musical notes and selection",
+      "Audio-clock audition produced simultaneous chord voices and a live playhead; Stop released voices/context/timer",
+      "Saved motif reopened through the same stable UUID with exact note/settings data",
+      "Unsaved musical checkpoint confirmed before cold restart without replacing the saved motif",
+      "Cold application restart preserved exact saved note bytes, IDs, PPQ/tempo/meter and motif reopening",
+      "MOTIF-only checkpoint discovery/inspection/loading remained unsaved until explicit normal Save",
+      "Native Delete/Ctrl-Z/Ctrl-Shift-Z/Ctrl-S preserve musical history and active-editor keyboard scope",
+      "Trusted modifier group selection/movement and Escape cancellation preserve one-entry history and source notes",
+      "External edit rejected stale Save, retained both versions, undo history and recoverable musical draft",
+      "MOTIF disable/re-enable released voices, scheduler and audio context while preserving records",
+      "Owning editor close released musical playback and reopened cleanly",
+      "Plugin unload/reload released musical services and retained exactly three commands",
+      "Actual light/dark and narrow-pane screenshots captured without pane overflow",
+      "Native DPR2 backing and CSS coordinate separation verified",
+      "Native production Canvas benchmarks completed at100/1000/5000/10000 notes",
+      "Trusted native pointer gestures measured production roll/history latency at100/1000/5000 notes",
+      "Ten native repeated start/stop cycles released all tracked musical voices, timers and closing contexts",
+      "Native PATCHBOOK recorded preview and MOTIF synthesized audition exchanged exclusive audio focus",
+      "Native suspended AudioContext stopped with an actionable diagnostic and released playback resources",
+      "Owner-window blur policy released musical playback in the actual host (synthetic blur event)",
+      "Native metadata Undo/Redo refreshes description/tags/notes controls while preserving authoritative source"
+    ],
+    "foundationChecks": [
+      "native load and three commands",
+      "three view shells and repeated open deduplication",
+      "native settings rendering",
+      "native Vault create/update and prose retention",
+      "identity after native rename",
+      "stale-write rejection",
+      "original/draft recovery copy",
+      "all three typed entity records and reference resolution",
+      "module-disable view cleanup and data preservation",
+      "plugin unload command cleanup and closed old repository",
+      "re-enable settings/data persistence and no command/view duplicates"
+    ],
+    "patchbookChecks": [
+      "Created instrument/patch, selected audio/preset/screenshot, imported confirmed local copy and persisted eight portable references; original hash unchanged",
+      "Arbitrary preset opens in inert native inspection; text is read only after explicit request",
+      "Native WAV/MP3/OGG/FLAC decoder probes, unsupported-file error, pause/resume/seek and stop/release verified",
+      "Simulated file move without link maintenance; missing reference repaired by explicit file selection and protected Save",
+      "Record navigation/reopen retains associations",
+      "Confirmed unsaved draft checkpoint is durable before application restart; authoritative source unchanged",
+      "Cold restart preserved authoritative assets; discovery/inspection/load wrote nothing; explicit recovered Save succeeded and checkpoint remained byte-identical",
+      "Disabling and re-enabling PATCHBOOK releases playback and retains records",
+      "Closing owning native view stops and releases preview",
+      "Plugin unload/reload releases media and listeners without duplicate commands",
+      "Actual light/dark and narrow-pane layouts captured; no horizontal overflow in measured pane",
+      "Native renderer ran production index/query/navigation/reference benchmarks at100/1000/5000 synthetic in-memory records"
+    ],
+    "motifRendererExceptions": [],
+    "patchbookRendererExceptions": [],
+    "narrow": {
+      "clientWidth": 425,
+      "scrollWidth": 425,
+      "canvas": 388
+    },
+    "highDpi": {
+      "dpr": 1.9999999534338713,
+      "cssWidth": 1187,
+      "backingWidth": 2374
+    },
+    "playback": {
+      "state": "playing",
+      "position": 2.4673333333333334,
+      "voices": 3,
+      "samples": [
+        {
+          "leadSeconds": 0.07200000000000001,
+          "wallGap": 0.04266666666666667
+        },
+        {
+          "leadSeconds": 0.09533333333333338,
+          "wallGap": 0.04266666666666663
+        },
+        {
+          "leadSeconds": 0.07466666666666666,
+          "wallGap": 0.04266666666666674
+        },
+        {
+          "leadSeconds": 0.09666666666666668,
+          "wallGap": 0.04266666666666674
+        },
+        {
+          "leadSeconds": 0.09800000000000009,
+          "wallGap": 0.04266666666666663
+        },
+        {
+          "leadSeconds": 0.09933333333333327,
+          "wallGap": 0.04266666666666685
+        },
+        {
+          "leadSeconds": 0.05800000000000005,
+          "wallGap": 0.04266666666666663
+        },
+        {
+          "leadSeconds": 0.05933333333333346,
+          "wallGap": 0.04266666666666641
+        },
+        {
+          "leadSeconds": 0.0606666666666662,
+          "wallGap": 0.04266666666666685
+        },
+        {
+          "leadSeconds": 0.0606666666666662,
+          "wallGap": 0.04266666666666685
+        },
+        {
+          "leadSeconds": 0.0606666666666662,
+          "wallGap": 0.04266666666666685
+        }
+      ],
+      "context": "running"
+    },
+    "recordedFormats": [
+      {
+        "name": "audition.wav",
+        "status": "playing",
+        "duration": 8
+      },
+      {
+        "name": "audition.mp3",
+        "status": "playing",
+        "duration": 8
+      },
+      {
+        "name": "audition.ogg",
+        "status": "playing",
+        "duration": 8
+      },
+      {
+        "name": "audition.flac",
+        "status": "playing",
+        "duration": 8
+      },
+      {
+        "name": "unsupported.wav",
+        "status": "error",
+        "duration": 0,
+        "message": "Unsupported preview: this Obsidian runtime could not decode the file. Choose another recording or open it in Obsidian."
+      }
+    ],
+    "foundationRendererExceptions": []
+  },
+  "benchmark": {
+    "methodology": "Actual Electron Canvas2D,960x360 CSSpx,DPR1; production validation/index/renderer/hit/command functions. Fixture generation excluded;5warmups,30samples. Initial includes validation/index/first draw/forced layout. Scroll/zoom mutate viewport, drag is preview plus render; command commit measures pure validated move. JS submission excludes physical presentation, storage and full session/DOM work.",
+    "results": [
+      {
+        "notes": 100,
+        "visible": 50,
+        "initialMs": 2.5,
+        "redraw": {
+          "medianMs": 0.09999999403953552,
+          "p95Ms": 0.20000001788139343
+        },
+        "scroll": {
+          "medianMs": 0.09999999403953552,
+          "p95Ms": 0.10000002384185791
+        },
+        "zoom": {
+          "medianMs": 0.09999999403953552,
+          "p95Ms": 0.20000001788139343
+        },
+        "selection": {
+          "medianMs": 0.09999999403953552,
+          "p95Ms": 0.20000001788139343
+        },
+        "dragPreview": {
+          "medianMs": 0.09999999403953552,
+          "p95Ms": 0.19999998807907104
+        },
+        "commandCommit": {
+          "medianMs": 0.09999999403953552,
+          "p95Ms": 0.20000001788139343
+        },
+        "serializedUtf16Bytes": 16006
+      },
+      {
+        "notes": 1000,
+        "visible": 475,
+        "initialMs": 2.0999999940395355,
+        "redraw": {
+          "medianMs": 0.29999998211860657,
+          "p95Ms": 0.30000001192092896
+        },
+        "scroll": {
+          "medianMs": 0.10000002384185791,
+          "p95Ms": 0.30000001192092896
+        },
+        "zoom": {
+          "medianMs": 0.19999998807907104,
+          "p95Ms": 0.30000001192092896
+        },
+        "selection": {
+          "medianMs": 0.19999998807907104,
+          "p95Ms": 0.30000001192092896
+        },
+        "dragPreview": {
+          "medianMs": 0.19999998807907104,
+          "p95Ms": 0.29999998211860657
+        },
+        "commandCommit": {
+          "medianMs": 0.9000000059604645,
+          "p95Ms": 1.0999999940395355
+        },
+        "serializedUtf16Bytes": 160464
+      },
+      {
+        "notes": 5000,
+        "visible": 782,
+        "initialMs": 7.5999999940395355,
+        "redraw": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.4000000059604645
+        },
+        "scroll": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.4000000059604645
+        },
+        "zoom": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.5
+        },
+        "selection": {
+          "medianMs": 0.4000000059604645,
+          "p95Ms": 0.5
+        },
+        "dragPreview": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.3999999761581421
+        },
+        "commandCommit": {
+          "medianMs": 4.200000017881393,
+          "p95Ms": 5.9000000059604645
+        },
+        "serializedUtf16Bytes": 818240
+      },
+      {
+        "notes": 10000,
+        "visible": 782,
+        "initialMs": 13.199999988079071,
+        "redraw": {
+          "medianMs": 0.4000000059604645,
+          "p95Ms": 0.5999999940395355
+        },
+        "scroll": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.4000000059604645
+        },
+        "zoom": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.5
+        },
+        "selection": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.4000000059604645
+        },
+        "dragPreview": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.4000000059604645
+        },
+        "commandCommit": {
+          "medianMs": 8.400000005960464,
+          "p95Ms": 9.599999994039536
+        },
+        "serializedUtf16Bytes": 1641770
+      }
+    ]
+  },
+  "interactive": [
+    {
+      "notes": 100,
+      "pointerUpToFrame": {
+        "medianMs": 9.400000005960464,
+        "p95Ms": 10.199999988079071
+      },
+      "samples": 12,
+      "historyEntries": 12
+    },
+    {
+      "notes": 1000,
+      "pointerUpToFrame": {
+        "medianMs": 10.700000017881393,
+        "p95Ms": 11
+      },
+      "samples": 12,
+      "historyEntries": 12
+    },
+    {
+      "notes": 5000,
+      "pointerUpToFrame": {
+        "medianMs": 35.400000005960464,
+        "p95Ms": 36.900000005960464
+      },
+      "samples": 12,
+      "historyEntries": 10
+    }
+  ],
+  "screenshots": [
+    "01-motif-browser.png",
+    "02-empty-roll.png",
+    "03-melody.png",
+    "04-chords.png",
+    "05-selected-note.png",
+    "06-transport-playback.png",
+    "10-recovery.png",
+    "11-conflict.png",
+    "08-light-theme.png",
+    "07-dark-theme.png",
+    "09-narrow-pane.png",
+    "12-high-dpi.png"
+  ],
+  "screenshotDirectory": "output/motif/milestone-3a/",
+  "preservation": {
+    "root": "/home/jason/troubadour",
+    "trackedFiles": 121,
+    "aggregateSha256": "4e217cc4f22b1a049470feb31d5955ece52542619497e97c0924e592f6928ff2",
+    "head": "bc2749e2877738bd443a1d3ace66f919d23fe837",
+    "clean": true,
+    "matchesBaseline": true
+  },
+  "limits": [
+    "Single Linux Obsidian1.15.0 environment; no physical audible latency/device loopback measurement",
+    "No Windows/macOS, screen-reader, hardware high-DPI or musical popout certification",
+    "Same-pitch overlaps remain unsupported; distinct-pitch chords/polyphony verified",
+    "Ten real start/stop cycles count tracked resources, not a heap leak certification",
+    "Canvas benchmark measures JS submission; pointer benchmark includes roll/session history, excludes full inspector and storage",
+    "MIDI import/export, map editing, advanced transforms and CANVAS remain deferred"
+  ],
+  "repository": {
+    "restorationCommit": "c63125b",
+    "signature": "good",
+    "pendingPaths": 57,
+    "modified": 31,
+    "untracked": 26,
+    "staged": 0,
+    "remotes": 0,
+    "diffWhitespaceCheck": "passed",
+    "nativeScriptSyntaxCheck": "passed",
+    "credentialPatternScan": "no matches",
+    "productionBundleBytes": 249162,
+    "productionBundleSha256": "6562aa4d3bcb22d201cc520403708c7e3b9d793741236202ca770f9b72d6db6a",
+    "deployedBundleMatches": true,
+    "isolatedObsidianShutdown": {
+      "guardedIsolatedProfile": true,
+      "port": 9227,
+      "musicalResourcesReleased": true,
+      "stoppedAt": "2026-11-06T06:49:52.097Z"
+    }
+  }
+}

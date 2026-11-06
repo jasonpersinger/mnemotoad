@@ -1,6 +1,6 @@
 # Product specification
 
-Milestone2B status: PATCHBOOK supports the sound-library workflow including native vault assets, confirmed imports, recorded auditioning and explicit recovery. P-01–03 are implemented for the tested Linux host. The integrated musical MVP remains planned. See [MILESTONE_2B_REPORT.md](MILESTONE_2B_REPORT.md) for exact validation/support limits.
+Milestone3A status: PATCHBOOK's sound library remains implemented; MOTIF now supports basic graphical/numeric composition, undo/redo, sine audition, protected saving/reopening and explicit recovery in the tested Linux host. MIDI interchange, advanced transforms and CANVAS remain planned, so the integrated MIDI-export MVP is not complete. See [MILESTONE_3A_REPORT.md](MILESTONE_3A_REPORT.md) for exact validation/support limits.
 
 ## Purpose and users
 

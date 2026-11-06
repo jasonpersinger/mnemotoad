@@ -27,7 +27,8 @@
     "test:patchbook-native": "node scripts/patchbook-smoke.mjs",
     "test:assets-native": "node scripts/patchbook-assets-native.mjs",
     "test:asset-fixtures": "node scripts/patchbook-test-assets.mjs",
-    "benchmark:patchbook": "node scripts/patchbook-benchmark.mjs"
+    "benchmark:patchbook": "node scripts/patchbook-benchmark.mjs",
+    "test:motif-native": "node scripts/motif-native.mjs"
   },
   "dependencies": {
     "yaml": "2.9.1"

@@ -53,10 +53,12 @@ export function validateEntity(value: unknown): Entity {
     if (!['audio', 'image', 'preset'].includes(String(a.role))) invalid('asset.role', 'unknown role');
     text(a.link, 'asset.link'); assetLink(a.link);
   }
-  if (['patch', 'instrument', 'effects-chain'].includes(String(e.kind))) {
+  if (['patch', 'instrument', 'effects-chain', 'motif'].includes(String(e.kind))) {
     for (const key of ['description', 'notes']) if (e[key] !== undefined) {
       text(e[key], key); if (String(e[key]).length > 100000) invalid(key, 'maximum 100000 characters');
     }
+  }
+  if (['patch', 'instrument', 'effects-chain'].includes(String(e.kind))) {
     if (e.archived !== undefined && typeof e.archived !== 'boolean') invalid('archived', 'expected boolean');
     if (e.externalReferences !== undefined) for (const link of list(e.externalReferences, 'external references', 100)) {
       text(link, 'external reference');

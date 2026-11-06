@@ -1,6 +1,6 @@
 # Development guide
 
-Current implementation: shared safe persistence, the PATCHBOOK library, asset management, recorded-audio preview and explicit recovery. Musical editors remain shells. Historical reports are preserved; [Milestone2B](MILESTONE_2B_REPORT.md) records current behavior and validation.
+Current implementation: shared safe persistence, PATCHBOOK library/assets/recorded preview and production basic MOTIF piano-roll editing/history/audition/recovery. CANVAS remains a shell. Historical reports are preserved; [Milestone3A](MILESTONE_3A_REPORT.md) records current behavior and validation.
 
 ## Setup and commands
 
@@ -49,7 +49,7 @@ This test-only CDP script first verifies the active vault path equals the projec
 Manual verification if automated desktop control is unavailable:
 
 1. Launch only the isolated profile/vault above. Confirm its vault name/path and enable MNEMOBARD.
-2. Run each “MNEMOBARD: Open PATCHBOOK/MOTIF/CANVAS” command twice. Expect one corresponding tab per module with an Under development message.
+2. Run each “MNEMOBARD: Open PATCHBOOK/MOTIF/CANVAS” command twice. Expect one corresponding tab per module: PATCHBOOK and MOTIF libraries, CANVAS Under development.
 3. Open MNEMOBARD settings; toggle each interface off/on. Its tab closes on disable, its command becomes unavailable, and stored notes remain unchanged.
 4. Disable/re-enable the plugin. Open tabs should retain host positions where supported; commands/views should not multiply. Close and reopen Obsidian and verify the module preferences and saved entity notes.
 5. Inspect the console for plugin errors. Keep the test-vault-only evidence and record installer/OS versions. Automated mocks are not substitutes for these checks.
@@ -100,7 +100,7 @@ Development: Obsidian typings/esbuild/Vitest/jsdom/ESLint/typescript-eslint/@typ
 
 ## Remaining boundaries
 
-PATCHBOOK now has shared draft sessions, explicit Save and recovery checkpoints. Generic musical sessions/undo/autosave, automatic asset relinking, migrations, recovery-history/retention UI and production musical compilation remain deferred. Cross-platform media, guaranteed performance targets, crash durability and multi-device conflicts remain unverified. Stop after2A; this guide does not authorize2B or musical production work.
+PATCHBOOK and MOTIF share typed draft sessions, explicit Save and recovery checkpoints. MOTIF adds bounded undo and musical compilation/audition. Automatic asset relinking, migrations and recovery retention remain deferred. Cross-platform media, universal performance targets, crash durability and multi-device conflicts remain unverified. Stop after3A; this guide does not authorize3B or CANVAS.
 
 ## PATCHBOOK development and validation
 
@@ -123,9 +123,9 @@ Source boundaries: `modules/patchbook/query.ts` (pure search/filter/sort), `libr
 
 Authoritative notes change only on **Save record** or scoped Ctrl/Cmd+S. **Saved** acknowledges the completed write. **Unsaved changes · recovery copy stored** acknowledges a recovery JSON, not a saved entity. Checkpoints debounce500ms and are awaited before navigation/module disable. View closure releases UI handlers immediately and checkpoints while services remain alive. Plugin unload cancels resources without asynchronous final saving. Very recent unacknowledged edits are not guaranteed durable; save before unloading/restarting.
 
-Recovery files retain original text, raw draft and a valid candidate when available. Invalid values produce a raw draft/validation error, never an invalid authoritative note. A conflict retains disk content and draft; compare through Open Markdown/Open recovery, then explicitly discard/re-enter reviewed changes against a fresh base. Never blindly retry, silently restore over a newer note or prune copies without a separate policy. Full restart does not automatically rehydrate pending drafts; inspection is manual.
+Recovery files retain original text, raw draft and a valid candidate when available. Invalid values produce a raw draft/validation error, never an invalid authoritative note. A conflict retains disk content and draft; compare through Open Markdown/Open recovery, then explicitly discard/re-enter reviewed changes against a fresh base. Never blindly retry, silently restore over a newer note or prune copies without a separate policy. Full restart does not automatically rehydrate pending drafts; the explicit Recovery register now discovers and inspects them (2B).
 
-Archive/restore is a confirmed conditional metadata save. It retains notes/IDs/relationships and supports Active/Archived/All visibility; permanent deletion is a separate Obsidian action. New associations require unique active targets. Missing/ambiguous/archived references are diagnostics. Custom properties are edited in the native note and preserved by forms. File references are plain vault wikilinks in2A, without preview/import/execution. See [schema details](DATA_MODEL.md#milestone-2a-library-records).
+Archive/restore is a confirmed conditional metadata save. It retains notes/IDs/relationships and supports Active/Archived/All visibility; permanent deletion is a separate Obsidian action. New associations require unique active targets. Missing/ambiguous/archived references are diagnostics. Custom properties are edited in the native note and preserved by forms. File references are portable vault wikilinks; native preview/import/repair were added in2B, without executing presets. See [schema details](DATA_MODEL.md#milestone-2a-library-records).
 
 ## Isolated Milestone 1B experiments
 
@@ -152,7 +152,7 @@ Raw results/screenshot are ignored at `output/experiments/native.json`, `native-
 
 Each render case uses the same 960×360 CSS-pixel viewport, five warmups, 30 redraw samples, 20 pan frames, 20 zoom frames and 30 hit/preview/redraw samples. Initial time includes building the static index. Forced layout and frame-interval data are distinct metrics; neither measures physical display latency. Node counts/backing bytes are deterministic approximate resource indicators, while heap deltas are global/noisy. The full report explains hardware and software rendering. No arbitrary CI timing threshold is enforced.
 
-On close/disable the test transport cancels timers/voices, guards pending resumes, disconnects nodes and closes its context. Blur/pagehide/hidden-document policy stops playback. A >100ms audio/wall polling gap or a late event stops instead of catching up. Pause cancels sound; resume retriggers still-held notes for the remaining duration. The normal production plugin has no transport yet. A future shared transport will need explicit focus ownership, sessions, export preflight and platform/latency validation before adoption.
+On close/disable the test transport cancels timers/voices, guards pending resumes, disconnects nodes and closes its context. Blur/pagehide/hidden-document policy stops playback. A >100ms audio/wall polling gap or a late event stops instead of catching up. Pause cancels sound; resume retriggers still-held notes for the remaining duration. The3A production transport is a separate reviewed implementation with start/stop, explicit focus ownership and musical sessions; it has no lab pause/loop UI. Export preflight and broader platform/latency validation remain future work.
 
 
 ## Asset and recovery development (2B)
@@ -166,3 +166,37 @@ For cold validation, checkpoint/save the test state, flush layout preferences, t
 Manual review: create instrument/patch → Manage assets → Select vault asset (category and search) → Save. Play, pause, seek, resume, stop. Import local file → inspect name/type/size → confirm visible vault destination → Save association. Remove it and confirm the file remains. Simulate a synthetic missing file, explicitly repair, then Save. Edit and wait for a confirmed checkpoint; restart; Recovery register → inspect original/current/draft → Load draft without saving → explicitly Save. Changed sources require the comparison acknowledgment; a later external change must still reject Save. Future/malformed notes/checkpoints stay read-only. No automatic cleanup exists.
 
 Known host issue: a long-lived stressed development session stalled FileManager link updates while its metadata resolver remained busy. The same full2A native suite passed after a clean isolated restart; do not weaken or bypass source conflicts or force host queues. Broader long-session/OS validation remains required. Raw failure evidence is retained in output; final successful runs have no observed renderer exceptions.
+
+
+## MOTIF development and validation (3A)
+
+No dependency installation is needed beyond the existing lockfile. `src/modules/motif/` separates pure edit commands/session, interval geometry, Canvas renderer/controller and DOM view/inspector. `src/music/` contains production timing/compiler/transport/sine adapter with no runtime experiment imports. `src/application/document-session.ts`, `src/storage/recovery.ts` and `src/ui/recovery-inspector.ts` are shared with thin PATCHBOOK wrappers. The repository remains the only authoritative writer.
+
+```sh
+pnpm check
+pnpm dev:vault
+pnpm dev:obsidian
+# Second terminal, only the guarded disposable instance:
+pnpm test:motif-native
+# Intentional isolated cold stop/relaunch, then:
+node scripts/motif-native.mjs --verify-restart
+```
+
+The runner creates only synthetic motifs/checkpoints, captures12 actual screenshots under `output/motif/milestone-3a/`, tests native pointer/keyboard editing and cold recovery, and builds an in-memory benchmark entry separately from production. It never installs the benchmark as a module or writes its synthetic benchmark notes. Rerunning creates a fresh identity set; preserve existing data/evidence if required. The24-group reviewed summary also includes five guarded CDP probes recorded in the report; the core two-phase runner produces19 groups.
+
+Manual workflow: Open MOTIF → New motif → name/settings → Apply musical settings → draw melody/chords. Drag notes; Shift-click a group; resize the right edge. Select a note in the register, Tab through pitch/start/duration/velocity and Apply selected-note properties. Try Duplicate/Delete/Undo/Redo, grid/off/triplets, zoom and two-axis scrolling. Focus the roll for scoped keyboard operations; Ctrl/Cmd+S saves. Play creates basic sine audition; Stop releases resources. Save → close/reopen → restart the isolated app → reopen and compare. Exercise a synthetic external prose edit against a pending draft and confirm Save rejects it. Motif recovery must inspect/load without writing, then Save explicitly. Disable/re-enable MOTIF with playback active. Inspect light/dark and a narrow pane.
+
+A group gesture validates as a whole and is one history entry. Bounds violations do not clamp notes. Same-pitch overlaps remain unsupported. PPQ changes are allowed only on empty motifs; meter/tempo edits do not move source ticks. Grid changes never quantize existing notes. Numeric/musical controls awaiting Apply are labeled, block Save and are not crash-protected; apply them to the draft first. The session checkpoints after500ms and shows confirmation; checkpoint != Saved. Explicit Save uses the same stale-source checks/backups as PATCHBOOK. View transitions retain draft/history in memory, module disable awaits checkpoints, and plugin unload disposes without promising asynchronous saving. Recovery never auto-restores or prunes.
+
+The production transport uses25ms polling/100ms lookahead/50ms initial lead with pre-scheduled voice ends. Late/stalled/suspended playback stops; UI frames only display position. Record changes, owner closure, background window policy, module disable and plugin unload release musical resources. PATCHBOOK recorded previews and MOTIF audition are mutually exclusive. Pause/loop/seek/sample playback are absent.
+
+Regression evidence can be routed without replacing earlier reviewed screenshots:
+
+```sh
+MNEMOBARD_FOUNDATION_REVIEW_DIR=output/motif/milestone-3a/foundation-regression pnpm test:obsidian
+MNEMOBARD_ASSET_REVIEW_DIR=output/motif/milestone-3a/patchbook-regression pnpm test:assets-native
+# After a separate deliberate isolated cold restart:
+MNEMOBARD_ASSET_REVIEW_DIR=output/motif/milestone-3a/patchbook-regression node scripts/patchbook-assets-native.mjs --verify-restart
+```
+
+See the [3A report](MILESTONE_3A_REPORT.md) for benchmark methodology, measured hardware/latencies, tests and unresolved OS/accessibility/memory risks. All native control is development-only and path-guarded; public APIs alone are used in plugin persistence/workspace code. This does not authorize3B, MIDI interchange, CANVAS or publication.

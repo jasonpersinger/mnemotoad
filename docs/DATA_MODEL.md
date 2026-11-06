@@ -1,6 +1,6 @@
 # Data model proposal
 
-Milestone2B status: ordinary schema1 entity notes and portable asset links remain unchanged. Asset management and recoverable unsaved sessions are implemented without a migration. See the2B section below and [MILESTONE_2B_REPORT.md](MILESTONE_2B_REPORT.md). Musical contracts remain planned.
+Milestone3A status: schema1 motifs are now editable/savable through MOTIF with source-tick preservation, compatible description/notes fields and musical recovery. Library/asset contracts remain intact; no migration was introduced. See the implemented3A section below and [MILESTONE_3A_REPORT.md](MILESTONE_3A_REPORT.md). MIDI interchange, maps and arrangement semantics below remain future contracts.
 
 ## Storage and authority
 
@@ -318,3 +318,15 @@ Preferences add `assetDirectory` to settings schema1 (default `<creationRoot>/As
 Recovery storage formats remain the2A `mnemobard-editor-draft` and foundation `mnemobard-recovery`, both schemaVersion1. Discovery covers JSON files in visible documented `/Recovery/` subfolders, including earlier creation roots,100 per page with32MiB read budget. Individual inspection is limited to20MiB and display to64Ki characters per section; larger originals remain openable. Unknown/future/malformed/duplicate-key envelopes remain inspection-only. Common empty draft name/instrument/stage fields can load for correction; other invalid structures remain text-only. No musical checkpoint is edited by PATCHBOOK.
 
 Recovery loading never rewrites source/checkpoint. For unchanged source, the loaded session captures that exact base; renamed notes resolve by UUID. Missing/duplicate/unreadable sources block restoration. A changed source is displayed alongside original/draft; only an explicit acknowledgment adopts that reviewed current text as the new save base, verified again before loading. The user then reviews and saves normally, including original-text backup and stale-write checks. No merge, automatic reopen, duplicate-ID comparison note, pruning or deletion. Source/backup history grows indefinitely; manual vault backup/management remains the user's responsibility. Very recent unacknowledged edits before a checkpoint are not crash-durable.
+
+## Milestone3A production motifs
+
+The schema1 example above is now the production MOTIF authority; import/export and composition examples remain future contracts. `description?` and `notes?` are compatible optional motif fields mapped to `mnemobard_description` and `mnemobard_notes` in YAML. Existing tags, patch IDs/links, custom YAML, musical/note extension fields and unrelated prose are preserved. Editor-generated local note IDs are fresh UUIDs; existing valid IDs are retained. No file rename changes entity identity.
+
+New motifs:120BPM (500000µs/quarter),4/4,960PPQ,15360 ticks. PPQ1–32767 stays source-specific. Integer source ticks are authoritative; BigInt fractions are transient compiler values only and never JSON serialized. BPM changes convert once to integerµs and affect playback seconds; meter changes reinterpret bars without moving notes or changing length. Only empty motifs permit PPQ changes; length reductions reject out-of-range notes.
+
+Editing uses quarter/eighth/sixteenth/eighth-triplet grids or off; unsupported fractional source-tick grids are rejected with guidance. Changing grid never quantizes existing notes. Numeric Apply uses exact source integers. Notes must fit explicit length; extending it is an explicit musical-setting edit. Different-pitch overlaps/chords are supported; same-pitch overlaps remain rejected.3A bounds are10000 notes,4096 quarter notes, pitch0–127, velocity1–127, meter numerator1–32 and denominator1/2/4/8/16/32, tempo20–300BPM. Larger/unsupported source records remain available for inspection.
+
+Recognized `tempoMap`, `tempos`, `tempoChanges`, `meterChanges`, `timeSignatures`, `mnemobard_tempo_map` and `mnemobard_meter_map` metadata prevents editing/audition in3A; it is never silently removed. Unknown future schemas remain read-only. A future map/codec design must define additional semantics before changing these policies.
+
+Musical checkpoints reuse existing append-only formats and conditional repository saving. A MOTIF-only validator/entry point loads reviewed recovery into an unsaved session; explicit Save is still required. Undo/selection/viewport/history are not authoritative musical data or persistent recovery history. See the [3A report](MILESTONE_3A_REPORT.md#f-persistence-and-recovery) for dirty/save/conflict/session behavior and limits.

@@ -33,7 +33,7 @@ export interface MotifData extends ExtensionFields {
   meter: Meter; lengthTicks: number; notes: Note[]; importSourceChannel?: number;
 }
 export interface Motif extends EntityBase {
-  kind: 'motif'; patchId?: string; patchLink?: string; data: MotifData;
+  kind: 'motif'; description?: string; notes?: string; patchId?: string; patchLink?: string; data: MotifData;
 }
 export interface Clip extends ExtensionFields { id: string; motifId: string; startTick: number; repeatCount: number }
 export interface Lane extends ExtensionFields {

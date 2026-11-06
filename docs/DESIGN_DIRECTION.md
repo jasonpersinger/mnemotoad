@@ -1,6 +1,6 @@
 # Design direction
 
-Status: final palette, typography, icons/artwork and ornamental treatment remain unapproved. Prompt004 authorizes a functional provisional PATCHBOOK interface; its restrained archival layout is implemented with host controls/fonts/themes. The remaining musical concepts below are exploratory. Functional scope is in [PRODUCT_SPEC.md](PRODUCT_SPEC.md).
+Status: final palette, typography, icons/artwork and ornamental treatment remain unapproved. Prompt006's functional MOTIF interface is implemented with culled Canvas and host controls/themes; PATCHBOOK was not redesigned. The3A review section distinguishes actual screenshots from remaining exploratory concepts. Functional scope is in [PRODUCT_SPEC.md](PRODUCT_SPEC.md).
 
 ## Identity and legibility
 
@@ -87,3 +87,11 @@ Approve the interaction hierarchy and hub-versus-direct-view navigation first. T
 ## Milestone2B provisional review
 
 The existing archival register now includes plain asset rows, inline vault selection/import confirmation, a compact audition control and a recovery register with comparison sections. Controls use host variables/fonts and visible focus; no brand assets or typography were finalized. Nine actual light/dark/narrow application captures live under `output/patchbook/milestone-2b/`; see the2B report. Screen-reader/community-theme certification remains open.
+
+## Milestone3A MOTIF review
+
+Actual editor screenshots: [3A review directory](../output/motif/milestone-3a/) and [report image index](MILESTONE_3A_REPORT.md#g-interface-and-design). The implemented layout combines a restrained register header/status, explicit transport, collapsible musical settings, compact editing controls, pitch/time Canvas and accessible note register. Host fonts/theme variables remain authoritative; no new imagery or final palette was selected.
+
+Bars/beat subdivisions carry different contrast; pitch rows alternate subtly; notes remain legible with velocity shading. Selection adds a strong border/marker and textual count. The playhead is distinct without animation unrelated to playback. Light/dark and425px pane were exercised; high-DPI backing was emulated. Numeric controls and a bounded note list provide an alternative to pointer gestures. Screen-reader/community-theme/popout certification remains open.
+
+Proposals for later shared visual review: retain consistent register labels, explicit Saved/Unsaved/Conflict terminology and grouped transport/edit controls; evaluate density with musicians before applying these patterns to PATCHBOOK. PATCHBOOK was not redesigned in3A. No recommendation here approves final typography, icons, artwork or broad styling changes.

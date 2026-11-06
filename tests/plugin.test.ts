@@ -51,6 +51,7 @@ it('registers commands/views/settings and creates all three real shell classes',
   expect(h.leaves).toHaveLength(3);
   for (const leaf of h.leaves) {
     if (leaf.type === 'mnemobard-patchbook') { expect(leaf.view?.contentEl.textContent).toContain('Begin with an instrument'); expect(leaf.view?.contentEl.querySelector('input[type="search"]')).not.toBeNull(); }
+    else if (leaf.type === 'mnemobard-motif') expect(leaf.view?.contentEl.textContent).toContain('Motif library');
     else expect(leaf.view?.contentEl.textContent).toContain('Under development');
   }
   expect(h.mock.tabs[0]).toBeInstanceOf(MnemobardSettingTab); (h.mock.tabs[0] as MnemobardSettingTab).display();

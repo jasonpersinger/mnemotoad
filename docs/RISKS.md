@@ -1,6 +1,6 @@
 # Engineering risks and feasibility experiments
 
-Status: proposed, not measured. Likelihood/impact are qualitative engineering estimates. The five risks below combine related failure modes so mitigations have clear owners. Experiments require implementation authorization in Milestone 1 or later; none ran during Milestone 0.
+Status: the original five risks below are qualitative Milestone0 estimates. Later milestone sections record actual experiments and implementation evidence; the3A update is current. No experiment ran during Milestone0, and passing one host's tests does not remove broader platform/data risks.
 
 ## R1 — Vault integrity and relationship consistency
 
@@ -93,3 +93,15 @@ The old p95 audible lateness/drift and 16.7ms frame targets remain proposed acce
 - Audio owns one lazy media element, releases src/listeners on stop/error/owner close/disable/unload and guards late promises. Main-window tests passed. Pop-outs, hardware/audible output and extended OS-suspend/device-loss stress remain unverified.
 - Recovery is discoverable but not a backup application. It retains all versions, bounds inspection, never merges automatically and requires explicit reviewed consent for changed-source rebasing. No automatic pruning; checkpoints can grow substantially. Invalid structures may be text-only; missing/duplicate originals require manual resolution.
 - In-memory5k search benefits from a catalog snapshot; full-result sorting/cloning and startup parsing remain linear. Native disk-scale indexing/full DOM redraw and memory-retention profiles are still unmeasured. A stressed host metadata/link queue temporarily stalled native FileManager rename; the full suite passed after a clean restart. Keep long-session compatibility testing before beta.
+
+## Milestone3A production update
+
+| Risk | Current evidence and mitigation | Remaining work before broader support |
+| --- | --- | --- |
+| R1: vault integrity | Same shared repository, exact-source conditional writes, recovery before replacement; native external-conflict/cold-recovery checks preserve both versions. Musical recovery loads unsaved. | Host sync/OS crash/acknowledgement uncertainty remains. Never auto-retry/merge or call per-file writes distributed transactions. Very recent/unapplied controls are not crash-durable; no pruning. |
+| R2: musical time/audio | Source PPQ and integer notes retained; transient exact compiler, off-before-on, automatic voice end,25/100ms scheduler; deterministic tests and native chords/stop/suspension/focus cycles pass. | Same-pitch overlap remains unsupported. Long drift, OS sleep/device transitions and physical loopback/latency need testing; maps/interchange need separate approval. |
+| R3: rendering/edit reliability | Real Canvas/list editor, culling/DPI/hit tests, one-step gestures and bounded undo.5k-note redraw p95≈0.4ms; roll/history pointer-up-to-frame p95≈36.9ms in one software-rendered host. | Full inspector/storage/heap profiling at scale; actual hardware DPI, assistive tech and community themes. Snapshot/history commit cost exceeds sparse drawing; measure before changing history representation. |
+| R4: arrangement scope | Pure note compiler retains track/channel/patch event boundary without implementing lanes/clips. CANVAS still placeholder. | Future repeat/source-resolution/export semantics and channel/pitch conflicts need their own reviewed fixtures. No timeline work is authorized. |
+| R5: lifecycle/platform | Native ten start/stop cycles and owner/view/module/plugin cleanup, focus-bound keys, isolated cold restarts; all baseline tests pass. No new dependency/legacy adoption. | Windows/macOS, musical popouts, long sessions and aggregate clean-session cache memory remain unverified. Per-session bounds are not a global heap bound. |
+
+See [3A report](MILESTONE_3A_REPORT.md) for exact environment, bounds and measurements; these observations refine the original estimates without removing their risks.

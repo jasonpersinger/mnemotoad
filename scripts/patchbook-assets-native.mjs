@@ -4,7 +4,8 @@ import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { build } from 'esbuild';
 import { connect, expectedVault } from './obsidian-cdp.mjs';
-const directory = 'output/patchbook/milestone-2b'; await mkdir(directory, { recursive: true });
+const directory = process.env.MNEMOBARD_ASSET_REVIEW_DIR ?? 'output/patchbook/milestone-2b';
+if (!/^output\/[a-zA-Z0-9_/-]+$/.test(directory) || directory.split('/').some(part => !part)) throw Error('Review output must remain in a designated project output subfolder.'); await mkdir(directory, { recursive: true });
 const client = await connect(), stamp = String(Date.now());
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 const prefix = `const plugin=app.plugins.getPlugin('mnemobard'),services=plugin.services,library=services.patchbook;
@@ -100,10 +101,11 @@ try {
     report.patchId=await run(`return library.query({kind:'patch',search:${JSON.stringify(stamp)}})[0].entity.id;`);
     await run(`const e=(await services.repository.read(${JSON.stringify(report.patchId)})).entity;assert(e.assets.length===8,'Missing persisted asset associations');`);
     await check('Created instrument/patch, selected audio/preset/screenshot, imported confirmed local copy and persisted eight portable references; original hash unchanged');
+    await client.command('Page.bringToFront'); await run('window.focus();'); await pause(100);
     await run(`const row=[...root.querySelectorAll('.mnemobard-asset-row')].find(row=>row.querySelector('strong')?.textContent==='sound.custom-preset');click('Open asset',row);`);
-    await wait(`document.querySelector('.modal-content')?.textContent.includes('Asset inspection')`);
-    await run(`click('Inspect as text',document.querySelector('.modal-content'));`);await wait(`document.querySelector('.mnemobard-asset-text')?.textContent.includes('Synthetic inert preset')`);
-    await run(`click('Close inspection',document.querySelector('.modal-content'));`);
+    await wait(`view.assetInspector?.contentEl.textContent.includes('Asset inspection')`);
+    await run(`click('Inspect as text',view.assetInspector.contentEl);`);await wait(`view.assetInspector?.contentEl.querySelector('.mnemobard-asset-text')?.textContent.includes('Synthetic inert preset')`);
+    await run(`click('Close inspection',view.assetInspector.contentEl);`);
     await check('Arbitrary preset opens in inert native inspection; text is read only after explicit request');
     for(const name of ['audition.wav','audition.mp3','audition.ogg','audition.flac','unsupported.wav']) {
       const state=await playFile(name);report.formats.push({name,status:state.status,duration:state.duration,message:state.message});

@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Milestone2B status: Prompt005 authorizes PATCHBOOK asset selection/import, recorded-media preview and explicit recovery. Existing entity repository/contracts remain authoritative. See [MILESTONE_2B_REPORT.md](MILESTONE_2B_REPORT.md) for tested behavior and limitations. Musical production recommendations below remain separately gated.
+Milestone3A status: Prompt006 authorizes basic production MOTIF and B01–B03 timing/Canvas/audition directions. Its editor, session/history, shared compiler and musical recovery are implemented; PATCHBOOK remains intact and CANVAS remains a placeholder. Existing repository/contracts are authoritative. See [MILESTONE_3A_REPORT.md](MILESTONE_3A_REPORT.md). Historical proposals below are qualified by the implemented3A section; B04 codec, later modules and release remain gated.
 
 ## Recommended stack
 
@@ -9,7 +9,7 @@ Milestone2B status: Prompt005 authorizes PATCHBOOK asset selection/import, recor
 | Language/host | Strict TypeScript; public Obsidian Plugin API | Typed musical contracts with a narrow host adapter. |
 | Tooling | pnpm with reviewed lockfile; esbuild; separate `tsc --noEmit`; ESLint with Obsidian rules | Small build surface and compatibility with official sample patterns. Exact versions selected at Milestone 1. |
 | UI | Obsidian ItemViews and controls; vanilla TypeScript DOM shell; Canvas 2D grids | Native forms and low dependency cost; culling and hit-testing under our control. No evidence yet requiring a framework. |
-| Sound | Web Audio API; one lazy shared AudioContext; oscillator/gain audition voices | Offline audition without sample licensing, remote soundfonts, or external instruments. |
+| Sound | One owner-scoped musical transport with a lazy context per active audition; separate mutually exclusive media preview | Offline audition without sample licensing, remote soundfonts, or external instruments; Stop releases the context. |
 | MIDI | `midi-file` behind a typed codec; domain owns note pairing/time/arrangement rules | Low-level event access, declarations, and no runtime dependencies in inspected manifest. Final approval depends on fixtures/license review. |
 | Data | Markdown/YAML identity; one owned versioned JSON block per motif/composition | A single authoritative text file per entity reduces save consistency problems. Standard MIDI is an explicit derivative. |
 | Tests | Vitest for pure logic and repository contracts; browser interaction/performance tests; disposable Obsidian vault integration | Simulated DOM tests cannot validate audio, layout, or Electron lifecycle. |
@@ -176,3 +176,24 @@ Imported motif source PPQ should remain exact, as legacy fixtures demonstrate; c
 A revision-keyed catalog snapshot avoids cloning every record before every filtered query. Public results remain cloned; index publication invalidates the snapshot, including renames/duplicates. This is a derived in-memory cache, never a second authority. Sorting/materialization remains linear. See the report's bounded benchmark and limitations.
 
 The ItemView scope is constructed before host activation, with handlers registered/removed per opening. Presets/arbitrary extensions open in a bounded inert Obsidian Modal; recognized audio/image extensions can open in the native workspace. No OS shell opener is called. Final design and musical technology decisions are unchanged.
+
+## Implemented MOTIF boundary (3A)
+
+Prompt006 approves B01–B03 directions within3A. `src/modules/motif/` contains pure commands, a bounded `MotifSession`, index-backed `MotifLibrary`, CSS-pixel geometry/interval index, renderer, pointer/scroll controller, numeric/list inspector and native view. `src/music/` contains reviewed exact timing, a new pure deterministic event compiler, injected owner-scoped transport and lazy sine adapter. Musical data never depends on pixels or Obsidian. Canvas/playhead frames never determine audio timestamps.
+
+```mermaid
+flowchart LR
+  UI[Native controls and culled Canvas] --> Session[MotifSession: draft/history]
+  Session --> Shared[DocumentSession]
+  Shared --> Repo[Existing EntityRepository]
+  Repo --> Note[One Markdown note and append-only recovery]
+  Session --> Compile[Pure musical compiler]
+  Compile --> Audio[Owner-scoped audio-clock transport]
+  Index[Shared identity index] --> Browser[Motif browser/recovery]
+```
+
+`DocumentSession<T>`, `CheckpointRecovery<T>` and the recovery inspector extract existing PATCHBOOK behavior into shared code with narrow typed validators. PATCHBOOK wrappers preserve its contracts/UI. MOTIF recovery refuses other entity kinds. Repository/index/codec/settings remain common; there is no second writer, global event bus or new dependency. Optional motif description/notes extend schema1 without migration.
+
+Main owns one musical transport and one recorded-preview service, coordinating exclusive focus. The musical context is created on Play and closed on Stop/error/owner change/close/module disable/unload. Notes receive automatic audio-thread end scheduling when started, with explicit off events retained in the compiler. View observers, frames, pointer/key listeners and focus-bound key scopes are disposed. Ordinary view transitions retain shared drafts/history; plugin unload disposes sessions and never promises a final durable save.
+
+Unsupported map metadata is retained and diagnosed, not flattened. Same-pitch overlaps retain the existing rejection rule; different-pitch polyphony works. No MIDI codec, tempo-map editor or arrangement feature is implemented. The own1B lab stays unchanged and outside the production import graph. See the [3A report](MILESTONE_3A_REPORT.md) for adoption decisions, tested bounds, actual performance and remaining lifecycle/platform limits.
