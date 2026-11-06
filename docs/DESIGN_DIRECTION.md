@@ -1,8 +1,10 @@
 # Design direction
 
-Status: exploratory interaction concepts. No final palette, typography, icons, ornamental treatment, or visual styling is approved. No UI has been implemented. Functional boundaries are in [PRODUCT_SPEC.md](PRODUCT_SPEC.md).
+Status: final palette, typography, icons/artwork and ornamental treatment remain unapproved. Prompt004 authorizes a functional provisional PATCHBOOK interface; its restrained archival layout is implemented with host controls/fonts/themes. The remaining musical concepts below are exploratory. Functional scope is in [PRODUCT_SPEC.md](PRODUCT_SPEC.md).
 
 ## Identity and legibility
+
+2A implementation uses three named registers, numbered rows, a browser/detail divider, quiet small labels, native form controls and an ordered Signal path list. Dense metadata remains legible in default light/dark themes and a narrow desktop pane; no texture, remote font, animation or custom icon system was added. Provisional screenshots are in ignored `output/patchbook/native-dark.png`, `native-light.png` and `native-narrow.png`. Human review may refine density, labels and hierarchy before final visual identity. This implementation does not approve a decorative font, palette or final brand mark.
 
 The intended character is mysterious, experimental, esoteric, and slightly antiquated. Express that through quiet terminology, restrained engraved or manuscript-like accents, and optional diagrams around musical context. Keep pitch, time, velocity, error messages, and transport controls direct and familiar. A musician should never need to decode a metaphor to save a note or stop sound.
 

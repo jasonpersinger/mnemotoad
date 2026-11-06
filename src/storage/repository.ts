@@ -1,7 +1,7 @@
-import type { Entity } from '../domain/entities';
+import { ENTITY_KINDS, type Entity } from '../domain/entities';
 import { FoundationError, checkActive, messageOf } from '../domain/errors';
 import { vaultPath } from '../domain/paths';
-import { validateEntity } from '../domain/validation';
+import { uuid, validateEntity } from '../domain/validation';
 import { createEntityDocument, parseEntityDocument, updateEntityDocument, type ParsedDocument } from './document';
 import { EntityIndex } from './index';
 import type { VaultPort } from './vault-port';
@@ -44,7 +44,7 @@ export class EntityRepository {
     return this.serial(entity.id.toLowerCase(), async () => {
       this.canWrite(signal); await this.index.start(); this.canWrite(signal);
       if (this.index.resolve(entity.id).status !== 'missing') throw new FoundationError('duplicate', 'This entity ID already exists. Create a new identity for a deliberate copy.');
-      const directory = `${this.root}/${{ patch: 'Patches', motif: 'Motifs', composition: 'Compositions' }[entity.kind]}`;
+      const directory = `${this.root}/${{ patch: 'Patches', motif: 'Motifs', composition: 'Compositions', instrument: 'Instruments', 'effects-chain': 'Effects Chains' }[entity.kind]}`;
       await this.vault.ensureFolder(directory, () => this.active(signal)); this.active(signal);
       const title = entity.title.normalize('NFC').replace(/[^\p{L}\p{N} _-]/gu, '-').trim().slice(0, 60) || 'Untitled';
       const source = createEntityDocument(entity);
@@ -80,6 +80,29 @@ export class EntityRepository {
     this.canWrite(signal); validateEntity(draft);
     const candidate = updateEntityDocument(base.source, base.source, draft);
     return this.recovery(base, draft, candidate, 'explicit-draft', signal);
+  }
+  /** Append-only recovery for an editor draft, including temporarily invalid form values.
+   * Never replaces an entity. A confirmed checkpoint is recoverable JSON, not a saved record.
+   */
+  async saveEditorDraft(value: Entity, base?: EntityRecord, signal?: AbortSignal): Promise<string> {
+    this.canWrite(signal);
+    const draft = structuredClone(value), snapshot = base ? structuredClone(base) : undefined;
+    uuid(draft.id);
+    if (!ENTITY_KINDS.includes(draft.kind) || draft.schemaVersion !== 1 || (snapshot && (snapshot.entity.id !== draft.id || snapshot.entity.kind !== draft.kind))) {
+      throw new FoundationError('invalid', 'A recovery draft must retain its supported identity and kind.');
+    }
+    let candidateSource: string | null = null, validationError: string | undefined;
+    try { candidateSource = snapshot ? updateEntityDocument(snapshot.source, snapshot.source, draft) : createEntityDocument(draft); }
+    catch (error) {
+      if (!(error instanceof FoundationError) || error.code !== 'invalid') throw error;
+      validationError = error.message;
+    }
+    const text = JSON.stringify({ format: 'mnemobard-editor-draft', schemaVersion: 1, entityId: draft.id,
+      sourcePath: snapshot?.path ?? null, savedAt: new Date().toISOString(), originalSource: snapshot?.source ?? null,
+      draft, candidateSource, ...(validationError ? { validationError } : {}) }, null, 2) + '\n';
+    const directory = `${this.root}/Recovery/${draft.id}`;
+    await this.vault.ensureFolder(directory, () => this.active(signal)); this.active(signal);
+    return this.createUnique(directory, crypto.randomUUID(), 'json', text, signal);
   }
   async save(base: EntityRecord, value: Entity, signal?: AbortSignal): Promise<EntityRecord> {
     // Freeze caller-owned draft and source before asynchronous/queued work.

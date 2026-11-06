@@ -1,6 +1,6 @@
 # Development roadmap
 
-Milestone 1B status: Prompt 003 authorized feasibility experiments following 1A review. The foundation has a signed Git baseline; isolated timing/compiler/playback/rendering findings are in [MILESTONE_1B_REPORT.md](MILESTONE_1B_REPORT.md). No production editors or legacy imports were implemented. Human review of 1B and a separate prompt are required before any subsequent implementation. All later steps below remain plans.
+Milestone 2A status: Prompt004 authorizes production PATCHBOOK after report-level1B review. Signed commit f0d90d1 preserves the completed1B work. Instruments/patches/reusable chains, browser/forms, safe saves/draft checkpoints and confirmed archive/restore are implemented; see [MILESTONE_2A_REPORT.md](MILESTONE_2A_REPORT.md). 2B and musical production functionality remain separately gated. No legacy import.
 
 This plan follows the [product acceptance criteria](PRODUCT_SPEC.md#integrated-mvp-acceptance-criteria), [architecture](ARCHITECTURE.md), [data contracts](DATA_MODEL.md), [risk experiments](RISKS.md), and [decision register](DECISIONS.md). It is not an executable implementation plan or permission to modify a vault.
 
@@ -55,6 +55,16 @@ Build bounded experiments for R2/R3/R4: source-PPQ import fixtures and a minimal
 **Proposed adoption sequence after review:** first approve PPQ/export warning and fixed-tempo MVP policies, rendering envelope, and strict MIDI adapter evaluation. Build production document-session/undo ownership before musical gestures write data. Proceed to separately authorized PATCHBOOK, then harden shared compiler/codec/transport and accessible grid for MOTIF; CANVAS should consume those same services. Independent implementation is now preferred for the small math/transport modules; no legacy import is needed to proceed. Do not promote `experiments/` wholesale.
 
 ## Milestone 2 — PATCHBOOK
+
+### 2A — Production library foundation (Prompt004)
+
+Implemented: standalone instrument and effects-chain notes; compatible patch metadata/UUID relations; structured ordered stages; browser/detail/forms; search with instrument/category/tag/visibility filters; deterministic sorting/pagination; native note/related navigation; shared draft ownership and recoverable conflicts; confirmed archive/restore retaining notes. Existing repository/index/settings/lifecycle remain authoritative. No audio preview or attachment import/management.
+
+Exit evidence: existing/new checks, native create/edit of all three record types, shared chain links, search/filter/sort, scoped keyboard Save, conflicts, rename identity, archive confirmation, module/plugin reload, light/dark/narrow layouts and cold restart. Exact results/limits belong to the2A report, not the planned MVP claims below.
+
+### 2B — Attachment and preview workflow (not authorized)
+
+Next proposed priorities: reviewed vault asset picker/reference repair, bounded on-request audio preview with focus ownership/cleanup, codec fixtures, and accessible screenshot/preset navigation. Evaluate recovery-history/rehydration UX and large-library performance separately before any retention/deletion policy. No automatic original-file rewrite or preset execution. A separate prompt is required.
 
 Implement patch create/edit, instrument/preset descriptions, parameter/effect lists, custom tags/search, native note navigation, safe vault attachment links and explicit audio preview. No proprietary preset parser or external instruments. Reuse foundation storage; do not create a separate patch database.
 

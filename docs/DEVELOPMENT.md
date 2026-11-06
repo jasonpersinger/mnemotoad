@@ -1,6 +1,6 @@
 # Development guide
 
-Production implementation: strict domain/data contracts, source-preserving documents, shared safe repository/index/references, settings and three workspace shells. Production musical capabilities remain planned. [Milestone 0](MILESTONE_0_REPORT.md) and [Milestone 1A](MILESTONE_1A_REPORT.md) remain historical reports; [Milestone 1B](MILESTONE_1B_REPORT.md) records isolated experiments and their limits.
+Production implementation: shared source-preserving domain/storage/settings and a functional PATCHBOOK instrument/patch/effects-chain library. MOTIF/CANVAS remain shells. Musical capabilities remain planned. Earlier reports are historical; [Milestone2A](MILESTONE_2A_REPORT.md) records current library behavior/validation.
 
 ## Setup and commands
 
@@ -100,9 +100,36 @@ Development: Obsidian typings/esbuild/Vitest/jsdom/ESLint/typescript-eslint/@typ
 
 ## Remaining boundaries
 
-Document sessions, autosave/undo, link-summary generation/automatic asset relinking, migrations, backup retention UI and production musical cross-reference compilation are deferred. The foundational APIs retain/reject/report data safely, but no editor promises these future behaviors. Pop-out musical editing, cross-platform media, guaranteed performance targets, filesystem crash durability and actual multi-device conflicts are unverified. Stop after the authorized 1B experiments; this guide does not authorize the next implementation phase.
+PATCHBOOK now has shared draft sessions, explicit Save and recovery checkpoints. Generic musical sessions/undo/autosave, automatic asset relinking, migrations, recovery-history/retention UI and production musical compilation remain deferred. Cross-platform media, guaranteed performance targets, crash durability and multi-device conflicts remain unverified. Stop after2A; this guide does not authorize2B or musical production work.
+
+## PATCHBOOK development and validation
+
+No additional package is required. `pnpm check` includes every existing experiment test plus domain/codec/library/session/UI contracts. The production entry imports the library feature, never experimental MIDI/audio/rendering.
+
+```sh
+pnpm check
+pnpm dev:vault
+pnpm dev:obsidian
+# Second terminal, only the marked isolated app at localhost:9227:
+pnpm test:patchbook-native
+pnpm test:obsidian
+```
+
+The PATCHBOOK native runner uses real form controls, tests all three kinds and relations, search/filter/sort/Markdown navigation, competing edits, confirmed archive/restore, module/plugin reload, native Ctrl+S, and light/dark/narrow layouts. It may resolve the host's one-time link-update prompt for a synthetic rename. Guarded host-control APIs used by development scripts are not plugin runtime dependencies. Theme/window changes affect only the disposable environment.
+
+After its workflow, close/relaunch only the isolated application, then run `node scripts/patchbook-smoke.mjs --verify-restart`. This compares five saved synthetic notes byte-for-byte, checks identities/settings/commands and selected-record/search restoration. The runner flushes the host's debounced `requestSaveLayout.run()` before intentional cold-stop tests; entity durability does not depend on that preferences file. Raw evidence/screenshots are ignored under `output/patchbook`; the report retains a reviewed summary.
+
+Source boundaries: `modules/patchbook/query.ts` (pure search/filter/sort), `library.ts` (operations/relations), `session.ts` (shared cloned draft state), `form.ts` (native fields/ordered stages) and `view.ts` (navigation/lifecycle). Shared EntityRepository/codec/index/ReferenceResolver remain the only persistence foundation. New notes use the configured root's Instruments/Patches/Effects Chains; UUIDs resolve moved notes anywhere in the vault.
+
+Authoritative notes change only on **Save record** or scoped Ctrl/Cmd+S. **Saved** acknowledges the completed write. **Unsaved changes · recovery copy stored** acknowledges a recovery JSON, not a saved entity. Checkpoints debounce500ms and are awaited before navigation/module disable. View closure releases UI handlers immediately and checkpoints while services remain alive. Plugin unload cancels resources without asynchronous final saving. Very recent unacknowledged edits are not guaranteed durable; save before unloading/restarting.
+
+Recovery files retain original text, raw draft and a valid candidate when available. Invalid values produce a raw draft/validation error, never an invalid authoritative note. A conflict retains disk content and draft; compare through Open Markdown/Open recovery, then explicitly discard/re-enter reviewed changes against a fresh base. Never blindly retry, silently restore over a newer note or prune copies without a separate policy. Full restart does not automatically rehydrate pending drafts; inspection is manual.
+
+Archive/restore is a confirmed conditional metadata save. It retains notes/IDs/relationships and supports Active/Archived/All visibility; permanent deletion is a separate Obsidian action. New associations require unique active targets. Missing/ambiguous/archived references are diagnostics. Custom properties are edited in the native note and preserved by forms. File references are plain vault wikilinks in2A, without preview/import/execution. See [schema details](DATA_MODEL.md#milestone-2a-library-records).
 
 ## Isolated Milestone 1B experiments
+
+The following workflow remains a regression/feasibility harness, not a production feature.
 
 `experiments/timing.ts` and `compiler.ts` are pure transient contracts. `transport.ts` depends only on an injected sink/clock/timer; `web-audio.ts` implements a test tone. `geometry.ts` and `rendering.ts` share musical-coordinate rectangles, row/time indexing, culling and preview probes. `offline-audio.ts` checks requested onset frames without a device. `plugin.ts` is a separate development entry; `src/main.ts` never imports it. Normal `pnpm check` includes experiment tests/typecheck/lint, but the normal production build excludes all experiments.
 

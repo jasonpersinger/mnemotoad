@@ -23,7 +23,9 @@ export async function connect() {
   }
   async function evaluate(expression) {
     const guard=`if(globalThis.app?.vault?.adapter?.getBasePath?.()!==${JSON.stringify(expectedVault)}) throw new Error('Refusing a non-disposable vault');`;
-    const result=await command('Runtime.evaluate',{expression:`(async()=>{${guard}return (${expression});})()`,awaitPromise:true,returnByValue:true});
+    // The guard is synchronous. Returning the original promise avoids an extra
+    // unreferenced async-wrapper promise that Chromium may garbage-collect.
+    const result=await command('Runtime.evaluate',{expression:`(()=>{${guard}return (${expression});})()`,awaitPromise:true,returnByValue:true});
     if(result.exceptionDetails)throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);
     return result.result?.value;
   }

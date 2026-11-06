@@ -1,6 +1,6 @@
 # Data model proposal
 
-Milestone 1A status: schema-1 entity contracts and Markdown/YAML/owned-JSON persistence are implemented under Prompt 002. Musical processing/export semantics below remain specifications for later work. See [DEVELOPMENT.md](DEVELOPMENT.md) for supported input limits, unknown-field preservation, full-source conflicts and manual recovery. No MIDI/editor implementation exists.
+Milestone2A status: shared schema1 persistence now supports production instrument/patch/effects-chain records under Prompt004. Musical processing/export semantics below remain specifications; no production MIDI editor exists. See the2A library extension and [DEVELOPMENT.md](DEVELOPMENT.md) for actual preservation, conflicts, recovery and limits.
 
 ## Storage and authority
 
@@ -35,7 +35,7 @@ Folder and filename are not identity. Existing records can live elsewhere in the
 | Field | Rule |
 | --- | --- |
 | `mnemobard_id` | UUID generated once on creation; independent of path/title; unique across entity notes. |
-| `mnemobard_kind` | `patch`, `motif`, or `composition`. |
+| `mnemobard_kind` | `patch`, `motif`, `composition`;2A adds `instrument` and `effects-chain`. |
 | `mnemobard_schema` | Positive integer; proposed current value 1. |
 | `title` | Nonempty human-facing title; not an ID. |
 | `tags` | Ordinary Obsidian string list; user-defined tags supported. |
@@ -46,7 +46,7 @@ Source fingerprints are computed from file contents, not persisted as self-refer
 
 ## Patch schema and example
 
-Required: envelope and instrument text. Optional preset name, manufacturer, native vault attachment links, parameter list, effects chain, and unrestricted musical notes. Parameters are descriptive values with optional units and labels; their values never execute automation or instrument commands. Effects are ordered text entries. Instrument identity is a simple value in MVP; a separately versioned instrument catalog can be added later if user research requires it.
+Original schema1 requires the envelope and instrument text, with optional preset, manufacturer, asset links, parameters and ordered effect descriptions. Prompt004 supersedes the earlier text-only instrument proposal:2A adds standalone instruments/chains and optional authoritative IDs while retaining existing text/effects arrays without migration. Parameters remain descriptive and never execute instrument commands. See the implemented extension below.
 
 ```markdown
 ---
@@ -216,7 +216,7 @@ Rename/move preserves UUID; index maps new path. Delete leaves a missing referen
 
 ## Versioning, migration, backup, and recovery
 
-The persisted schema version is separate from plugin package version. Schema 1 is only a proposal. Validation has read-only diagnostics; it does not migrate on open. Each later migration defines input/output versions, pure transform, preserved unknown fields, fixtures, and a reviewable preview. Explicit approval is required before migration writes.
+The persisted schema version is separate from plugin package version. Schema1 contracts are implemented for the supported entity kinds; later musical semantics remain proposals. Validation has read-only diagnostics and does not migrate on open. Each later migration defines input/output versions, pure transform, preserved unknown fields, fixtures and a reviewable preview. Explicit approval is required before migration writes.
 
 Before each replacement, write a uniquely named exact-text backup in Recovery. Before migration, also record source/target versions and progress. Use expected-content checks on the authoritative note; if it changed, stop and preserve both candidates. Migrations are idempotent per entity and resumable after interruption; no multi-file all-or-nothing claim. A failed migration does not make the old version unreadable. Unknown future schema is read-only; never downgrade automatically.
 
@@ -229,3 +229,79 @@ No persisted schema or source entity interface changed. The isolated experiment 
 At a 1000→960 conversion, source tick 1 becomes exactly 24/25 destination ticks. The experiment's default integer projection rejects that value; explicit nearest rounding returns 1 with error +1/25 tick. This demonstrates where the previously proposed endpoint policy needs warnings and post-quantization bounds/overlap checks. It does not silently adopt a different persisted resolution, implement the proposed minimum-one-tick repair, or approve tempo-map storage. Repetition offsets remain exact until the final export projection, avoiding cumulative per-repeat rounding. Meter labeling is separate from elapsed-time conversion.
 
 SMPTE divisions are recognized by division bit 15, including frame codes -24/-25/-29/-30 with a nonzero ticks/frame byte, then rejected before conversion with instructions to provide PPQ MIDI. -29 denotes drop-frame timing; it is not approximated as 29 integer frames/sec. Invalid frame codes/zero ticks/frame are malformed. Production MIDI import still requires bounded structural validation and an explicit policy for Type2, controllers, SysEx, meter/tempo changes and malformed files. See [1B report](MILESTONE_1B_REPORT.md).
+
+## Milestone 2A library records
+
+Implemented under Prompt004. Library notes use the existing UUID/kind/schema1/title envelope and surgical YAML codec. No musical payload/schema changed. New kinds have version1 contracts; unknown/newer versions remain read-only. No automatic catalog creation, effects conversion or bulk migration. Older builds do not understand the new kinds and must not edit them. Minimal new UI patch: name plus a selected instrument; old text-only patches remain valid.
+
+| Typed field | YAML property | Contract |
+| --- | --- | --- |
+| description / notes | `mnemobard_description` / `mnemobard_notes` | Optional nonempty text, at most100,000 characters each. General notes are metadata; additional Markdown body content remains user-owned. |
+| externalReferences | `mnemobard_external_references` | Up to100 http/https URLs without embedded credentials. No automatic fetch. |
+| archived | `mnemobard_archived` | Optional boolean, active by default. Confirmed archive/restore does not move/delete notes or change relationships. |
+| tags / assets / extra | Existing tags and `mnemobard_audio/images/presets`; arbitrary other YAML | Existing foundation contracts. New properties are namespaced so a user-owned `description`/`category` remains unrelated metadata. |
+
+### Instrument record
+
+Only name/title is required. Manufacturer/developer, instrument type and platform/format are optional free text, with no hardcoded supported-instrument registry.
+
+```yaml
+---
+mnemobard_id: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+mnemobard_kind: instrument
+mnemobard_schema: 1
+title: Ink module
+manufacturer: Workshop
+mnemobard_instrument_type: Software synthesizer
+mnemobard_platform: VST3 / desktop
+mnemobard_description: A source for granular textures.
+tags: [digital, experimental]
+---
+```
+
+### Effects-chain record
+
+Required: title/envelope and ordered `mnemobard_effects` list (empty allowed, maximum256 stages). Each stage has a stable document-local ID and nonempty processor name; parameter notes and a vault preset wikilink are optional. Array order is signal-path order. Unknown fields on retained stage IDs survive edits. Removing a stage is explicit. No processing or preset loading occurs.
+
+```yaml
+---
+mnemobard_id: bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb
+mnemobard_kind: effects-chain
+mnemobard_schema: 1
+title: Atmosphere
+mnemobard_effects:
+  - id: stage-delay
+    name: Tape delay
+    parameterNotes: Quarter-note echoes, low feedback.
+  - id: stage-eq
+    name: Equalizer
+    parameterNotes: Low cut at 100 Hz.
+    presetLink: "[[Assets/low-cut.preset]]"
+---
+```
+
+### Patch extension
+
+The original `instrument` text remains a readable fallback. UUIDs are authoritative and case-insensitive. The service derives current fallback text/wikilinks from an explicitly chosen target. Renaming an instrument title changes derived UI labels without rewriting other patch files in the background.
+
+```yaml
+mnemobard_instrument_id: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+mnemobard_instrument: "[[MNEMOBARD/Instruments/Ink module-aaaaaaaa.md]]"
+mnemobard_effects_chain_ids: [bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb]
+mnemobard_effects_chains: ["[[MNEMOBARD/Effects Chains/Atmosphere-bbbbbbbb.md]]"]
+mnemobard_category: Pad
+mnemobard_character: hushed
+mnemobard_parameter_notes: Slow attack; leave room for echoes.
+```
+
+Chain IDs are unique (maximum100); companion links, when supplied, match their order/count. New/reassigned references must resolve uniquely to active targets of the correct kind. Existing missing/archived references can be retained while editing unrelated metadata and are diagnosed. No target is guessed by name/path and no missing hint is invented. Resolvable companions refresh on explicit patch Save; Obsidian may separately update wikilinks on rename. Stable IDs work either way.
+
+Reverse associated-patch lists are derived from forward UUIDs. Confirmed archive never cascades or rewrites referencing patches. Active/archived/all queries and restore are supported. Physical deletion through Obsidian produces missing-reference diagnostics. Existing legacy effects text and structured parameters remain editable and are not silently converted to reusable chains.
+
+### Preservation and editor-draft recovery
+
+Creation validates its serialized result against the same8Mi-character readable-document limit before writing. Updates retain exact full-source revision checks and pre-save recovery. A changed owned YAML list may be reformatted within that property; surviving unknown stage values and unrelated YAML/prose are preserved. Exact pre-save recovery retains original bytes, including comments inside a changed structured field.
+
+`EntityRepository.saveEditorDraft` appends JSON under the existing Recovery/<UUID> folder: format `mnemobard-editor-draft`, schemaVersion1, entity ID, optional original path/source, timestamp, raw draft, candidateSource when valid, and validationError when invalid. Blank names or invalid references are therefore recoverable without creating invalid authoritative notes. Checkpoints never replace entity files, are not indexed as notes and do not create multi-file transactions. Sessions retain edits arriving while an earlier version saves.
+
+Recovery JSON is manually inspectable; automatic rehydration/history/pruning is not implemented. Drafts remain in memory across view/module closure while the plugin is enabled. Full plugin/application restart relies on Saved notes or confirmed recovery files, not workspace state. Last unacknowledged edits before a checkpoint are not guaranteed durable. Restore into a new comparison note before explicitly replacing an original.

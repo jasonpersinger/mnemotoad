@@ -1,14 +1,20 @@
 import { isMap, isScalar, isNode, parseDocument as parseYaml, stringify } from 'yaml';
-import type { Entity, EntityKind, AssetReference } from '../domain/entities';
+import { isLibraryEntity, type Entity, type EntityKind, type AssetReference } from '../domain/entities';
 import { FoundationError, messageOf } from '../domain/errors';
 import { UUID, object, validateEntity } from '../domain/validation';
 
 export interface ParsedDocument { entity: Entity; source: string }
 const COMMON_KEYS = ['mnemobard_id', 'mnemobard_kind', 'mnemobard_schema', 'title', 'tags',
   'mnemobard_audio', 'mnemobard_images', 'mnemobard_presets'];
-const ownedKeys = (kind: EntityKind) => [...COMMON_KEYS, ...(kind === 'patch' ?
-  ['instrument', 'manufacturer', 'preset', 'parameters', 'effects'] : kind === 'motif' ?
-    ['mnemobard_patch_id', 'mnemobard_patch'] : [])];
+const LIBRARY_FIELDS = { description: 'mnemobard_description', notes: 'mnemobard_notes', externalReferences: 'mnemobard_external_references', archived: 'mnemobard_archived' } as const;
+const PATCH_FIELDS = { instrumentId: 'mnemobard_instrument_id', instrumentLink: 'mnemobard_instrument', effectsChainIds: 'mnemobard_effects_chain_ids', effectsChainLinks: 'mnemobard_effects_chains', category: 'mnemobard_category', character: 'mnemobard_character', parameterNotes: 'mnemobard_parameter_notes' } as const;
+const INSTRUMENT_FIELDS = { instrumentType: 'mnemobard_instrument_type', platform: 'mnemobard_platform', manufacturer: 'manufacturer' } as const;
+function libraryFields(kind: EntityKind): Record<string, string> {
+  return kind === 'patch' ? { ...LIBRARY_FIELDS, ...PATCH_FIELDS } : kind === 'instrument' ? { ...LIBRARY_FIELDS, ...INSTRUMENT_FIELDS } : kind === 'effects-chain' ? { ...LIBRARY_FIELDS, steps: 'mnemobard_effects' } : {};
+}
+const musical = (kind: EntityKind): boolean => kind === 'motif' || kind === 'composition';
+const ownedKeys = (kind: EntityKind) => [...COMMON_KEYS, ...Object.values(libraryFields(kind)), ...(kind === 'patch' ?
+  ['instrument', 'manufacturer', 'preset', 'parameters', 'effects'] : kind === 'motif' ? ['mnemobard_patch_id', 'mnemobard_patch'] : [])];
 const ASSETS = { audio: 'mnemobard_audio', image: 'mnemobard_images', preset: 'mnemobard_presets' } as const;
 
 function frontmatter(source: string) {
@@ -65,11 +71,11 @@ export function parseEntityDocument(source: string): ParsedDocument | null {
   const fields = fm.fields;
   if (fields.mnemobard_schema !== 1) throw new FoundationError('unsupported-schema', 'Unsupported entity schema; open the original note without rewriting it.');
   const kind = fields.mnemobard_kind as EntityKind, blocks = ownedBlocks(source, fm.end);
-  if (kind === 'patch' ? blocks.length !== 0 : blocks.length !== 1 || blocks[0]?.kind !== `mnemobard-${kind}`) {
+  if (!musical(kind) ? blocks.length !== 0 : blocks.length !== 1 || blocks[0]?.kind !== `mnemobard-${kind}`) {
     throw new FoundationError('invalid', 'Expected exactly one correctly typed owned JSON block for a motif/composition, and none for a patch.');
   }
   let data: unknown;
-  if (kind !== 'patch') {
+  if (musical(kind)) {
     try {
       const content = blocks[0]?.content ?? '';
       data = JSON.parse(content);
@@ -92,9 +98,10 @@ export function parseEntityDocument(source: string): ParsedDocument | null {
     }
   }
   if (assets.length) candidate.assets = assets;
+  for (const [key, field] of Object.entries(libraryFields(kind))) if (fields[field] !== undefined) candidate[key] = fields[field];
   if (kind === 'patch') {
     for (const key of ['instrument', 'manufacturer', 'preset', 'parameters', 'effects']) if (fields[key] !== undefined) candidate[key] = fields[key];
-  } else {
+  } else if (musical(kind)) {
     candidate.data = data;
     if (kind === 'motif') {
       if (fields.mnemobard_patch_id !== undefined) candidate.patchId = fields.mnemobard_patch_id;
@@ -128,13 +135,20 @@ function metadata(entity: Entity): Record<string, unknown> {
     if (entity.patchId !== undefined) result.mnemobard_patch_id = entity.patchId;
     if (entity.patchLink !== undefined) result.mnemobard_patch = entity.patchLink;
   }
+  if (isLibraryEntity(entity)) for (const [key, field] of Object.entries(libraryFields(entity.kind))) {
+    const value = (entity as unknown as Record<string, unknown>)[key];
+    if (value !== undefined) result[field] = value;
+  }
   return result;
 }
 
 export function createEntityDocument(value: Entity): string {
   const entity = validateEntity(value);
-  const block = entity.kind === 'patch' ? '' : `\n\`\`\`mnemobard-${entity.kind}\n${JSON.stringify(entity.data, null, 2)}\n\`\`\`\n`;
-  return `---\n${stringify(metadata(entity), { lineWidth: 0 })}---\n${block}\n# Notes\n\n`;
+  const block = isLibraryEntity(entity) ? '' : `\n\`\`\`mnemobard-${entity.kind}\n${JSON.stringify(entity.data, null, 2)}\n\`\`\`\n`;
+  const source = `---\n${stringify(metadata(entity), { lineWidth: 0 })}---\n${block}\n# Notes\n\n`;
+  // Creation must obey the same readable-document limits as updates and later opens.
+  if (!parseEntityDocument(source)) throw new FoundationError('invalid', 'The proposed entity note could not be parsed; no record was written.');
+  return source;
 }
 
 /** Preserve extensions on retained objects; optional known fields may be removed. */
@@ -146,7 +160,7 @@ function retainExtensions(previous: unknown, next: unknown, context = 'data'): u
   });
   if (!previous || !next || typeof previous !== 'object' || typeof next !== 'object' || Array.isArray(previous) || Array.isArray(next)) return next;
   const old = previous as Record<string, unknown>, result = { ...old, ...next };
-  const optionalFields = context === 'data' ? ['importSourceChannel'] : context === 'lanes' ? ['patchId', 'percussion'] : [];
+  const optionalFields = context === 'data' ? ['importSourceChannel'] : context === 'lanes' ? ['patchId', 'percussion'] : context === 'steps' ? ['parameterNotes', 'presetLink'] : [];
   for (const optional of optionalFields) if (!Object.hasOwn(next, optional)) delete result[optional];
   for (const [k, v] of Object.entries(next)) result[k] = retainExtensions(old[k], v, k);
   return result;
@@ -158,7 +172,8 @@ export function updateEntityDocument(source: string, expectedSource: string, val
   if (!current || !fm) throw new FoundationError('invalid', 'The source is no longer a supported MNEMOBARD note.');
   let next = validateEntity(value);
   if (next.id !== current.entity.id || next.kind !== current.entity.kind) throw new FoundationError('invalid', 'Entity identity and kind cannot change during an update.');
-  if (next.kind !== 'patch' && current.entity.kind !== 'patch') next = validateEntity({ ...next, data: retainExtensions(current.entity.data, next.data) });
+  if (!isLibraryEntity(next) && !isLibraryEntity(current.entity)) next = validateEntity({ ...next, data: retainExtensions(current.entity.data, next.data) });
+  if (next.kind === 'effects-chain' && current.entity.kind === 'effects-chain') next = validateEntity({ ...next, steps: retainExtensions(current.entity.steps, next.steps, 'steps') });
   const fields = metadata(next), edits: { start: number; end: number; text: string }[] = [];
   const newline = source.includes('\r\n') ? '\r\n' : '\n';
   // Only owned fields and explicitly supplied extension fields are touched.
@@ -174,7 +189,7 @@ export function updateEntityDocument(source: string, expectedSource: string, val
       edits.push({ start: fm.start + start, end: fm.start + end, text: replacement });
     } else if (replacement) edits.push({ start: fm.start + fm.raw.length, end: fm.start + fm.raw.length, text: replacement });
   }
-  if (next.kind !== 'patch' && current.entity.kind !== 'patch' && JSON.stringify(next.data) !== JSON.stringify(current.entity.data)) {
+  if (!isLibraryEntity(next) && !isLibraryEntity(current.entity) && JSON.stringify(next.data) !== JSON.stringify(current.entity.data)) {
     const block = ownedBlocks(source, fm.end)[0]; if (!block) throw new FoundationError('invalid', 'Owned block missing.');
     edits.push({ start: block.start, end: block.end, text: `\`\`\`mnemobard-${next.kind}${newline}${JSON.stringify(next.data, null, 2).replaceAll('\n', newline)}${newline}\`\`\`${newline}` });
   }

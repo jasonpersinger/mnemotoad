@@ -4,7 +4,7 @@
 
 Read README and the relevant documents in `docs/` before implementation: PRODUCT_SPEC, ARCHITECTURE, DATA_MODEL, ROADMAP, DECISIONS, TROUBADOUR_AUDIT and RISKS. DESIGN_DIRECTION and TECHNICAL_RESEARCH inform UI/dependency work. Read the decision approval log and current user instructions; do not confuse a proposal with approval. Parent workspace rules also apply.
 
-Current authority: Prompt 003 authorizes **Milestone 1B feasibility experiments only**, following review of the implemented 1A foundation. Read docs/MILESTONE_1A_REPORT.md, docs/DEVELOPMENT.md and the 1B report when present. Isolated timing/compiler/test-tone/rendering prototypes are authorized; production musical editors, full synthesis and timeline implementation remain unauthorized. Legacy extraction, publication, remotes and personal-vault changes remain prohibited. Stop after 1B; recommendations are not production-adoption approval. Routine tests/builds/local dependencies inside authorized scope do not require repeated approval.
+Current authority: Prompt 004 authorizes **Milestone 2A PATCHBOOK only**, after report-level 1B review. Instruments, patches, reusable effects chains, library UI and safe persistence extensions are authorized. Preserve MIDI experiments; no musical editing/playback/export, synthesis, timeline, advanced attachment/preview workflows or 2B work. Legacy copying/modification, publication, remotes and personal-vault changes remain prohibited. Read the 1A/1B reports and 2A report when present. Routine authorized implementation does not require repeated approval; production musical technology recommendations remain separately gated.
 
 ## Preserve work and user data
 

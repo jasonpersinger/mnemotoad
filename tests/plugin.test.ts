@@ -49,7 +49,10 @@ it('registers commands/views/settings and creates all three real shell classes',
   expect(h.mock.commands.map(c => c.id)).toEqual(['open-patchbook','open-motif','open-canvas']); expect(h.mock.views.size).toBe(3);
   for (const module of ['patchbook','motif','canvas'] as const) await h.plugin.services?.modules.open(module);
   expect(h.leaves).toHaveLength(3);
-  for (const leaf of h.leaves) expect(leaf.view?.contentEl.textContent).toContain('Under development');
+  for (const leaf of h.leaves) {
+    if (leaf.type === 'mnemobard-patchbook') { expect(leaf.view?.contentEl.textContent).toContain('Begin with an instrument'); expect(leaf.view?.contentEl.querySelector('input[type="search"]')).not.toBeNull(); }
+    else expect(leaf.view?.contentEl.textContent).toContain('Under development');
+  }
   expect(h.mock.tabs[0]).toBeInstanceOf(MnemobardSettingTab); (h.mock.tabs[0] as MnemobardSettingTab).display();
   await h.plugin.services?.index.settled(); h.mock.unload(); expect(h.mock.views.size).toBe(0); expect(h.mock.commands).toHaveLength(0); expect(h.mock.tabs).toHaveLength(0);
   expect([...h.listeners.values()].reduce((n,s)=>n+s.size,0)).toBe(0);

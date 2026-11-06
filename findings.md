@@ -1,3 +1,12 @@
+# Milestone 2A findings
+
+- Signed baseline f0d90d1 preserves reviewed1B work; good signature, no signing override/remote. Production library independently implemented on the shared repository/codec/index.
+- Instruments/effects-chain schema1 kinds and namespaced patch fields are additive. Legacy text patches remain valid; UUID links survive native rename; metadata/prose and unknown surviving stage values are preserved.
+- Native library CRUD/queries/relations, explicit Save and keyboard scope, draft conflicts/checkpoints, confirmed archive/restore and module/plugin reload work. Invalid drafts remain recoverable without unsafe detail links or invalid authoritative notes.
+- Cold restart preserved5 source notes exactly plus IDs/settings/commands/selection/search. Host layout preferences are debounced; the view requests updates and cold-stop tooling flushes them. Saved entity durability is independent of preferences.
+-165 tests/17 files pass; native2A17 checks, original foundation smoke and1B15 checks/21cases pass. Light/dark/narrow desktop screenshots inspected. Windows/macOS/screen readers/large libraries remain unverified.
+- Recovery is append-only/manual; recent unacknowledged changes are not crash/unload-durable. Removal is reversible archive, not physical deletion. Assets remain metadata only. No2B, dependency, experiment source, legacy or personal-vault change.
+
 # Milestone 0 findings
 
 ## Confirmed local facts

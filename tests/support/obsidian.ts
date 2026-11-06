@@ -8,7 +8,14 @@ export class TFile { constructor(public path: string) {} }
 export class TFolder { constructor(public path: string) {} }
 export const normalizePath = (path: string): string => path;
 export class Notice { static messages: string[] = []; constructor(text: string) { Notice.messages.push(text); } }
+export class Scope {
+  handlers = new Set<{ modifiers: unknown; key: unknown; callback: () => boolean }>();
+  constructor(readonly parent?: Scope) {}
+  register(modifiers: unknown, key: unknown, callback: () => boolean) { const handler = { modifiers, key, callback }; this.handlers.add(handler); return handler; }
+  unregister(handler: { modifiers: unknown; key: unknown; callback: () => boolean }): void { this.handlers.delete(handler); }
+}
 export class ItemView extends Component {
+  app = { scope: new Scope(), workspace: { requestSaveLayout: () => {} } };
   contentEl = document.createElement('div');
   constructor(public leaf: unknown) { super(); }
 }

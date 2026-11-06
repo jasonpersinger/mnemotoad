@@ -1,0 +1,88 @@
+{
+  "milestone": "2A",
+  "baseline": "f0d90d1",
+  "measuredAt": "2026-11-05T23:50:28.041Z",
+  "environment": {
+    "title": "MNEMOBARD · PATCHBOOK - dev-vault - Obsidian 1.15.0",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+    "width": 452,
+    "height": 591,
+    "dpr": 1.046875
+  },
+  "checks": [
+    "Created instrument using native workspace form",
+    "Edited instrument metadata through its production form",
+    "Created and reordered a structured reusable effects chain",
+    "Edited effects-chain metadata without changing stage order",
+    "Created two patches sharing stable instrument and effects-chain references",
+    "Search, combined instrument/category/tag filters and sorting operate in native UI",
+    "Related record navigation works; missing assets remain actionable metadata",
+    "Underlying Markdown record opens through workspace navigation",
+    "External edit conflict rejects stale save and preserves current note and recovery draft",
+    "Explicit discard confirmation and subsequent edits preserve custom YAML and Markdown",
+    "Native Ctrl+S saves the active form through its Obsidian key scope",
+    "Native FileManager rename retains entity identity and patch relationships",
+    "Archive requires confirmation, retains referenced notes and restores without cascading",
+    "Module disable awaits draft recovery, retains data and restores a usable draft after re-enable",
+    "Plugin unload/reload cleans services and restores records without duplicate commands",
+    "Native light/dark themes and narrow desktop pane retain legibility and contained layout",
+    "Saved five synthetic records and workspace state for cold-restart verification"
+  ],
+  "recordCount": 5,
+  "exceptions": [],
+  "themes": [
+    {
+      "theme": "obsidian",
+      "light": false,
+      "width": 1225,
+      "scrollWidth": 1225,
+      "color": "rgb(218, 218, 218)",
+      "background": "#1C1C1C",
+      "formLabels": 9
+    },
+    {
+      "theme": "moonstone",
+      "light": true,
+      "width": 1225,
+      "scrollWidth": 1225,
+      "color": "rgb(34, 34, 34)",
+      "background": "#ffffff",
+      "formLabels": 9
+    }
+  ],
+  "narrow": {
+    "width": 385,
+    "scrollWidth": 385,
+    "columns": "360.896px"
+  },
+  "coldRestart": {
+    "records": 5,
+    "commands": 3,
+    "enabled": true,
+    "workspaceRestored": true,
+    "exceptions": 0,
+    "environment": {
+      "title": "MNEMOBARD · PATCHBOOK - dev-vault - Obsidian 1.15.0",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+      "width": 459,
+      "height": 600,
+      "dpr": 1.046875
+    }
+  },
+  "regression1B": {
+    "checks": 15,
+    "renderCases": 21,
+    "exceptions": [],
+    "sourceChanged": false
+  },
+  "screenshots": [
+    "output/patchbook/native-dark.png",
+    "output/patchbook/native-light.png",
+    "output/patchbook/native-narrow.png"
+  ],
+  "notes": [
+    "Synthetic records only; raw source/recovery fixture data excluded from this summary.",
+    "Linux native desktop; theme/narrow checks use recorded CDP viewport overrides.",
+    "No Windows/macOS, physical mobile, screen-reader or large-library certification."
+  ]
+}

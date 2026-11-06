@@ -1,3 +1,11 @@
+# Milestone 2A completion
+
+2026-11-05: Reviewed all37 pending1B changes, ignores/credential patterns and123-test verification; signed baseline f0d90d1 verifies good. Implemented typed instrument/patch/chain library, shared safe persistence extensions, sessions/recovery, native forms/browser/relations/queries and confirmed archive/restore. No new dependency or legacy copying.
+
+Final verification:165 tests/17 files, strict typecheck/lint/build and audit pass. Native Linux Obsidian1.15.0:2A17 checks, foundation smoke and existing1B regression15checks/21cases pass. Cold restart preserved5 exact source notes and IDs/settings/commands/workspace hints. Default themes/narrow layouts inspected. Scoped keyboard, invalid-draft, size-limit, startup and workspace-debounce findings corrected without weakening checks. The CDP wrapper fix is development tooling only.
+
+Historical reports/audit/experiment sources/lockfile preserved; legacy121-file hash/HEAD/clean status unchanged. No personal vault, system configuration, remote or publication action.2A work remains uncommitted for review after the signed baseline. Report: docs/MILESTONE_2A_REPORT.md. Stop pending a separate2B prompt.
+
 # Milestone 0 progress
 
 2026-11-05: Inspected workspace and requested legacy path before creating files. Root empty, Git absent, TROUBADOUR path missing. Asked user asynchronously to supply the path or authorize a corrected location. Continuing independent research. No code executed, dependencies installed, or legacy files modified.

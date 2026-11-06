@@ -62,6 +62,15 @@ Status: proposed, not measured. Likelihood/impact are qualitative engineering es
 
 **Legacy work:** shared `Transport.stop/dispose`, abort/generation guards and UI destroy/race tests are valuable. Optional iPhone audio-session mutation is unnecessary initially; existing historical Linux/phone evidence does not certify Windows/macOS or MNEMOBARD. Runtime source has minimal dependencies; ownership remains unresolved.
 
+## Milestone 2A risk update
+
+Production library sessions and native workflows reduce R1/R5 uncertainty, while source-content conflicts, duplicate/missing IDs, failed writes, invalid draft recovery and confirmed archive/restore remain explicitly tested. The2A report records actual checks and limitations; existing musical risk experiments below remain historical and do not authorize production adoption.
+
+- Saved records have been tested through native reload/restart; unacknowledged edits after the last500ms checkpoint are not crash/unload-durable. Recovery is manual and append-only; disk growth/retention, automatic rehydration, and multi-device/crash behavior remain open. Never strengthen the per-file host guarantee into a distributed transaction claim.
+- Library removal archives instead of using a non-conditional physical delete. Incoming references remain and show archived status; there is no cascade. Native hard deletion still produces missing-reference diagnostics.
+- Scoped keyboard bindings, view/index/session subscriptions and timers are released. Linux light/dark/narrow native checks do not certify Windows/macOS, pop-outs, screen readers or very large libraries. Pagination bounds rendered list size; index/query performance still needs a measured support envelope.
+- Audio/attachment preview remains2B. Require bounded asset access, format/error fixtures, focus ownership and cleanup before adding it. No preset parsing/execution or original-file modification is implied.
+
 ## Milestone 1B risk update
 
 The five risks above remain active. [MILESTONE_1B_REPORT.md](MILESTONE_1B_REPORT.md) and its benchmark evidence distinguish measured reductions from remaining work.

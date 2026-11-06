@@ -1,6 +1,6 @@
 # Decision register
 
-Date: 2026-11-05. **Proposed is not approved.** Prompt 003 authorized isolated Milestone 1B experiments after review of the 1A foundation. The approval log supersedes older milestone stops for that limited scope. No production musical editor or legacy source adoption is authorized.
+Date: 2026-11-05. **Proposed is not approved.** Prompt004 authorizes production PATCHBOOK in2A after report-level1B review. This supersedes older stops for that scope. It does not approve musical production adoption,2B, final branding or legacy copying.
 
 ## Confirmed requirements and authority
 
@@ -78,3 +78,16 @@ Do not propose wholesale reuse of the piano-roll UI, arrangement UI/compiler, le
 | B05 | Independently implement small timing/compiler/render/transport services. Keep legacy math, headroom and cancellation lessons as reference. | Recommended D12 strategy C for this scope. No L1/L3 source import is necessary; no reuse authorization requested as a blocker. |
 
 Review required: B01–B04 production adoption, final fixed-tempo/import/export warning policy, supported rendering envelope and later accessibility/OS validation. Existing legacy rights, release license, final styling and destructive migration gates remain unresolved. Do not mark these approved merely because experiments pass.
+
+### Prompt004 / Milestone2A
+
+- User authorized production instruments, patches and reusable ordered chains, superseding the provisional text-only instrument/effects proposal. Additive schema1 kinds and namespaced patch metadata require no existing-note migration. Ordinary Markdown remains authoritative. Report-level1B review is not musical production-adoption approval.
+- Signed baseline **f0d90d1** preserves all37 reviewed1B changes; good signature;123 existing tests/typecheck/lint/build passed before implementation. No signing bypass/configuration change or remote action.
+- Adopted for2A: native DOM ItemView; existing codec/repository/index; shared per-ID drafts; explicit Save with500ms append-only recovery; source conflicts reject rather than merge; derived reverse UUID relationships; ordinary navigation wikilinks. No new dependency, database or bus.
+- Library removal is confirmed reversible archiving. Conditional saves retain notes/IDs/references and permit restore. Permanent deletion stays in Obsidian; no cascade or compare-and-trash guarantee.
+- Description/general notes are namespaced YAML; arbitrary Markdown/custom metadata remain user-owned. Changed owned structured fields may format their own YAML; exact pre-save recovery retains original bytes. Unknown/future schemas remain read-only. Creation validates the serialized document before writing.
+- Invalid drafts may be checkpointed as raw recovery JSON without becoming invalid records. Checkpoint acknowledgment differs from Saved; unload cannot guarantee the last unacknowledged edits. Manual recovery only; automatic restore/pruning/migrations remain deferred.
+- Provisional archival layout uses host fonts/themes/controls, scoped Mod+S, inline confirmations and responsive panes. No final typography/iconography/artwork selected.
+- Guarded native CDP tooling needed removal of an unnecessary async-wrapper promise that Chromium could collect. This is a test-harness correction, not a MIDI experiment or production API change. Startup now displays index readiness before creation.
+
+Stop after2A. Review the actual workflow/limits before separately authorizing2B. B01–B04, legacyL1–L5, distribution license, final design and destructive migrations remain unresolved.

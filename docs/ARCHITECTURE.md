@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Milestone 1B status: Prompt 003 authorized isolated feasibility experiments following review of the 1A foundation. Production host/domain/storage/module-shell implementation remains unchanged. See [MILESTONE_1B_REPORT.md](MILESTONE_1B_REPORT.md) for measured recommendations, failures and limits; these are not production-adoption approval. Historical proposals below remain proposals unless explicitly adopted in DECISIONS. No legacy source was extracted.
+Milestone 2A status: Prompt 004 authorizes the production PATCHBOOK library after report-level 1B review. Instruments, patches and reusable effects chains consume the shared foundation; MOTIF/CANVAS remain shells and musical experiments remain isolated. See [MILESTONE_2A_REPORT.md](MILESTONE_2A_REPORT.md) for verification/limits. Musical proposals below remain unapproved production recommendations. No legacy source was extracted.
 
 ## Recommended stack
 
@@ -28,6 +28,18 @@ Prefer a shared culled Canvas 2D grid with native DOM controls/inspectors and a 
 Native audio supports the proposed 25ms poll/100ms horizon with explicit stop on lateness/stall, generation cancellation and owner-close cleanup. Poll wall time and AudioContext time are distinct; measured scheduling lead is not audible latency. A production transport should have one shared owner/focus coordinator rather than the experimental view's own context. Tone.js, rendering frameworks and legacy extraction remain unnecessary for these experiments. `midi-file` is dev-only and provisionally preferred behind a strict outer parser validator; no runtime dependency was added.
 
 ## Boundaries and dependency direction
+
+### Implemented PATCHBOOK boundary (2A)
+
+`src/modules/patchbook/library.ts` owns library queries, stable-ID association choices, archive/restore and shared per-ID sessions. `query.ts` supplies pure search/filter/sort over derived library items. `session.ts` owns cloned drafts, explicit Save, revision tracking, debounced recovery checkpoints and subscriber/timer cancellation. `form.ts`/`view.ts` supply native controls in the existing PATCHBOOK ItemView type. The view subclasses ModuleView to retain its workspace/lifecycle contract while replacing that module's placeholder.
+
+All authoritative operations continue through EntityRepository → source-preserving codec → public Vault adapter. Instrument/effects-chain kinds and namespaced optional patch properties extend schema1 additively; no note is converted on open. Workspace state contains query/selection hints, never the sole copy of drafts. Reverse patch lists are derived, not written to instruments/chains. No database, event bus, UI framework or runtime dependency was added.
+
+Library removal is confirmed **archiving**, a conditional metadata update with reversible restore. Notes/IDs/incoming references remain. Permanent deletion is a separate native Obsidian action; no atomic compare-and-trash or cascade is claimed. See [data contracts](DATA_MODEL.md#milestone-2a-library-records).
+
+Authoritative edits require explicit Save. Unsaved draft checkpoints run after500ms and before navigation/module disable/view closure; temporarily invalid form values are preserved as recovery JSON by the same repository. A checkpoint is not a saved entity. Save failures retain the draft and disk version. Plugin unload cancels resources without attempting asynchronous durability work; edits after the last confirmed save/checkpoint are not crash/unload-durable. Recovery copies are manually inspectable, not silently restored.
+
+ItemView owns scoped index/session subscriptions and an Obsidian Mod+S binding. Closing releases handlers immediately, then checkpoints while shared services remain alive. Module disable awaits dirty checkpoints before changing settings/detaching its views, retaining sessions/files. Plugin unload disposes sessions/timers. Native links open through workspace APIs; no asset is decoded, executed, imported or previewed in2A.
 
 ```mermaid
 flowchart TB

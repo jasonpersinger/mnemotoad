@@ -23,7 +23,8 @@
     "test:obsidian": "node scripts/obsidian-smoke.mjs",
     "experiments:build": "pnpm typecheck && node scripts/experiments-build.mjs",
     "experiments:native": "node scripts/experiments-native.mjs",
-    "experiments:midi": "node scripts/experiments-midi.mjs"
+    "experiments:midi": "node scripts/experiments-midi.mjs",
+    "test:patchbook-native": "node scripts/patchbook-smoke.mjs"
   },
   "dependencies": {
     "yaml": "2.9.1"

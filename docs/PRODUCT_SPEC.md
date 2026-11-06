@@ -1,6 +1,6 @@
 # Product specification
 
-Milestone 1A status: shared data/storage/settings and three under-development view shells are implemented. The MVP functional table and AC-01–10 below remain product targets, not completed editor/playback/export claims. See [MILESTONE_1A_REPORT.md](MILESTONE_1A_REPORT.md).
+Milestone2A status: production PATCHBOOK supports instruments, patches, reusable ordered effects chains, forms, queries, UUID relations, safe saves/draft recovery and confirmed archive/restore. P-01/P-03 and the metadata-reference portion of P-02 are implemented; asset previews/management belong to separately authorized2B. The complete integrated MVP/AC-01–10 remain targets, not musical editor/playback/export claims. See [MILESTONE_2A_REPORT.md](MILESTONE_2A_REPORT.md).
 
 ## Purpose and users
 

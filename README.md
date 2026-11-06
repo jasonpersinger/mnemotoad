@@ -20,9 +20,13 @@ Keep musical knowledge in the vault, accessible without the plugin. Prefer Markd
 
 ## Current status
 
-**Milestone 1A foundation preserved; Milestone 1B feasibility experiments completed. Production musical editors remain planned.**
+**Milestone 2A: PATCHBOOK is a usable instrument, patch and effects-chain library. Musical editors remain planned.**
 
-The production plugin has three theme-compatible workspace shells, module settings, typed patch/motif/composition contracts, Markdown/YAML/JSON parsing, a shared identity/reference index, conditional vault writes and recovery copies. Production musical editing/playback/export are not implemented. Separate `experiments/` prototypes test timing, event compilation, a quiet tone and grid rendering using synthetic data only; they do not connect to production records.
+PATCHBOOK provides three registers, create/edit forms, descriptions/tags/parameters, ordered reusable effects chains, search/filter/sort, related navigation and ordinary Markdown access. Records use stable IDs and shared source-preserving persistence with recoverable conflicts. Confirmed archive/restore removes entries from the active library while retaining their notes. File/audio/screenshot/preset references are metadata only; previews and attachment management are deferred to2B.
+
+Open **MNEMOBARD: Open PATCHBOOK**, create an instrument, then a patch associated with it. Create a chain in **Effects chains** and select it on a patch. **Save record** or Ctrl/Cmd+S in a form saves to the vault. Disabling the interface preserves files. See the [2A report](docs/MILESTONE_2A_REPORT.md) for validation/limits. Signed commit `f0d90d1` preserves completed1B work before2A. Further implementation requires separate review/authorization.
+
+MOTIF/CANVAS remain theme-compatible shells. Production MIDI/audio/arrangement functionality is not implemented. Separate experiments remain isolated from production records; their success does not approve adoption.
 
 `pnpm check` runs typecheck, lint, tests and a production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow, and [MILESTONE_1A_REPORT.md](docs/MILESTONE_1A_REPORT.md) for exact validation and limitations. Linux Obsidian 1.15.0 native smoke validation was performed; Windows/macOS and musical capabilities are unverified.
 

@@ -1,3 +1,7 @@
+# Current status — Milestone 2A complete
+
+Prompt004 scope is implemented and verified. See docs/MILESTONE_2A_REPORT.md and docs/validation/milestone-2a-native.json. Stop pending human review and a separate prompt; no2B work. Historical milestone records follow.
+
 # MNEMOBARD Milestone 0 plan
 
 Scope: research, source audit, provisional specifications and architecture only. No implementation, dependency installation, Git initialization, or legacy import.
@@ -56,3 +60,13 @@ Stop after Milestone 1A. Await a separate prompt/review before Milestone 1B; no 
 Execution plan: docs/superpowers/plans/2026-11-05-milestone-1b.md. Prompt 003 supersedes the historical 1B stop for experiments only; production adoption and legacy copying remain gated. No additional permission is required for routine authorized experiments.
 
 1B errors/limits: initial GPG signing unavailable until user unlocked key; signed baseline succeeded. Initial native all-DOM20k caused CDP timeout; only the verified isolated instance restarted, workload retained as failed. Bounded suite now saves results incrementally. Strict typecheck found an unchecked fixture byte access, corrected using DataView. No type/lint/test rule weakened. Stop here pending human review and a separate implementation prompt.
+
+# Milestone 2A (Prompt 004 authorization)
+
+16. Review and signed1B baseline — complete: f0d90d1, good signature;123 original tests/typecheck/lint/build pass;37 reviewed changes, no unrelated work.
+17. Additive library records and shared persistence — complete; old patch data retained, no migrations.
+18. Library queries, shared draft/checkpoint safety and confirmed archive/restore — complete.
+19. Production workspace/native workflow — complete;17 checks, light/dark/narrow layouts, keyboard Save and cold restart of5 exact notes plus query/selection/settings.
+20. Report/regression/preservation — complete;165 tests/17 files, typecheck/lint/build, native foundation and1B regression pass. Legacy121 tracked hashes/HEAD/clean status unchanged; experiment sources/lockfile/historical reports preserved. Stop after2A; no previews/attachment manager or musical editors.
+
+2A resolved issues: strict checks caught unused imports; invalid draft detail validation prevents unsafe links; native Mod+S required an owned Obsidian Scope; creation now validates readable serialized size; Chromium collected the redundant CDP async-wrapper promise; native rename needed host prompt handling; cold preference testing needed layout requests and a flushed debounce. No tests/rules weakened and no new dependency. Pending recovery rehydration/retention and platform/accessibility/large-library validation are documented limits.

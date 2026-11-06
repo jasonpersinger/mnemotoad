@@ -53,6 +53,17 @@ export function validateEntity(value: unknown): Entity {
     if (!['audio', 'image', 'preset'].includes(String(a.role))) invalid('asset.role', 'unknown role');
     text(a.link, 'asset.link'); assetLink(a.link);
   }
+  if (['patch', 'instrument', 'effects-chain'].includes(String(e.kind))) {
+    for (const key of ['description', 'notes']) if (e[key] !== undefined) {
+      text(e[key], key); if (String(e[key]).length > 100000) invalid(key, 'maximum 100000 characters');
+    }
+    if (e.archived !== undefined && typeof e.archived !== 'boolean') invalid('archived', 'expected boolean');
+    if (e.externalReferences !== undefined) for (const link of list(e.externalReferences, 'external references', 100)) {
+      text(link, 'external reference');
+      let url: URL; try { url = new URL(String(link)); } catch { return invalid('external reference', 'use a full http or https URL'); }
+      if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) invalid('external reference', 'use http/https without credentials');
+    }
+  }
   if (e.kind === 'patch') {
     text(e.instrument, 'instrument');
     for (const key of ['preset', 'manufacturer']) if (e[key] !== undefined) text(e[key], key);
@@ -62,6 +73,25 @@ export function validateEntity(value: unknown): Entity {
       const row = object(p, 'parameter'); text(row.name, 'parameter name');
       if (typeof row.value !== 'string' && !(typeof row.value === 'number' && Number.isFinite(row.value))) invalid('parameter value', 'expected text or finite number');
       if (row.unit !== undefined) text(row.unit, 'parameter unit');
+    }
+    for (const key of ['category', 'character', 'parameterNotes']) if (e[key] !== undefined) text(e[key], key);
+    if (e.instrumentId !== undefined) uuid(e.instrumentId, 'instrumentId');
+    if (e.instrumentLink !== undefined) { text(e.instrumentLink, 'instrumentLink'); assetLink(e.instrumentLink); }
+    if (e.effectsChainIds !== undefined) {
+      const ids = list(e.effectsChainIds, 'effectsChainIds', 100); ids.forEach(id => uuid(id, 'effectsChainId'));
+      if (new Set(ids.map(id => String(id).toLowerCase())).size !== ids.length) invalid('effectsChainIds', 'duplicate IDs');
+    }
+    if (e.effectsChainLinks !== undefined) {
+      const links = list(e.effectsChainLinks, 'effectsChainLinks', 100); links.forEach(link => { text(link, 'chain link'); assetLink(String(link)); });
+      if (links.length !== (e.effectsChainIds as unknown[] | undefined)?.length) invalid('effectsChainLinks', 'must correspond in order to chain IDs');
+    }
+  } else if (e.kind === 'instrument') {
+    for (const key of ['manufacturer', 'instrumentType', 'platform']) if (e[key] !== undefined) text(e[key], key);
+  } else if (e.kind === 'effects-chain') {
+    for (const step of records(e.steps, 'effects steps', 256)) {
+      portable(step); text(step.name, 'processor name');
+      if (step.parameterNotes !== undefined) text(step.parameterNotes, 'effect parameter notes');
+      if (step.presetLink !== undefined) { text(step.presetLink, 'effect preset'); assetLink(step.presetLink); }
     }
   } else {
     const d = object(e.data, 'data'); version(d.schemaVersion); portable(d);

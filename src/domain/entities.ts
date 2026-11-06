@@ -1,4 +1,4 @@
-export const ENTITY_KINDS = ['patch', 'motif', 'composition'] as const;
+export const ENTITY_KINDS = ['patch', 'motif', 'composition', 'instrument', 'effects-chain'] as const;
 export type EntityKind = typeof ENTITY_KINDS[number];
 export const SCHEMA_VERSION = 1;
 export type ExtensionFields = Record<string, unknown>;
@@ -9,10 +9,20 @@ export interface EntityBase {
   /** Unowned YAML fields. They are preserved, never executed. */
   extra: ExtensionFields;
 }
-export interface Patch extends EntityBase {
+export interface LibraryMetadata {
+  description?: string; notes?: string; externalReferences?: string[]; archived?: boolean;
+}
+export interface Instrument extends EntityBase, LibraryMetadata {
+  kind: 'instrument'; manufacturer?: string; instrumentType?: string; platform?: string;
+}
+export interface EffectStep extends ExtensionFields { id: string; name: string; parameterNotes?: string; presetLink?: string }
+export interface EffectsChain extends EntityBase, LibraryMetadata { kind: 'effects-chain'; steps: EffectStep[] }
+export interface Patch extends EntityBase, LibraryMetadata {
   kind: 'patch'; instrument: string; manufacturer?: string; preset?: string;
   parameters?: (ExtensionFields & { name: string; value: string | number; unit?: string })[];
   effects?: string[];
+  instrumentId?: string; instrumentLink?: string; effectsChainIds?: string[]; effectsChainLinks?: string[];
+  category?: string; character?: string; parameterNotes?: string;
 }
 export interface Meter extends ExtensionFields { numerator: number; denominator: number }
 export interface Note extends ExtensionFields {
@@ -37,13 +47,21 @@ export interface CompositionData extends ExtensionFields {
   audioRefs: (ExtensionFields & { id: string; path: string; atTick: number; label: string })[];
 }
 export interface Composition extends EntityBase { kind: 'composition'; data: CompositionData }
-export type Entity = Patch | Motif | Composition;
+export type LibraryEntity = Patch | Instrument | EffectsChain;
+export type LibraryKind = LibraryEntity['kind'];
+export type Entity = LibraryEntity | Motif | Composition;
+export function isLibraryEntity(entity: Entity): entity is LibraryEntity {
+  return entity.kind === 'patch' || entity.kind === 'instrument' || entity.kind === 'effects-chain';
+}
 
+export function createEntity<K extends EntityKind>(kind: K, title: string): Extract<Entity, {kind: K}>;
 export function createEntity(kind: EntityKind, title: string): Entity {
   const base = { id: crypto.randomUUID(), schemaVersion: 1 as const, title, extra: {} };
   const timing = { schemaVersion: 1 as const, ppq: 960, tempoMicrosecondsPerQuarter: 500000,
     meter: { numerator: 4, denominator: 4 }, lengthTicks: 3840 };
   if (kind === 'patch') return { ...base, kind, instrument: 'Unspecified instrument' };
+  if (kind === 'instrument') return { ...base, kind };
+  if (kind === 'effects-chain') return { ...base, kind, steps: [] };
   if (kind === 'motif') return { ...base, kind, data: { ...timing, notes: [] } };
   return { ...base, kind, data: { ...timing, lanes: [], markers: [], sections: [], audioRefs: [] } };
 }

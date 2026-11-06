@@ -9,9 +9,11 @@ import { ObsidianVaultPort } from './platform/obsidian-vault';
 import { ModuleView, MODULE_LABELS } from './ui/module-view';
 import { MnemobardSettingTab } from './settings';
 import { messageOf } from './domain/errors';
+import { PatchbookLibrary } from './modules/patchbook/library';
+import { PatchbookView } from './modules/patchbook/view';
 
 export default class MnemobardPlugin extends Plugin {
-  /** Shared foundation for future modules. No musical/editor implementation. */
+  /** Shared foundation and production library. Musical editors remain deferred. */
   services?: FoundationServices;
   private active = false;
   private generation = 0;
@@ -37,9 +39,10 @@ export default class MnemobardPlugin extends Plugin {
       },
       close: type => { for (const leaf of this.app.workspace.getLeavesOfType(type)) leaf.detach(); },
     });
-    this.services = { settings, modules, index, repository, references };
+    const patchbook = new PatchbookLibrary(index, repository);
+    this.services = { settings, modules, index, repository, references, patchbook };
     for (const module of MODULES) {
-      this.registerView(VIEW_TYPES[module], leaf => new ModuleView(leaf, module, () => this.active ? this.services : undefined));
+      this.registerView(VIEW_TYPES[module], leaf => module === 'patchbook' ? new PatchbookView(leaf, () => this.active ? this.services : undefined) : new ModuleView(leaf, module, () => this.active ? this.services : undefined));
       this.addCommand({ id: `open-${module}`, name: `Open ${MODULE_LABELS[module]}`,
         checkCallback: checking => {
           if (!modules.enabled(module)) return false;
@@ -54,6 +57,7 @@ export default class MnemobardPlugin extends Plugin {
   }
   async setModule(id: ModuleId, enabled: boolean): Promise<void> {
     const services = this.services; if (!this.active || !services) return;
+    if (id === 'patchbook' && !enabled) await services.patchbook.checkpointAll();
     const confirmed = await services.settings.update({ modules: { [id]: enabled } });
     if (this.active) services.modules.setEnabled(id, confirmed.modules[id]);
   }
@@ -66,6 +70,7 @@ export default class MnemobardPlugin extends Plugin {
       for (const type of Object.values(VIEW_TYPES)) for (const leaf of this.app.workspace.getLeavesOfType(type)) {
         if (leaf.view instanceof ModuleView) leaf.view.release();
       }
+      services.patchbook.dispose();
       services.index.dispose();
     }
     this.services = undefined;
