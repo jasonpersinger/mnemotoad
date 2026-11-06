@@ -15,9 +15,7 @@ export function noteHit(rects: readonly NoteRect[], x: number, y: number): NoteR
 export function anchoredStart(view: RollViewport, nextPixels: number, anchorX: number): number {
   return Math.max(0, view.startTick + (anchorX - PITCH_GUTTER) * view.ppq * (1 / view.pixelsPerQuarter - 1 / nextPixels));
 }
-export function backingSize(width: number, height: number, dpr: number): { width: number; height: number; scale: number } {
-  const scale = Math.min(4, Math.max(1, Number.isFinite(dpr) ? dpr : 1)); return { width: Math.round(width * scale), height: Math.round(height * scale), scale };
-}
+export { backingSize } from '../../ui/canvas-metrics';
 /** Per-pitch sorted intervals with prefix-end lookup; no fixed-duration bucket explosion. */
 export class NoteIndex {
   private rows = new Map<number, { note: Note; end: number }[]>();

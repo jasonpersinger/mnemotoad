@@ -31,6 +31,10 @@ export class ItemView extends Component {
   app = { keymap: new Keymap(), scope: new Scope(), workspace: { requestSaveLayout: () => {} } };
   contentEl = document.createElement('div');
   constructor(public leaf: unknown) { super(); }
+  // Native host opens the view through this wrapper; onOpen alone would miss
+  // accidental shadowing of the host's internal method by a private helper.
+  async open(): Promise<void> { await this.onOpen(); }
+  async onOpen(): Promise<void> {}
 }
 export class Plugin extends Component {
   views = new Map<string, (leaf: unknown) => unknown>();

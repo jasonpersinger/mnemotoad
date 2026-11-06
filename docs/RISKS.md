@@ -1,6 +1,6 @@
 # Engineering risks and feasibility experiments
 
-Status: the original five risks below are qualitative Milestone0 estimates. Later milestone sections record actual experiments and implementation evidence; the3A update is current. No experiment ran during Milestone0, and passing one host's tests does not remove broader platform/data risks.
+Status: the original five risks below are qualitative Milestone0 estimates. The Milestone 4A update records current arrangement evidence and remaining risks. Historical experiments remain evidence for their tested scope, not cross-platform guarantees.
 
 ## R1 — Vault integrity and relationship consistency
 
@@ -115,3 +115,15 @@ See [3A report](MILESTONE_3A_REPORT.md) for exact environment, bounds and measur
 - **R5 resources/platform:**2MiB/50k events/10s owned worker, termination/URL cleanup, bounded selection options and8 clean unowned cache entries address concrete bounds. Dirty/owned sessions/history/recovery still consume memory; no actual aggregate heap certification. Browser CSP, Windows/macOS, musical popouts and long sessions remain open.
 
 [3B report](MILESTONE_3B_REPORT.md) records the full bounds, methodology and tested limits. No package audit vulnerabilities were reported; that does not prove parser safety beyond validation/fault evidence.
+
+## Milestone 4A risk update
+
+| Risk | Current evidence / mitigation | Remaining work before or during4B |
+| --- | --- | --- |
+| Live source drift (high likelihood/high impact) | Saved UUID resolution, conservative source-text SHA256 review, rename hints, same-instance draft warning, preserved broken clips and explicit acknowledgment. No source file is written by composition Save. | Define a coherent source capture/recheck protocol for export/playback; a saved arrangement is not a frozen musical snapshot. Cross-process edits between reads remain possible. |
+| PPQ/length fidelity (medium/high) | Exact BigInt/GCD endpoint and full-length checks; no rounding, rest/trailing-silence tests; incompatible or enlarged live sources remain diagnostic. | Inexact material must be edited at source or await an explicitly approved conversion policy. No hidden resampling. |
+| Lane/channel and overlap mismatch (high/high) | Up to32 planner lanes without allocation; overlapping clips retained with warnings; `exportReady:false`. | At most16 MIDI channels require an explicit policy, same-channel/pitch checks, repetition boundary rules and independent multitrack output validation. |
+| Editor/history/host latency (medium/medium-high) | Cached summaries/plans and demand-driven culling keep pointer previews light. Actual32/1,000 full-view workload is measured in the4A report. Validation/history/recovery remain enabled. | Save and committed history edits are more expensive than drawing; bound support by host measurements and profile before larger limits. Approximate heap readings are GC-dependent. |
+| Vault/lifecycle compatibility (medium/critical) | Existing per-file protected saves/checkpoints, non-destructive recovery, native restart/conflict/disable/unload regressions. The native `open` helper collision and Escape propagation issue were fixed; tests now include a host open wrapper. | No multi-file/distributed transaction, crash-durable last keystroke, screen-reader certification or Windows/macOS validation is claimed. Pending form controls need Apply before checkpointing. |
+
+The five original risk studies remain historical proposals where they discuss rounded arrangement conversion, unique lane channels or synchronized audio. Prompt008's exact-only planner policy and explicit4B boundary take precedence.

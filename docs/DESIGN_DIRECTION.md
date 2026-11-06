@@ -101,3 +101,11 @@ Proposals for later shared visual review: retain consistent register labels, exp
 Actual [3B screenshots](../output/motif/milestone-3b/) add native import-preview/fidelity and export-snapshot/destination dialogs, Transform notes and Selection actions disclosures, searchable PATCHBOOK context and exact musical-position entry. The note list is collapsible; C-octave labels are clearer. Controls stay theme-native with visible focus and text diagnostics. No PATCHBOOK redesign, new fonts/artwork or final brand system was introduced.
 
 Dark/light/narrow and keyboard position entry were tested in the disposable Linux host. Review the warning hierarchy and selected-part wording with musicians; the5k latency and dense numeric inspector still warrant usability work. Screen-reader/popout/community-theme certification remains open. Broader redesign and final identity remain proposals requiring review.
+
+## Milestone 4A CANVAS direction
+
+Prompt008 approves a dark-first CANVAS workspace, scoped to this module. Its archival heading, large lane/time surface, fixed lane gutter, violet host accent and spare controls make the timeline primary. Lane management, score settings, clip register and diagnostics are collapsible; selected-clip controls sit below the timeline. Bar/beat lines follow the composition meter, repetition separators follow full source length, and selected/error clips add outlines and textual markers instead of color alone.
+
+All colors use active Obsidian variables; no global dark theme or custom fonts/artwork were introduced. Default dark/light and620px desktop layouts were inspected in the actual host. Native keyboard nudge/undo and numerical alternatives were exercised. A narrow pane exposes less musical time, so scrolling/zoom are necessary; clip labels may be abbreviated. The paged clip list is the textual alternative, not a screen-reader certification.
+
+Review actual captures in [output/canvas/milestone-4a/](../output/canvas/milestone-4a/). Stronger shared instrument/archival styling, final typography/icons and cross-module visual unification remain proposals for later human review. PATCHBOOK/MOTIF styling is preserved.

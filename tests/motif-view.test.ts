@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, expect, it } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { WorkspaceLeaf } from 'obsidian';
+import { CanvasLibrary } from '../src/modules/canvas/library';
 import type { FoundationServices } from '../src/application/services';
 import { SettingsService } from '../src/application/settings';
 import { ModuleController } from '../src/application/modules';
@@ -23,15 +24,15 @@ beforeEach(() => { installDomHelpers(); Object.defineProperty(HTMLCanvasElement.
 afterEach(() => { for(const close of closers.splice(0))close();document.body.replaceChildren(); });
 async function fixture() {
   const vault=new MemoryVault(),index=new EntityIndex(vault),repository=new EntityRepository(vault,index),settings=new SettingsService({load:async()=>null,save:async()=>{}});await settings.load();
-  const services:FoundationServices={settings,index,repository,modules:new ModuleController(settings.current.modules,{open:async()=>{},close:()=>{}}),references:new ReferenceResolver(index,path=>vault.exists(path)),patchbook:new PatchbookLibrary(index,repository),assets:new PatchbookAssets(vault),preview:new AudioPreview(),recovery:new PatchbookRecovery(vault,index,repository),motifs:new MotifLibrary(index,repository,vault),musical:new MusicalTransport()};
-  const view=new MotifView({} as WorkspaceLeaf,()=>services);document.body.append(view.contentEl);closers.push(()=>{view.release();services.motifs.dispose();services.musical.dispose();services.patchbook.dispose();repository.dispose();index.dispose();settings.dispose();});await view.onOpen();return{view,services,vault,repository};
+  const services:FoundationServices={settings,index,repository,modules:new ModuleController(settings.current.modules,{open:async()=>{},close:()=>{}}),references:new ReferenceResolver(index,path=>vault.exists(path)),patchbook:new PatchbookLibrary(index,repository),assets:new PatchbookAssets(vault),preview:new AudioPreview(),recovery:new PatchbookRecovery(vault,index,repository),canvas:new CanvasLibrary(index,repository,vault),motifs:new MotifLibrary(index,repository,vault),musical:new MusicalTransport()};
+  const view=new MotifView({} as WorkspaceLeaf,()=>services);document.body.append(view.contentEl);closers.push(()=>{view.release();services.canvas.dispose();services.motifs.dispose();services.musical.dispose();services.patchbook.dispose();repository.dispose();index.dispose();settings.dispose();});await view.onOpen();return{view,services,vault,repository};
 }
 const settle=async()=>{await new Promise(r=>setTimeout(r,0));await new Promise(r=>setTimeout(r,0));};
 function click(root:HTMLElement,text:string){const button=[...root.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent===text&&!b.disabled);if(!button)throw Error('Missing button '+text);button.click();}
 function input(root:HTMLElement,label:string,value:string){const input=[...root.querySelectorAll<HTMLInputElement|HTMLTextAreaElement>('input,textarea')].find(node=>node.getAttribute('aria-label')===label);if(!input)throw Error('Missing input '+label);input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));return input;}
 it('creates, names, numerically edits and saves a motif using real DOM handlers',async()=>{
  const{view,services}=await fixture();click(view.contentEl,'New motif');await settle();input(view.contentEl,'Motif name','Keyboard phrase');click(view.contentEl,'Add note');expect(view.contentEl.querySelectorAll('[data-note-id]')).toHaveLength(1);
- input(view.contentEl,'Pitch','65');input(view.contentEl,'Start tick','120');input(view.contentEl,'Duration ticks','360');input(view.contentEl,'Velocity','47');click(view.contentEl,'Apply to primary note');click(view.contentEl,'Save motif');await settle();
+ input(view.contentEl,'Pitch','65');input(view.contentEl,'Start tick','120');input(view.contentEl,'Duration ticks','360');input(view.contentEl,'Velocity','47');click(view.contentEl,'Apply to primary note');click(view.contentEl,'Save motif');await vi.waitFor(()=>expect(view.contentEl.querySelector('.mnemobard-save-status')?.textContent).toBe('Saved'));
  const item=services.motifs.items('Keyboard')[0];expect(item?.entity.data.notes[0]).toMatchObject({pitch:65,startTick:120,durationTicks:360,velocity:47});expect(view.contentEl.querySelector('.mnemobard-save-status')?.textContent).toBe('Saved');
 });
 it('uses a bounded textual list with stable multi-selection and independent duplication',async()=>{
@@ -64,7 +65,7 @@ it('owns a child key scope only inside the editor and preserves native text undo
 });
 
 it('does not claim a Save while musical or note property fields remain unapplied',async()=>{
- const{view,services}=await fixture();click(view.contentEl,'New motif');await settle();input(view.contentEl,'Tempo BPM','80');click(view.contentEl,'Save motif');await settle();expect(services.motifs.items()).toHaveLength(0);expect(view.contentEl.textContent).toContain('Apply or discard pending');click(view.contentEl,'Discard settings changes');click(view.contentEl,'Add note');input(view.contentEl,'Velocity','60');click(view.contentEl,'Save motif');await settle();expect(services.motifs.items()).toHaveLength(0);click(view.contentEl,'Apply to primary note');click(view.contentEl,'Save motif');await settle();expect(services.motifs.items()[0]?.entity.data.notes[0]?.velocity).toBe(60);
+ const{view,services}=await fixture();click(view.contentEl,'New motif');await settle();input(view.contentEl,'Tempo BPM','80');click(view.contentEl,'Save motif');await settle();expect(services.motifs.items()).toHaveLength(0);expect(view.contentEl.textContent).toContain('Apply or discard pending');click(view.contentEl,'Discard settings changes');click(view.contentEl,'Add note');input(view.contentEl,'Velocity','60');click(view.contentEl,'Save motif');await settle();expect(services.motifs.items()).toHaveLength(0);click(view.contentEl,'Apply to primary note');click(view.contentEl,'Save motif');await vi.waitFor(()=>expect(view.contentEl.querySelector('.mnemobard-save-status')?.textContent).toBe('Saved'));expect(services.motifs.items()[0]?.entity.data.notes[0]?.velocity).toBe(60);
 });
 
 it('refreshes metadata controls after Undo and Redo without overwriting active typing',async()=>{

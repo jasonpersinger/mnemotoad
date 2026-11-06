@@ -4,7 +4,9 @@
 
 Read README and the relevant documents in `docs/` before implementation: PRODUCT_SPEC, ARCHITECTURE, DATA_MODEL, ROADMAP, DECISIONS, TROUBADOUR_AUDIT and RISKS. DESIGN_DIRECTION and TECHNICAL_RESEARCH inform UI/dependency work. Read the decision approval log and current user instructions; do not confuse a proposal with approval. Parent workspace rules also apply.
 
-Current authority: Prompt007 authorizes **Milestone3B MOTIF only**, following engineering/visual3A review. Safe bounded MIDI import preview/selection/export, essential transpose/quantize/velocity commands, PATCHBOOK UUID associations and exact bar/beat/tick editing are authorized. Evaluate B04 codec for production with strict outer validation and independent interoperability evidence. Preserve PATCHBOOK, experiments and schema1/source PPQ/same-pitch/map protections. No CANVAS, maps/multitrack editing, hardware MIDI, recording, sample libraries/external hosting, broad redesign, cloud, publication, destructive migration or legacy copying. Final branding and future milestones require separate review.
+Current authority: Prompt008 authorizes **Milestone4A CANVAS only**, following3B engineering/visual review. Implement the arrangement planner, lanes/clips/repeats, exact source-PPQ preflight, saved live motif references/review, shared history and safe persistence/recovery. Preserve PATCHBOOK/MOTIF and experiments. No arrangement playback, multitrack export, final channel allocation, timing maps, hardware/recording/external hosting, broad module redesign, cloud, publication, destructive migration or legacy copying. Dark-first CANVAS must respect host light/dark variables without changing user appearance. Final branding and4B need separate authorization.
+
+Milestone4A implementation is complete; see `docs/MILESTONE_4A_REPORT.md` and its retained validation evidence. Stop before4B unless the current user explicitly authorizes it.
 
 ## Preserve work and user data
 

@@ -1,9 +1,10 @@
 import type { Entity } from '../domain/entities';
+import { contentRevision } from './content-revision';
 import { FoundationError, messageOf } from '../domain/errors';
 import { entityIdentityHint, parseEntityDocument } from './document';
 import type { VaultChange, VaultPort } from './vault-port';
 
-export interface IndexEntry { path: string; id?: string; entity?: Entity; error?: FoundationError }
+export interface IndexEntry { path: string; id?: string; entity?: Entity; error?: FoundationError; revision?: string }
 export type Resolution = { status: 'missing'; id: string } | { status: 'duplicate'; id: string; paths: string[] } |
   { status: 'invalid'; entry: IndexEntry } | { status: 'ready'; path: string; entity: Entity };
 
@@ -58,7 +59,7 @@ export class EntityIndex {
             if (this.vault.exists(path)) {
               source = await this.vault.read(path);
               const parsed = parseEntityDocument(source);
-              if (parsed) entry = { path, id: parsed.entity.id.toLowerCase(), entity: parsed.entity };
+              if (parsed) entry = { path, id: parsed.entity.id.toLowerCase(), entity: parsed.entity, ...(parsed.entity.kind==='motif'?{revision:await contentRevision(source)}:{}) };
             }
           } catch (error) {
             const hint = source === undefined ? this.entries.get(path)?.id : entityIdentityHint(source);
@@ -87,6 +88,10 @@ export class EntityIndex {
     if (!entry.entity || entry.error) return { status: 'invalid', entry: cloneEntry(entry) };
     return { status: 'ready', path: entry.path, entity: structuredClone(entry.entity) };
   }
+  /** Scalar metadata only: consumers can invalidate caches without cloning musical arrays. */
+  heads(): {path:string;id?:string;kind?:Entity['kind'];title?:string;revision?:string;errorCode?:FoundationError['code'];message?:string}[]{
+    return [...this.entries.values()].map(e=>({path:e.path,id:e.id,kind:e.entity?.kind,title:e.entity?.title,revision:e.revision,errorCode:e.error?.code,message:e.error?.message}));
+  }
   all(): IndexEntry[] { return [...this.entries.values()].map(cloneEntry); }
   subscribe(listener: () => void): () => void { if (this.closed) return () => {}; this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
   private publish(): void { if (!this.closed) { this.revision++; for (const listener of this.listeners) listener(); } }
@@ -94,7 +99,7 @@ export class EntityIndex {
 }
 
 function cloneEntry(entry: IndexEntry): IndexEntry {
-  return { path: entry.path, ...(entry.id ? { id: entry.id } : {}),
+  return { path: entry.path, ...(entry.revision?{revision:entry.revision}:{}), ...(entry.id ? { id: entry.id } : {}),
     ...(entry.entity ? { entity: structuredClone(entry.entity) } : {}),
     ...(entry.error ? { error: new FoundationError(entry.error.code, entry.error.message, { ...entry.error.context }) } : {}) };
 }

@@ -10,7 +10,7 @@ const LIBRARY_FIELDS = { description: 'mnemobard_description', notes: 'mnemobard
 const PATCH_FIELDS = { instrumentId: 'mnemobard_instrument_id', instrumentLink: 'mnemobard_instrument', effectsChainIds: 'mnemobard_effects_chain_ids', effectsChainLinks: 'mnemobard_effects_chains', category: 'mnemobard_category', character: 'mnemobard_character', parameterNotes: 'mnemobard_parameter_notes' } as const;
 const INSTRUMENT_FIELDS = { instrumentType: 'mnemobard_instrument_type', platform: 'mnemobard_platform', manufacturer: 'manufacturer' } as const;
 function libraryFields(kind: EntityKind): Record<string, string> {
-  return kind === 'patch' ? { ...LIBRARY_FIELDS, ...PATCH_FIELDS } : kind === 'instrument' ? { ...LIBRARY_FIELDS, ...INSTRUMENT_FIELDS } : kind === 'effects-chain' ? { ...LIBRARY_FIELDS, steps: 'mnemobard_effects' } : kind === 'motif' ? { description: 'mnemobard_description', notes: 'mnemobard_notes' } : {};
+  return kind === 'patch' ? { ...LIBRARY_FIELDS, ...PATCH_FIELDS } : kind === 'instrument' ? { ...LIBRARY_FIELDS, ...INSTRUMENT_FIELDS } : kind === 'effects-chain' ? { ...LIBRARY_FIELDS, steps: 'mnemobard_effects' } : (kind === 'motif' || kind === 'composition') ? { description: 'mnemobard_description', notes: 'mnemobard_notes' } : {};
 }
 const musical = (kind: EntityKind): boolean => kind === 'motif' || kind === 'composition';
 const ownedKeys = (kind: EntityKind) => [...COMMON_KEYS, ...Object.values(libraryFields(kind)), ...(kind === 'patch' ?
@@ -135,7 +135,7 @@ function metadata(entity: Entity): Record<string, unknown> {
     if (entity.patchId !== undefined) result.mnemobard_patch_id = entity.patchId;
     if (entity.patchLink !== undefined) result.mnemobard_patch = entity.patchLink;
   }
-  if (isLibraryEntity(entity) || entity.kind === 'motif') for (const [key, field] of Object.entries(libraryFields(entity.kind))) {
+  if (isLibraryEntity(entity) || entity.kind === 'motif' || entity.kind === 'composition') for (const [key, field] of Object.entries(libraryFields(entity.kind))) {
     const value = (entity as unknown as Record<string, unknown>)[key];
     if (value !== undefined) result[field] = value;
   }
@@ -160,7 +160,7 @@ function retainExtensions(previous: unknown, next: unknown, context = 'data'): u
   });
   if (!previous || !next || typeof previous !== 'object' || typeof next !== 'object' || Array.isArray(previous) || Array.isArray(next)) return next;
   const old = previous as Record<string, unknown>, result = { ...old, ...next };
-  const optionalFields = context === 'data' ? ['importSourceChannel'] : context === 'lanes' ? ['patchId', 'percussion'] : context === 'steps' ? ['parameterNotes', 'presetLink'] : [];
+  const optionalFields = context === 'data' ? ['importSourceChannel'] : context === 'lanes' ? ['patchId', 'percussion'] : context === 'clips' ? ['laneId', 'label', 'sourceRevision', 'sourcePath', 'sourceTitle', 'reviewedLengthTicks'] : context === 'steps' ? ['parameterNotes', 'presetLink'] : [];
   for (const optional of optionalFields) if (!Object.hasOwn(next, optional)) delete result[optional];
   for (const [k, v] of Object.entries(next)) result[k] = retainExtensions(old[k], v, k);
   return result;

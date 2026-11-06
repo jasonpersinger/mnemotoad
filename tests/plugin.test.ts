@@ -28,6 +28,8 @@ function host() {
     onLayoutReady: (fn: () => void) => { fn(); },
     getLeavesOfType: (type: string) => leaves.filter(l => !l.detached && l.type === type),
     revealLeaf: async () => {},
+    activeLeaf: undefined as unknown,
+    setActiveLeaf(leaf: unknown) { this.activeLeaf = leaf; },
     getLeaf: () => {
       const leaf = { type: '', detached: false, view: undefined as ModuleView | undefined,
         detach() { this.detached=true; void this.view?.onClose(); },
@@ -48,11 +50,12 @@ it('registers commands/views/settings and creates all three real shell classes',
   const h = host(); await h.plugin.onload();
   expect(h.mock.commands.map(c => c.id)).toEqual(['open-patchbook','open-motif','open-canvas']); expect(h.mock.views.size).toBe(3);
   for (const module of ['patchbook','motif','canvas'] as const) await h.plugin.services?.modules.open(module);
+  expect(h.workspace.activeLeaf).toBe(h.leaves[2]);
   expect(h.leaves).toHaveLength(3);
   for (const leaf of h.leaves) {
     if (leaf.type === 'mnemobard-patchbook') { expect(leaf.view?.contentEl.textContent).toContain('Begin with an instrument'); expect(leaf.view?.contentEl.querySelector('input[type="search"]')).not.toBeNull(); }
     else if (leaf.type === 'mnemobard-motif') expect(leaf.view?.contentEl.textContent).toContain('Motif library');
-    else expect(leaf.view?.contentEl.textContent).toContain('Under development');
+    else expect(leaf.view?.contentEl.textContent).toContain('Composition library');
   }
   expect(h.mock.tabs[0]).toBeInstanceOf(MnemobardSettingTab); (h.mock.tabs[0] as MnemobardSettingTab).display();
   await h.plugin.services?.index.settled(); h.mock.unload(); expect(h.mock.views.size).toBe(0); expect(h.mock.commands).toHaveLength(0); expect(h.mock.tabs).toHaveLength(0);

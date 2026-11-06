@@ -16,6 +16,10 @@ export class MotifLibrary {
   readonly recovery: CheckpointRecovery<Motif>;
   readonly midiFiles: MidiFiles;
   private owners = new Map<MotifSession, Set<object>>();
+  private draftListeners=new Set<()=>void>();
+  isDirty(id:string):boolean{return this.sessions.get(id.toLowerCase())?.dirty??false;}
+  subscribeDrafts(listener:()=>void):()=>void{this.draftListeners.add(listener);return()=>{this.draftListeners.delete(listener);};}
+  private publishDrafts():void{if(!this.closed)for(const listener of this.draftListeners)listener();}
   constructor(readonly index: EntityIndex, private readonly repository: EntityRepository, vault: VaultPort & AssetPort) {
     this.midiFiles = new MidiFiles(vault);
     this.recovery = new CheckpointRecovery(vault, index, repository, raw => {
@@ -36,7 +40,7 @@ export class MotifLibrary {
     const session = new MotifSession(draft, base, {
       save: (original, next, signal) => this.persist(original, next, signal),
       checkpoint: (next, original, signal) => this.repository.saveEditorDraft(next, original, signal),
-    }); this.sessions.set(draft.id.toLowerCase(), session); this.trimClean(); return session;
+    }); this.sessions.set(draft.id.toLowerCase(), session);session.subscribe(()=>this.publishDrafts());this.publishDrafts(); this.trimClean(); return session;
   }
   private async persist(base: EntityRecord | undefined, next: Motif, signal: AbortSignal): Promise<EntityRecord> {
     checkActive(signal, this.closed); await this.index.start(); checkActive(signal, this.closed); const value=editableMotif(next);
@@ -70,7 +74,7 @@ export class MotifLibrary {
     if (existing?.dirty || existing?.busy) throw new FoundationError('conflict', 'Save or explicitly discard the current motif draft before recovering.');
     if(existing)this.owners.delete(existing); existing?.dispose(); const session = this.session(value.draft, value.base); session.update(value.draft); session.recoveryPath = value.checkpoint; return session;
   }
-  discard(session: MotifSession): void { this.owners.delete(session); session.dispose(); this.sessions.delete(session.draft.id.toLowerCase()); }
+  discard(session: MotifSession): void { this.owners.delete(session); session.dispose(); this.sessions.delete(session.draft.id.toLowerCase());this.publishDrafts(); }
   async checkpointAll(): Promise<void> { for (const session of this.drafts()) await session.checkpoint(); }
-  dispose(): void { this.closed = true; this.recovery.dispose(); for (const session of this.sessions.values()) session.dispose(); this.sessions.clear(); this.owners.clear(); }
+  dispose(): void { this.closed = true; this.recovery.dispose(); for (const session of this.sessions.values()) session.dispose(); this.sessions.clear(); this.owners.clear();this.draftListeners.clear(); }
 }

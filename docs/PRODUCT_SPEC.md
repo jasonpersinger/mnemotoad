@@ -1,6 +1,6 @@
 # Product specification
 
-Milestone3B status: PATCHBOOK remains implemented; MOTIF now adds supported selected-part MIDI import/export, essential transformations, patch context and musical-position editing to its production editor/history/audition/recovery. Advanced transforms/maps and CANVAS remain planned; the integrated arrangement-export MVP is not complete. See [MILESTONE_3B_REPORT.md](MILESTONE_3B_REPORT.md) for exact fidelity/support limits.
+Milestone 4A status: PATCHBOOK and MOTIF remain implemented; CANVAS now adds saved-motif lanes/clips, exact repetition and placement, source-change review, shared undo/redo and safe save/recovery. The integrated arrangement-export MVP is still incomplete: arrangement playback/export, sections/markers and recording-reference UI remain future work. See [MILESTONE_4A_REPORT.md](MILESTONE_4A_REPORT.md).
 
 ## Purpose and users
 

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { WorkspaceLeaf } from 'obsidian';
+import { CanvasLibrary } from '../src/modules/canvas/library';
 import type { FoundationServices } from '../src/application/services';
 import { SettingsService } from '../src/application/settings';
 import { ModuleController } from '../src/application/modules';
@@ -24,10 +25,10 @@ async function fixture() {
   const vault = new MemoryVault(), index = new EntityIndex(vault), repository = new EntityRepository(vault, index), library = new PatchbookLibrary(index, repository);
   const settings = new SettingsService({ load: async () => null, save: async () => {} }); await settings.load();
   const services: FoundationServices = { repository, index, patchbook: library, references: new ReferenceResolver(index, p => vault.exists(p)), settings,
-    motifs: new MotifLibrary(index, repository, vault), musical: new MusicalTransport(), assets: new PatchbookAssets(vault), preview: new AudioPreview(), recovery: new PatchbookRecovery(vault, index, repository),
+    canvas: new CanvasLibrary(index,repository,vault), motifs: new MotifLibrary(index, repository, vault), musical: new MusicalTransport(), assets: new PatchbookAssets(vault), preview: new AudioPreview(), recovery: new PatchbookRecovery(vault, index, repository),
     modules: new ModuleController(settings.current.modules, { open: async () => {}, close: () => {} }) };
   const view = new PatchbookView({} as WorkspaceLeaf, () => services); document.body.append(view.contentEl);
-  cleanup.push(() => { view.release(); library.dispose(); repository.dispose(); index.dispose(); settings.dispose(); });
+  cleanup.push(() => { view.release(); services.canvas.dispose(); library.dispose(); repository.dispose(); index.dispose(); settings.dispose(); });
   await view.onOpen(); return { view, vault, services, library, repository, index };
 }
 async function settle() { await new Promise(resolve => setTimeout(resolve, 0)); await new Promise(resolve => setTimeout(resolve, 0)); }

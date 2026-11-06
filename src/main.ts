@@ -17,6 +17,8 @@ import { PatchbookRecovery } from './modules/patchbook/recovery';
 
 import { MotifLibrary } from './modules/motif/library';
 import { MotifView } from './modules/motif/view';
+import { CanvasLibrary } from './modules/canvas/library';
+import { CanvasView } from './modules/canvas/view';
 import { MusicalTransport } from './music/transport';
 
 export default class MnemobardPlugin extends Plugin {
@@ -42,6 +44,7 @@ export default class MnemobardPlugin extends Plugin {
         if (!isCurrent()) { if (!existing) leaf.detach(); return; }
         await this.app.workspace.revealLeaf(leaf);
         if (!isCurrent()) { if (!existing) leaf.detach(); return; }
+        this.app.workspace.setActiveLeaf(leaf, { focus: true });
         if (!(leaf.view instanceof ModuleView)) throw Error('The workspace view did not initialize. Reopen the module.');
       },
       close: type => { for (const leaf of this.app.workspace.getLeavesOfType(type)) leaf.detach(); },
@@ -51,9 +54,10 @@ export default class MnemobardPlugin extends Plugin {
     const preview = new AudioPreview(undefined, () => musical.stop());
     const musical = new MusicalTransport(() => preview.stop());
     const motifs = new MotifLibrary(index, repository, vault);
-    this.services = { settings, modules, index, repository, references, patchbook, assets, preview, recovery: new PatchbookRecovery(vault, index, repository), motifs, musical };
+    const canvas = new CanvasLibrary(index,repository,vault,id=>motifs.isDirty(id));
+    this.services = { settings, modules, index, repository, references, patchbook, assets, preview, recovery: new PatchbookRecovery(vault, index, repository), motifs, musical, canvas };
     for (const module of MODULES) {
-      this.registerView(VIEW_TYPES[module], leaf => module === 'patchbook' ? new PatchbookView(leaf, () => this.active ? this.services : undefined) : module === 'motif' ? new MotifView(leaf, () => this.active ? this.services : undefined) : new ModuleView(leaf, module, () => this.active ? this.services : undefined));
+      this.registerView(VIEW_TYPES[module], leaf => module === 'patchbook' ? new PatchbookView(leaf, () => this.active ? this.services : undefined) : module === 'motif' ? new MotifView(leaf, () => this.active ? this.services : undefined) : new CanvasView(leaf, () => this.active ? this.services : undefined));
       this.addCommand({ id: `open-${module}`, name: `Open ${MODULE_LABELS[module]}`,
         checkCallback: checking => {
           if (!modules.enabled(module)) return false;
@@ -70,6 +74,7 @@ export default class MnemobardPlugin extends Plugin {
     const services = this.services; if (!this.active || !services) return;
     if (id === 'patchbook' && !enabled) { services.preview.stop(); await services.patchbook.checkpointAll(); }
     if (id === 'motif' && !enabled) { services.musical.stop(); await services.motifs.checkpointAll(); }
+    if (id === 'canvas' && !enabled) await services.canvas.checkpointAll();
     const confirmed = await services.settings.update({ modules: { [id]: enabled } });
     if (this.active) services.modules.setEnabled(id, confirmed.modules[id]);
   }
@@ -78,7 +83,7 @@ export default class MnemobardPlugin extends Plugin {
     this.generation++;
     const services = this.services;
     if (services) {
-      services.musical.dispose(); services.motifs.dispose(); services.preview.dispose(); services.assets.dispose(); services.recovery.dispose();
+      services.canvas.dispose(); services.musical.dispose(); services.motifs.dispose(); services.preview.dispose(); services.assets.dispose(); services.recovery.dispose();
       services.modules.dispose(); services.repository.dispose(); services.settings.dispose();
       for (const type of Object.values(VIEW_TYPES)) for (const leaf of this.app.workspace.getLeavesOfType(type)) {
         if (leaf.view instanceof ModuleView) leaf.view.release();

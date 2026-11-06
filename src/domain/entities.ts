@@ -35,9 +35,9 @@ export interface MotifData extends ExtensionFields {
 export interface Motif extends EntityBase {
   kind: 'motif'; description?: string; notes?: string; patchId?: string; patchLink?: string; data: MotifData;
 }
-export interface Clip extends ExtensionFields { id: string; motifId: string; startTick: number; repeatCount: number }
+export interface Clip extends ExtensionFields { id: string; motifId: string; startTick: number; repeatCount: number; laneId?: string; label?: string; sourceRevision?: string; sourcePath?: string; sourceTitle?: string; reviewedLengthTicks?: number }
 export interface Lane extends ExtensionFields {
-  id: string; name: string; midiChannel: number; percussion?: boolean; patchId?: string; clips: Clip[];
+  id: string; name: string; midiChannel?: number; percussion?: boolean; patchId?: string; clips: Clip[];
 }
 export interface CompositionData extends ExtensionFields {
   schemaVersion: 1; ppq: number; tempoMicrosecondsPerQuarter: number; meter: Meter; lengthTicks: number;
@@ -46,7 +46,7 @@ export interface CompositionData extends ExtensionFields {
   sections: (ExtensionFields & { id: string; startTick: number; endTick: number; label: string })[];
   audioRefs: (ExtensionFields & { id: string; path: string; atTick: number; label: string })[];
 }
-export interface Composition extends EntityBase { kind: 'composition'; data: CompositionData }
+export interface Composition extends EntityBase { kind: 'composition'; description?: string; notes?: string; data: CompositionData }
 export type LibraryEntity = Patch | Instrument | EffectsChain;
 export type LibraryKind = LibraryEntity['kind'];
 export type Entity = LibraryEntity | Motif | Composition;

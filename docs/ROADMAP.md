@@ -1,6 +1,6 @@
 # Development roadmap
 
-Milestone3B status: Prompt007 authorizes MIDI interchange and targeted musical/integration work after3A engineering/visual review. Signed baseline90eed00 preserves3A. Implementation/tests/native evidence are in [MILESTONE_3B_REPORT.md](MILESTONE_3B_REPORT.md). Stop for3B review; CANVAS, release and legacy adoption remain gated.
+Milestone 4A status: Prompt008 authorizes the arrangement foundation after 3B engineering/visual review. Signed baseline50583e1 preserves 3B; 90eed00 preserves 3A. See [MILESTONE_4A_REPORT.md](MILESTONE_4A_REPORT.md) for implementation, native tests and limits. Stop after 4A. Playback, arrangement export and channel allocation need separate 4B approval.
 
 This plan follows the [product acceptance criteria](PRODUCT_SPEC.md#integrated-mvp-acceptance-criteria), [architecture](ARCHITECTURE.md), [data contracts](DATA_MODEL.md), [risk experiments](RISKS.md), and [decision register](DECISIONS.md). It is not an executable implementation plan or permission to modify a vault.
 
@@ -104,15 +104,19 @@ Implement note model/controller/UI, note and multiselect commands, keyboard/nume
 
 ## Milestone 4 — CANVAS
 
-Implement lanes and full-length motif instances with repeat count, contextual patch links, sections/markers/development notes, recording-reference markers, numeric and pointer editing, undo, composition persistence, MIDI-only arrangement preview and Type1 export. Use the same compiler for visual positions, preview and export. Export preflight reports missing/changed records, length violations and channel/pitch conflicts.
+### 4A — Arrangement foundation (Prompt008)
 
-**Dependencies:** MOTIF domain and saved records; stable IDs; PATCHBOOK context; foundation compiler/transport; accepted PPQ/channel and live-reference policies.
+Implemented: ordered UUID lanes and parametric saved-motif clips, musical placement/drag/duplication/repetition, shared bounded history, exact source-PPQ preflight, source revision review, native timeline/keyboard controls, safe Markdown save/recovery. No source note arrays are embedded. The compatible contract allows 32 lanes without allocating channels.
 
-**Tests/acceptance:** C-01–03, AC-03–08, R4; 16-lane/1,000-instance capped fixtures; repeated-note boundary order; meter/PPQ conversions; live motif-length effects; missing/duplicate records; deterministic export snapshot. Validate DAW tracks, tempo/meter, section markers and silence. Verify recording links are visibly excluded from MIDI preview/export.
+Acceptance: pure/model/persistence/UI tests; native four-lane 6/8 workflow, rename/change/missing/inexact sources, conflict/recovery/cold restart and disable/unload checks; actual screenshots; 4/20, 16/200 and 32/1,000 host benchmarks. See [4A report](MILESTONE_4A_REPORT.md).
 
-**Legacy proposal:** reference `arrangementPlan` repeat/boundary tests but implement new lane semantics. Do not copy section clipping or Type0 encoder as the arrangement exporter.
+**Review gate G4A:** approve arrangement usability, live-reference interpretation, exact-only PPQ policy, measured interaction limits and 4B scope. Completion does not authorize 4B.
 
-**Human review G4:** validate planner scope and complete workflow before adding fades/automation or synchronized audio.
+### 4B — Proposed compilation, transport and interchange
+
+Requires separate authorization. Reuse the pure source summaries/preflight, exact timing helpers and existing musical compiler after review. Establish a coherent captured-source revision set, final channel allocation and same-channel/pitch collision policy before implementing arrangement MIDI export or audio audition. A 32-lane planner does not imply 32 available MIDI channels.
+
+Sections/markers, recording references and related UI require explicitly scoped priorities. Existing schema fields are preserved, but 4A adds no such editor. Do not adopt the old rounded conversion, unique-channel proposal or legacy source automatically. Independently verify any future MIDI output and cancellation/transport behavior.
 
 ## Milestone 5 — Integration and beta
 

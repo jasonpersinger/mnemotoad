@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Milestone3B status: Prompt007 authorizes MIDI interoperability/essential transformations/patch integration. B04's pinned codec is adopted behind strict validation and an isolated worker; the production3A architecture remains authoritative. See [MILESTONE_3B_REPORT.md](MILESTONE_3B_REPORT.md). Historical proposals below are qualified by implemented3A/3B sections; CANVAS, maps, final branding and release remain gated.
+Milestone 4A status: Prompt008 authorizes CANVAS arrangement planning after 3B review. The implementation uses saved live motif references, exact PPQ preflight, shared history and safe Markdown persistence. PATCHBOOK/MOTIF and experiments remain intact. Arrangement playback, multitrack export and channel allocation are deferred to separately authorized 4B. See [MILESTONE_4A_REPORT.md](MILESTONE_4A_REPORT.md); historical proposals below are qualified by the implemented milestone sections.
 
 ## Recommended stack
 
@@ -207,3 +207,31 @@ Prompt007 evaluates/adopts B04 within a conservative SMF subset. `src/midi/struc
 MOTIF commands implement validated group transpose/quantize/velocity within existing history. `positions.ts` uses exact fractions for one-based denominator-beat notation, retaining zero-based source ticks. `PatchAssociation` uses existing patchId/patchLink fields and index; public loadIfDeferred precedes PATCHBOOK navigation. No PATCHBOOK UI redesign or sound hosting occurs.
 
 Attached views pin sessions. Eviction removes only clean idle unowned in-memory sessions until eight remain; dirty/busy/owned sessions and all files/checkpoints stay intact. Measured refresh optimization captures one immutable draft per update and leaves library refreshes index-driven. Existing validation/snapshot history are unchanged. See the [3B report](MILESTONE_3B_REPORT.md) for bounds, resource ownership, fidelity rules, before/after full-view measurements and limits. CANVAS/tempo-map/multitrack editor design remains separately gated.
+
+## Milestone 4A implemented arrangement foundation
+
+CANVAS is a native `CanvasView`, backed by `CanvasLibrary` and `CanvasSession`. `HistorySession<T>` extracts the existing MOTIF history into a shared implementation; MOTIF retains its selection behavior and history semantics. PATCHBOOK continues using its existing document sessions. Position/grid utilities and Canvas backing-size math are shared pure modules, with compatibility exports at the old MOTIF paths.
+
+```mermaid
+flowchart LR
+  Saved[Saved motif Markdown] --> Index[EntityIndex: UUID, revision, scalar heads]
+  Index --> Catalog[Immutable SourceCatalog summaries]
+  Composition[Composition working draft] --> Preflight[Pure exact arrangement preflight]
+  Catalog --> Preflight
+  Preflight --> Timeline[Culled Canvas timeline + native controls]
+  Timeline --> History[CanvasSession / shared HistorySession]
+  History --> Repository[DocumentSession / EntityRepository]
+  Repository --> Note[One composition Markdown note + recovery copies]
+```
+
+`src/arrangement/` is independent of Obsidian, DOM and audio. A cached summary contains PPQ, complete length, tempo/meter, note count, source-text SHA256 and the GCD of note endpoints/full length. It retains no notes. Pure timing checks exact conversion with BigInt, and preflight returns parametric periods/extents and structured diagnostics. It never allocates channels, expands MIDI events or claims export readiness. Source revisions are fingerprints of the exact text returned by Vault, encoded as UTF-8, not hashes of raw filesystem bytes.
+
+`EntityIndex.heads()` supports cache invalidation without cloning every musical array. Only changed saved motifs are cloned to rebuild summaries; rename changes the path hint, not identity. The view caches preflight by arrangement revision, index revision and same-instance MOTIF dirty notifications. Pointer motion updates only a temporary geometry gesture; pointer release validates and commits one edit. A source/index change cancels an active gesture and refreshes the plan.
+
+The timeline owns one viewport Canvas, native scrolling, ResizeObserver/theme subscriptions and demand-driven frames. Native lane/clip controls and a paged clip list provide keyboard alternatives. Scope registrations apply only inside the editor. Module disabling checkpoints applied dirty drafts before closing views; view closure releases resources and retains dirty sessions. Unload cancels resources but is not a durable-save transaction. Clean unowned idle arrangement sessions are bounded to eight; dirty/busy/owned sessions are retained, with a twenty-draft opening guard. Recovery files are never pruned.
+
+Composition Save uses the existing repository's per-file stale-source comparison and pre-save/draft copies. It neither requires every source to resolve nor writes source files. There is no cross-file snapshot/transaction. Source review updates the displayed revision/path/title/period hints through the same undo history, after checking that the displayed revision is still current. Recognized future timing maps remain protected.
+
+No dependency was added. WebCrypto SHA256 is native in the tested Electron host; tests supply Node's SubtleCrypto to jsdom without changing production code. Native testing also identified a hidden host `open` method collision: the helper is named `openComposition`, and the test host now exercises the open wrapper. Module commands use the public `revealLeaf` followed by `setActiveLeaf(..., {focus:true})` so an opened register is the keyboard target. These public APIs are documented in the [official API declarations](https://raw.githubusercontent.com/obsidianmd/obsidian-api/master/obsidian.d.ts).
+
+See [DATA_MODEL.md](DATA_MODEL.md#milestone-4a-composition-contract), [4A report](MILESTONE_4A_REPORT.md) and [development workflow](DEVELOPMENT.md#canvas-development-and-validation-4a). The earlier 16-channel arrangement/export proposal is deferred: planner lanes and future MIDI channels are separate concerns.

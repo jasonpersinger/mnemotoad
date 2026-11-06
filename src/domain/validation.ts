@@ -53,7 +53,7 @@ export function validateEntity(value: unknown): Entity {
     if (!['audio', 'image', 'preset'].includes(String(a.role))) invalid('asset.role', 'unknown role');
     text(a.link, 'asset.link'); assetLink(a.link);
   }
-  if (['patch', 'instrument', 'effects-chain', 'motif'].includes(String(e.kind))) {
+  if (['patch', 'instrument', 'effects-chain', 'motif', 'composition'].includes(String(e.kind))) {
     for (const key of ['description', 'notes']) if (e[key] !== undefined) {
       text(e[key], key); if (String(e[key]).length > 100000) invalid(key, 'maximum 100000 characters');
     }
@@ -122,16 +122,20 @@ export function validateEntity(value: unknown): Entity {
       }
     } else {
       if (d.ppq !== 960) invalid('composition ppq', 'must be 960 in schema 1');
-      const lanes = records(d.lanes, 'lanes', 16), channels = new Set<number>(), clips: Record<string, unknown>[] = [];
+      const lanes = records(d.lanes, 'lanes', 32), channels = new Set<number>(), clips: Record<string, unknown>[] = [];
       for (const lane of lanes) {
-        text(lane.name, 'lane name'); integer(lane.midiChannel, 'lane channel', 0, 15);
-        if (channels.has(lane.midiChannel)) invalid('lane channel', 'must be unique'); channels.add(lane.midiChannel);
+        text(lane.name, 'lane name'); if(lane.midiChannel!==undefined){integer(lane.midiChannel, 'lane channel', 0, 15);if (channels.has(lane.midiChannel)) invalid('lane channel', 'must be unique'); channels.add(lane.midiChannel);}
         if (lane.percussion !== undefined && typeof lane.percussion !== 'boolean') invalid('percussion', 'expected boolean');
         if ((lane.midiChannel === 9) !== (lane.percussion === true)) invalid('percussion', 'channel 10 requires explicit percussion designation');
         if (lane.patchId !== undefined) uuid(lane.patchId, 'lane patchId');
         for (const c of records(lane.clips, 'clips', 1000)) {
           uuid(c.motifId, 'motifId'); integer(c.startTick, 'clip start', 0, d.lengthTicks - 1);
-          integer(c.repeatCount, 'repeatCount', 1, 1000); clips.push(c);
+          integer(c.repeatCount, 'repeatCount', 1, 1000);
+          if(c.laneId!==undefined&&c.laneId!==lane.id)invalid('clip laneId','must agree with its containing lane');
+          if(c.label!==undefined)text(c.label,'clip label');if(c.sourceTitle!==undefined)text(c.sourceTitle,'source title');
+          if(c.sourceRevision!==undefined&&(typeof c.sourceRevision!=='string'||! /^[0-9a-f]{64}$/.test(c.sourceRevision)))invalid('source revision','expected SHA256 content fingerprint');
+          if(c.sourcePath!==undefined){text(c.sourcePath,'source path');vaultPath(c.sourcePath);}
+          if(c.reviewedLengthTicks!==undefined)integer(c.reviewedLengthTicks,'reviewed motif length',1,1e9); clips.push(c);
         }
       }
       unique(clips, 'composition clips'); if (clips.length > 1000) invalid('clips', 'maximum is 1000');

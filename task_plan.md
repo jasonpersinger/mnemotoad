@@ -1,3 +1,7 @@
+# Milestone4A complete — Prompt008
+
+Signed3B baseline50583e1 verifies good.386 tests/33 files, strict typecheck/lint/build and audits pass. CANVAS21 native groups and58 MOTIF/MIDI/PATCHBOOK/foundation regressions passed, including cold restart/conflicts/recovery/cleanup.17 actual screenshots, exact saved-source preflight and32-lane/1,000-clip measurements are recorded in docs/MILESTONE_4A_REPORT.md and docs/validation/milestone-4a-native.json. Final drag p95≈45.4ms/Save maximum≈411.7ms remain host-specific costs; preceding slower repeats are retained. No new dependency, legacy copying/modification, personal-vault or remote changes.4A remains uncommitted after the signed baseline. Stop before4B; human review and separate authorization required.
+
 # Milestone3B complete — Prompt007
 
 Signed3A baseline90eed00 verifies good.349 tests/30 files, typecheck/lint/build and audit pass. Native MIDI16 groups, MOTIF19, PATCHBOOK12 and foundation11 pass, including cold restart/conflicts/recovery/cleanup. Independent Python/raw-fixture checks preserve supported events/source PPQ;14 actual screenshots and full-view100/1000/5000 profiles are in docs/MILESTONE_3B_REPORT.md and docs/validation/milestone-3b-native.json.5k pointer p95≈60.8ms remains a limitation; exact musical/unknown-state import restrictions remain explicit. No legacy/personal-vault/remote changes.3B work remains uncommitted; stop before CANVAS. Historical entries follow.

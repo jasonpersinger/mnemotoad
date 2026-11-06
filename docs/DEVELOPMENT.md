@@ -1,6 +1,6 @@
 # Development guide
 
-Current implementation: shared safe persistence, PATCHBOOK library/assets/recorded preview, and MOTIF piano roll/history/audition/recovery plus3B MIDI interchange, transformations, patch context and exact musical positions. CANVAS remains a shell. Historical reports are preserved; [Milestone3B](MILESTONE_3B_REPORT.md) records current behavior and validation.
+Current implementation: shared safe persistence; PATCHBOOK library/assets/recorded preview; MOTIF piano roll/history/audition/recovery, MIDI interchange and transformations; CANVAS lane/clip arrangement planning with exact saved-source preflight. Historical reports remain unchanged. [Milestone 4A](MILESTONE_4A_REPORT.md) records current behavior and verification.
 
 ## Setup and commands
 
@@ -225,3 +225,38 @@ Transform notes groups selected semitone/octave and velocity commands plus selec
 The cache retains up to8 clean idle unowned sessions; attached views pin their sessions. Eviction clears only in-memory clean history, never saved data, dirty/owned sessions or checkpoint files. For large phrases inspect actual full-view measurements rather than the3A roll-only result;5k interactions remain slower and no universal guarantee is made.
 
 Native regressions can use `MNEMOBARD_MOTIF_REVIEW_DIR`, `MNEMOBARD_ASSET_REVIEW_DIR` and `MNEMOBARD_FOUNDATION_REVIEW_DIR` under a designated output subfolder; defaults preserve original milestone paths. The [3B report](MILESTONE_3B_REPORT.md#j-testing) lists exact commands and native results. Stop at3B; CANVAS, maps, hardware MIDI, advanced transforms and publication require separate authorization.
+
+## CANVAS development and validation (4A)
+
+New code lives in `src/arrangement/` (pure saved-source summaries/exact timing/preflight), `src/modules/canvas/` (commands/session/library/native view/timeline/inspector/picker), and shared history/music/UI helpers. EntityIndex adds saved-motif source revisions and metadata-only heads. No new dependency or legacy code is included.
+
+```bash
+pnpm check
+pnpm dev:vault
+# Separate terminal; only the marked project-local vault/profile:
+env DISPLAY=:1 XAUTHORITY=/run/user/1000/xauth_rQvTCh pnpm dev:obsidian
+# Second terminal, guarded localhost:9227:
+node scripts/canvas-native.mjs
+node scripts/stop-dev-obsidian.mjs
+# Relaunch the same isolated host, then:
+node scripts/canvas-native.mjs --verify-restart
+node scripts/canvas-benchmark.mjs
+node scripts/canvas-edge-native.mjs
+node scripts/canvas-review.mjs
+```
+
+The DISPLAY/XAUTHORITY values above describe this validation host; adapt them to the current local display, never a personal vault. The stop script first checkpoints applied drafts, then verifies the exact project-local profile and CDP port in the parent process command before terminating that process only. No broad process-name kill or automatic file deletion occurs. Application workspace-layout flushing in these development scripts is test harness code, not production persistence.
+
+Native scripts create synthetic records and append recovery; repeated runs retain their data. Screenshots/raw benchmarks stay ignored under `output/canvas/milestone-4a/`; the tracked sanitized evidence is `docs/validation/milestone-4a-native.json`. Earlier screenshot evidence is preserved. Existing regression scripts accept separate review directories:
+
+```bash
+MNEMOBARD_MOTIF_REVIEW_DIR=output/canvas/milestone-4a/motif-regression node scripts/motif-native.mjs
+MNEMOBARD_ASSET_REVIEW_DIR=output/canvas/milestone-4a/patchbook-regression node scripts/patchbook-assets-native.mjs
+MNEMOBARD_MIDI_REVIEW_DIR=output/canvas/milestone-4a/midi-regression node scripts/motif-midi-native.mjs
+# After a guarded cold restart, repeat each with --verify-restart.
+MNEMOBARD_FOUNDATION_REVIEW_DIR=output/canvas/milestone-4a/foundation-regression node scripts/obsidian-smoke.mjs
+```
+
+Save explicitly. Applied edits enter the shared draft/history and delayed checkpoints; unsubmitted clip/lane/settings forms are guarded and require Apply or Discard. Closing a pane warns that unapplied controls were not checkpointed. Dirty sessions survive ordinary view transitions while the plugin is enabled; restart recovery requires explicit discovery/review/loading, then Save. Clean unowned sessions can be evicted; unsaved sessions and recovery files are never automatically pruned. A file rename preserves identity; incompatible source timing blocks new placement while retaining existing clips.
+
+Known boundaries: 32 lanes/1,000 clips/1,000 repeats and4,096-quarter editor length are validation limits, not universal performance promises. Preflight is planning-only. No arrangement audio, export, MIDI-channel policy or tempo/meter maps are implemented. Do not promote the unused source-summary GCD into a playback event stream:4B still needs validated source notes, captured revisions and collision policy.

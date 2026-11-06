@@ -20,7 +20,7 @@ Keep musical knowledge in the vault, accessible without the plugin. Prefer Markd
 
 ## Current status
 
-**Milestone3B: MOTIF now adds safe MIDI import preview/export, transformations, PATCHBOOK associations and exact musical-position editing.** Its piano roll/history/audition/persistence remain intact; PATCHBOOK is preserved and CANVAS remains planned.
+**Milestone 4A: CANVAS now provides a multitrack arrangement planner.** Create lanes, place saved motifs, repeat or move clips, review source changes, and save/reopen ordinary Markdown. PATCHBOOK and MOTIF remain intact. Arrangement playback and multitrack MIDI export await Milestone 4B.
 
 The instrument/patch/effects-chain registers retain search/filter/sort, stable relationships, Markdown access, explicit Save, conflict protection and reversible archiving. **Manage assets** selects existing vault files, imports a confirmed local copy, repairs a missing reference or removes an association while keeping the file. **Play preview** auditions one recording at a time; no instrument is hosted or synthesized. **Recovery register** discovers checkpoints and loads a reviewed draft without saving it automatically.
 
@@ -28,9 +28,11 @@ Open **MNEMOBARD: Open PATCHBOOK**, create an instrument and patch, select asset
 
 Open **MNEMOBARD: Open MOTIF** → New motif. Draw notes/chords, drag or resize, use the note register for precise pitch/start/duration/velocity, then Play and Save motif. Defaults are120BPM,4/4,960PPQ. Existing source ticks remain exact. Different-pitch polyphony works; same-pitch overlaps are explicitly rejected. Recovery checkpoints are separate from saved notes. See the [3A report](docs/MILESTONE_3A_REPORT.md) and [actual screenshots](output/motif/milestone-3a/) for controls, validation and limits. Import selects one supported track/channel with explicit fidelity checks; export creates a new Type1 MIDI file. Transpose/quantize/velocity use existing history. See the [3B report](docs/MILESTONE_3B_REPORT.md) and [actual3B screenshots](output/motif/milestone-3b/). Advanced transforms/maps remain deferred.
 
-Signed commit `90eed00` preserves the reviewed3A foundation. The independent MIDI/rendering experiments are unchanged. Stop after3B: further implementation, legacy copying and publication require separate authorization. Final branding is unapproved.
+Open **MNEMOBARD: Open CANVAS** → New composition → Add lane → Place motif. Select a clip for precise bar:beat:tick placement, repetition, duplication and source review. Use the lane manager and clip list for keyboard access. Saved motif revisions are live references; unsaved MOTIF notes are excluded. Inexact PPQ conversion blocks placement instead of rounding. See the [4A report](docs/MILESTONE_4A_REPORT.md) and [actual screenshots](output/canvas/milestone-4a/).
 
-`pnpm check` passes349 tests across30 files, typecheck, lint and production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow. The basic musical workflow, cold restart, conflicts and recovery were validated in Linux Obsidian1.15.0; Windows/macOS, physical audio latency and screen-reader behavior remain unverified.
+Signed commit `50583e1` preserves the reviewed 3B foundation; `90eed00` remains the 3A restoration point. Experiments are unchanged. Stop after 4A: 4B, legacy copying and publication require separate authorization. Final branding remains unapproved.
+
+`pnpm check` passes 386 tests across 33 files, typecheck, lint and production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow. The basic musical workflow, cold restart, conflicts and recovery were validated in Linux Obsidian1.15.0; Windows/macOS, physical audio latency and screen-reader behavior remain unverified.
 
 The kickoff’s `/home/troubadour` path was corrected by the user to `~/troubadour` (`/home/jason/troubadour`). The [Milestone 0 audit](docs/TROUBADOUR_AUDIT.md) remains the read-only reference. No legacy source/tests/assets were copied, and no legacy reuse has been authorized. All foundation code was implemented independently.
 

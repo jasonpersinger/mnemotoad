@@ -2,5 +2,5 @@ import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
 export default defineConfig({
   resolve: { alias: { obsidian: fileURLToPath(new URL('./tests/support/obsidian.ts', import.meta.url)) } },
-  test: { environment: 'node', include: ['tests/**/*.test.ts'], restoreMocks: true },
+  test: { setupFiles: ['./tests/setup.ts'], environment: 'node', include: ['tests/**/*.test.ts'], restoreMocks: true },
 });

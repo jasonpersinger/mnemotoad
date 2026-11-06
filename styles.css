@@ -139,3 +139,37 @@
 .mnemobard-midi-status { white-space: pre-wrap; overflow-wrap: anywhere; }
 .mnemobard-motif-toolbar { border-inline-start: 2px solid var(--background-modifier-border); padding-inline-start: 8px; }
 .mnemobard-midi-dialog [hidden] { display: none; }
+
+/* CANVAS4A: scoped, dark-first tonal hierarchy using host variables in both themes. */
+.mnemobard-canvas { --canvas-accent: var(--interactive-accent); padding: 14px; }
+.mnemobard-canvas-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; border-block-end: 1px solid var(--background-modifier-border); padding-block-end: 8px; }
+.mnemobard-canvas-heading .mnemobard-eyebrow { flex-basis: 100%; margin: 0; }
+.mnemobard-canvas-heading h2 { margin: 0; letter-spacing: .08em; }
+.mnemobard-canvas-title { display: block; margin-block: 10px; }
+.mnemobard-canvas-title span { display: block; font-size: var(--font-small); color: var(--text-muted); }
+.mnemobard-canvas-title input { width: 100%; font-size: var(--h3-size); background: transparent; border: 0; border-block-end: 1px solid var(--background-modifier-border); border-radius: 0; }
+.mnemobard-canvas-toolbar, .mnemobard-canvas-navigation { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-block: 8px; }
+.mnemobard-canvas-toolbar .mnemobard-save-status { margin-inline: 6px; font-size: var(--font-small); }
+.mnemobard-canvas-more { position: relative; }
+.mnemobard-canvas-more[open] { flex-basis: 100%; }
+.mnemobard-canvas-settings { color: var(--text-muted); margin-block: 6px; }
+.mnemobard-canvas-settings form, .mnemobard-canvas-clip-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-block: 8px; }
+.mnemobard-canvas label, .mnemobard-canvas-picker label { display: grid; gap: 4px; font-size: var(--font-small); }
+.mnemobard-canvas-clip-form input { max-width: 160px; }
+.mnemobard-canvas-settings input { max-width: 140px; }
+.mnemobard-arrangement-surface { border: 1px solid var(--background-modifier-border); border-inline-start: 3px solid var(--canvas-accent); background: var(--background-primary); }
+.mnemobard-arrangement-scroll { overflow: auto; position: relative; height: clamp(340px, 52vh, 640px); overscroll-behavior: contain; }
+.mnemobard-arrangement-space { position: relative; }
+.mnemobard-arrangement-canvas { display: block; position: sticky; top: 0; left: 0; touch-action: none; outline-offset: -3px; }
+.mnemobard-arrangement-canvas:focus-visible { outline: 2px solid var(--interactive-accent); }
+.mnemobard-canvas-inspector { border-block-start: 1px solid var(--background-modifier-border); margin-block-start: 8px; padding-block-start: 8px; }
+.mnemobard-canvas-inspector h3 { margin-block: 4px; }
+.mnemobard-canvas-lane-manager, .mnemobard-canvas-clip-register, .mnemobard-canvas-diagnostics { margin-block: 8px; }
+.mnemobard-canvas-lane-manager form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-block: 6px; }
+.mnemobard-canvas-clip-register button { display: block; max-width: 100%; white-space: normal; text-align: start; margin-block: 4px; height: auto; }
+.mnemobard-canvas-source-review { overflow-wrap: anywhere; }
+.mnemobard-canvas-picker { max-width: 700px; }
+.mnemobard-canvas-picker input, .mnemobard-canvas-picker select { max-width: 100%; }
+.mnemobard-canvas-picker select { width: 100%; margin-block: 8px; }
+.mnemobard-canvas-picker form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+@media (max-width: 700px) { .mnemobard-canvas { padding: 10px; } .mnemobard-arrangement-scroll { height: 360px; } .mnemobard-canvas-toolbar button { padding-inline: 8px; } }

@@ -1,17 +1,17 @@
 # Decision register
 
-Updated: 2026-11-06. **Proposed is not approved.** Prompt007 authorizes Milestone3B after3A engineering/visual review, including evaluated codec adoption and targeted musical/PATCHBOOK integration. The scoped B04 implementation decision is recorded below. CANVAS, maps, final branding/release and legacy copying remain unapproved. Older approval-log entries retain historical authority.
+Updated: 2026-11-06. **Proposed is not approved.** Prompt008 authorizes Milestone4A CANVAS planning after3B engineering/visual review. Current scoped decisions C01–C08 are recorded below. Arrangement audio/export/channel allocation require4B approval; maps, final branding/release and legacy copying remain unapproved. Older log entries describe authority at their original milestones.
 
 ## Confirmed requirements and authority
 
 | ID | Decision/constraint | Authority/status |
 | --- | --- | --- |
-| U1 | Use existing `/home/jason/MNEMOBARD`; preserve prior work; milestone is research/docs only. | User kickoff; required. Initial root empty, no Git. |
+| U1 | Use existing `/home/jason/MNEMOBARD`; preserve prior work; milestone is research/docs only. | Original Milestone0 scope; later prompts authorize implementation. Root/preservation requirements remain binding. |
 | U2 | Treat TROUBADOUR read-only; no code copy, install, legacy execution, commit or push. | User kickoff; required. |
 | U3 | Corrected legacy root is `~/troubadour` → `/home/jason/troubadour`. | User follow-up explicitly authorizes this location. Original `/home/troubadour` absent. |
 | U4 | One integrated Obsidian plugin; PATCHBOOK, MOTIF and CANVAS; initial Linux/Windows/macOS desktop. | User product brief; required. |
 | U5 | Local-first, interoperable, non-destructive, modular, native, maintainable, extensible, private; no telemetry/account dependency. | User principles; required. |
-| U6 | Do not implement/finalize visual styling/import legacy code; stop at Milestone 0. Milestone 1 needs explicit approval. | User milestone boundary; required. |
+| U6 | Do not implement/finalize visual styling/import legacy code; stop at Milestone 0. Milestone 1 needs explicit approval. | Historical Milestone0 boundary, superseded only within later explicitly authorized scopes. |
 
 ## Architectural recommendations
 
@@ -19,17 +19,17 @@ Updated: 2026-11-06. **Proposed is not approved.** Prompt007 authorizes Mileston
 | --- | --- | --- | --- |
 | D01 | TypeScript + public Obsidian API; pnpm + esbuild; separate typecheck/lint; Vitest. | Official sample matches host delivery; npm remains viable, Vite adds little for plugin bundle but browser tests can use its ecosystem. No exact versions copied from legacy. | Adopted for 1A under Prompt 002; exact dependencies in package.json. |
 | D02 | Pure domain/application/host adapters; independent module UIs sharing services and IDs. | Whole TROUBADOUR fork/broad refactor would retain song ownership and UI coupling. | Foundation adopted in1A; shared typed draft/recovery extracted for PATCHBOOK and production MOTIF in3A. |
-| D03 | One authoritative Markdown entity with YAML and an owned versioned JSON block; explicit standard MIDI exports. | `.mid` authority + sidecar improves immediate interoperability but introduces binary/metadata consistency and overwrite concerns. Separate JSON/Markdown pair and opaque database rejected initially. Legacy preservation experience supports single-file ownership. | Foundation format adopted under Prompt 002; MIDI export deferred. |
-| D04 | New motifs default960PPQ; source PPQ retained; exact transient timing; fixed-tempo/meter editing. | Normalizing imports discards source timing; map storage and export conversion need later contracts. | B01 direction approved in Prompt006 and verified for3A. No MIDI interchange or map storage/editing approved. |
+| D03 | One authoritative Markdown entity with YAML and an owned versioned JSON block; explicit standard MIDI exports. | `.mid` authority + sidecar improves immediate interoperability but introduces binary/metadata consistency and overwrite concerns. Separate JSON/Markdown pair and opaque database rejected initially. Legacy preservation experience supports single-file ownership. | Foundation format adopted under Prompt002; MOTIF MIDI export implemented under Prompt007. Arrangement export remains4B. |
+| D04 | New motifs default960PPQ; source PPQ retained; exact transient timing; fixed-tempo/meter editing. | Normalizing imports discards source timing; map storage and export conversion need later contracts. | B01 approved in Prompt006; source-preserving MOTIF interchange adopted in3B, exact-only arrangement placement in4A. Maps remain unapproved. |
 | D05 | `midi-file` adapter provisionally preferred; reference TROUBADOUR parser rules/tests. | `@tonejs/midi` higher-level alternative; MidiWriterJS generation only; custom legacy parser has maintenance/model cost. Benchmark and fixtures decide. | Pinned1.2.4 adopted under Prompt007/B04 in3B with independent strict validation, cancellable worker, explicit fidelity policy and independent exported-event verification. No broad event-lossless claim. |
 | D06 | Shared lazy Web Audio transport + basic oscillator audition; media-element recording previews. | Tone.js/sample/native hosting unnecessary; quiet local sine is sufficient. | B03 direction approved in Prompt006; reviewed production start/stop and exclusive audio focus verified in3A. Pause/loop remain deferred. |
-| D07 | Vanilla/native DOM shell; Canvas2D culled grids plus accessible lists. | React/Preact/Svelte remain possible; no demonstrated need. All-note DOM incurs unnecessary work. | B02 direction approved in Prompt006; production MOTIF Canvas/list implemented and measured in3A. Final visual identity remains unapproved. |
-| D08 | Standalone patches/motifs; composition forward ID links; live motif instances. | Legacy same-song ownership rejected. Snapshot/pinned motifs provide stability but add version management; defer pending user feedback. Length edits show downstream effects. | Standalone IDs/references implemented; live musical effects remain unimplemented. |
-| D09 | Conflict-aware conditional saves, exact-text recovery copies, incremental identity index; explicit migration preview/approval. | Legacy managed-token merge may preserve prose edits; whole-text conservative conflicts are simpler. Decide tested merge policy in foundation. No database authority or distributed transaction claim. | Conditional writes, backups and incremental index implemented; whole-source conflicts chosen. Migration/session/retention UI deferred. |
+| D07 | Vanilla/native DOM shell; Canvas2D culled grids plus accessible lists. | React/Preact/Svelte remain possible; no demonstrated need. All-note DOM incurs unnecessary work. | B02 approved for MOTIF in3A and CANVAS in4A; native viewport/list evidence recorded. Final visual identity remains unapproved. |
+| D08 | Standalone patches/motifs; composition forward ID links; live motif instances. | Legacy same-song ownership rejected. Snapshot/pinned motifs provide stability but add version management; defer pending user feedback. Length edits show downstream effects. | Standalone references implemented; Prompt008 approves saved live motif instances with source revision review in4A. Snapshots remain deferred. |
+| D09 | Conflict-aware conditional saves, exact-text recovery copies, incremental identity index; explicit migration preview/approval. | Legacy managed-token merge may preserve prose edits; whole-text conservative conflicts are simpler. Decide tested merge policy in foundation. No database authority or distributed transaction claim. | Per-file protected writes, recovery inspection and typed sessions/history/clean-cache bounds implemented. Destructive migrations and automatic recovery pruning remain unapproved. |
 | D10 | Desktop-only supported manifest initially, browser-based runtime, main-window editors until pop-outs tested. | Full mobile support from legacy manifest is not adopted. Set actual minAppVersion from tested host/API matrix. | Desktop-only manifest, conservative minimum 1.15.0 from native Linux smoke; other platforms unverified. |
-| D11 | Type1 conductor + per-lane tracks; full-length repeated clips, unique lane channels; no audio mixing. | Legacy section clipping/Type0 motif export does not meet timeline contract. Complex trim/stretch/maps deferred. | Proposed. |
+| D11 | Type1 conductor + per-lane tracks; full-length repeated clips, unique lane channels; no audio mixing. | Legacy section clipping/Type0 motif export does not meet timeline contract. Complex trim/stretch/maps deferred. | Historical export proposal only.4A uses optional unallocated channels and32 planner lanes; final allocation/export awaits4B policy. |
 | D12 | Hybrid A+C legacy strategy: selective refactor/extraction and reference-informed rebuild. | B broad port too coupled; D independent development remains fallback if clearance/validation fails. No unconditional direct reuse. | Reference-only during 1A/1B; Prompt 003 retains copying prohibition. B05 recommends independent implementations for this scope. |
-| D13 | Mysterious/antiquated brand expressed with restrained accents while honoring host theme/accessibility. | Legacy palette/polish approval is for a different product and is not transferable approval. | Exploratory; final styling not approved. |
+| D13 | Mysterious/antiquated brand expressed with restrained accents while honoring host theme/accessibility. | Legacy palette/polish approval is for a different product and is not transferable approval. | Prompt008 approves provisional dark-first CANVAS with host light/dark compatibility; final branding remains unapproved. |
 
 Rationale and detail are in [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md), [research](TECHNICAL_RESEARCH.md), and [audit](TROUBADOUR_AUDIT.md). Five risks and experiments are in [RISKS.md](RISKS.md).
 
@@ -49,9 +49,9 @@ Do not propose wholesale reuse of the piano-roll UI, arrangement UI/compiler, le
 
 ## Outstanding decisions
 
-1. Approve/amend architecture, custom note format, PPQ import/export rounding contract, fixed-tempo MVP, supported limits and live motif effects.
+1. Review4A usability/support evidence and separately authorize4B channel/collision/source-capture/export/transport policy. Current architecture, saved live references and exact-only arrangement placement are scoped approvals, not pending foundation decisions.
 2. Confirm TROUBADOUR ownership/provenance and intended distribution permissions; authorize L1–L4 individually or approve independent implementation. Select MNEMOBARD’s distribution license; none chosen in this milestone.
-3. Milestones 1A and isolated 1B experiments were separately authorized by Prompts 002/003. Further implementation requires another prompt after 1B review. Legacy dynamic validation/extraction remains unapproved.
+3. Explicit prompts have authorized implementation through4A only.4B needs a new prompt/review. Legacy dynamic validation/extraction remains unapproved.
 4. Choose an initial reference hardware/Obsidian installer matrix and review measured targets after spikes. Decide pop-out/mobile expansion only after support evidence.
 5. Approve interface hierarchy and later visual direction; decide whether recovery copies remain manual-retention or get a reviewed pruning policy after MVP. No automatic deletion proposed.
 
@@ -134,3 +134,20 @@ Authority: user explicitly approves3B after3A engineering/visual review and perm
 Verified349 tests/30 files, native MIDI/cold recovery/conflicts and existing MOTIF/PATCHBOOK/foundation regressions;14 real screenshots and actual full-editor profiles. See the [report](MILESTONE_3B_REPORT.md) and [retained evidence](validation/milestone-3b-native.json).5k full-view latency remains above the old50ms hypothesis.
 
 Stop after3B. CANVAS needs a separate Prompt008 or equivalent explicit scope; maps, overlap-policy/schema changes, final visual identity/release license/publication and all legacy copying remain unapproved. No L1–L5 adoption is requested.
+
+### Prompt008 / Milestone 4A
+
+Authority: explicit user approval after 3B engineering/visual review supersedes the old 3A-only AGENTS/current-status text. All49 pending 3B paths were reviewed, the349-test baseline passed, and signed local commit `50583e1` verified good. No signing/remote configuration was changed; `90eed00` remains the 3A restoration point.
+
+| Decision | Implementation and approval scope |
+| --- | --- |
+| C01 — Saved live references | Approved by Prompt008. UUIDs resolve saved motifs only; SHA256 of Vault-read source text detects changes since explicit review. Same-instance unsaved drafts are warnings. No snapshot promise or source duplication. |
+| C02 — Exact arrangement timing | Approved by Prompt008. New timelines960PPQ; validate every note endpoint and complete repetition interval with exact BigInt arithmetic/GCD summaries. Reject inexact placement instead of adopting the old rounded-conversion proposal. |
+| C03 — Compatible planner schema | Required by Prompt008's no-channel-allocation and32-lane workload. Schema1 now accepts optional channels and32 lanes; old assigned channels remain validated/preserved. Optional clip lane/revision/path/title/reviewed-period hints are backward compatible for the new reader. Older plugin versions may refuse expanded records; no automatic downgrade/migration. |
+| C04 — Shared editing history | Extract reviewed MOTIF history into generic `HistorySession<T>` and retain MOTIF selection hooks. CANVAS uses the same bounds/grouping/save/reload/conflict semantics. No independent undo framework. |
+| C05 — Native/Canvas rendering | Approved native DOM/Canvas direction, now applied to lane clips. Demand-driven viewport rendering, immutable source summaries and cached plans keep pointer previews separate from validation/history commits. Keyboard lane/clip/position alternatives remain native controls. |
+| C06 — Resource/session ownership | Eight clean unowned idle arrangement sessions retained; dirty/busy/owned sessions never automatically deleted. Twenty pending-draft opening guard. Disable checkpoints applied edits; unload is not a save guarantee. No recovery pruning. |
+| C07 — Planning preflight only | Always reports `exportReady:false`. Clip overlap remains structural data plus warning. No MIDI channels, arrangement playback, final MIDI serialization, section/marker UI or recording-reference UI authorized in4A. |
+| C08 — Provisional CANVAS design | Dark-first scoped host-variable surfaces and violet host accent; readable light theme, large timeline and collapsed secondary controls. No MOTIF/PATCHBOOK redesign or final brand approval. |
+
+Current evidence and limitations are in [MILESTONE_4A_REPORT.md](MILESTONE_4A_REPORT.md). These scoped implementation decisions do not approve 4B. Human review must define captured-source consistency, allocation across at most16 MIDI channels, same-pitch collisions between clips, supported arrangement bounds and any future pinned-source policy. Sections/markers/recording UI, final branding, distribution license, destructive migration and all legacy reuse remain separately gated. No legacy-code adoption is requested.

@@ -1,6 +1,6 @@
 # Data model proposal
 
-Milestone3B status: schema1 motifs now support selected-part MIDI interchange, optional provenance, existing UUID patch relationships and exact bar/beat/tick UI conversion. Library/asset/Markdown contracts remain intact; no migration or tick normalization occurred. See the3B section and [MILESTONE_3B_REPORT.md](MILESTONE_3B_REPORT.md). Maps and arrangement contracts remain future work.
+Milestone 4A status: composition schema 1 has compatible planner extensions: optional legacy channels, up to 32 ordered lanes, stable clip/source UUIDs and saved-source revision hints. Exact PPQ conversion rejects unrepresentable endpoints; no rounding or migration is performed. The implemented 4A section below supersedes earlier arrangement/export proposals. See [MILESTONE_4A_REPORT.md](MILESTONE_4A_REPORT.md).
 
 ## Storage and authority
 
@@ -131,7 +131,7 @@ This example is two bars of 4/4 at 120 BPM. The explicit end preserves silence a
 
 ## Composition schema and example
 
-Required: envelope, matching block version, composition PPQ 960, fixed tempo/meter, explicit length, ordered lanes. Lane IDs, clip IDs, section IDs, and marker IDs are unique within the composition. Lane owns optional patch ID, an explicit MIDI channel, and optional `percussion` (default false); `percussion: true` requires channel index 9, and index 9 requires that explicit flag. Clip owns motif ID, start, and positive integer repeat count. No saved pixel positions determine music.
+Required: envelope, matching block version, composition PPQ 960, fixed tempo/meter, explicit length, ordered lanes. Lane IDs, clip IDs, section IDs, and marker IDs are unique within the composition. This historical example includes an optional patch ID, a legacy explicit MIDI channel, and optional `percussion` (default false); `percussion: true` requires channel index 9, and index 9 requires that explicit flag. Clip owns motif ID, start, and positive integer repeat count. No saved pixel positions determine music.
 
 ````markdown
 ---
@@ -183,15 +183,17 @@ Lane sound: [[MNEMOBARD/Patches/dusk-glass]]
 
 This example repeats the two-bar motif four times across an eight-bar composition at 100 BPM. Motif tempo/meter controls standalone preview; composition tempo/meter overrides it when arranged. Tick counts are converted between explicit PPQs so musical quarter-note positions remain consistent; differing motif meter changes bar labels. No musical time stretching occurs. Lane patch overrides motif patch for contextual display only; neither maps a proprietary preset to a MIDI program.
 
-For equal PPQ, repeated event start is `clip.startTick + repetitionIndex * motif.lengthTicks + note.startTick`, with `repetitionIndex` from zero through `repeatCount - 1`. For unequal PPQ, convert the source offset/end using the endpoint rule above. Clip end is `startTick + round(repeatCount * motif.lengthTicks * compositionPPQ / motif.ppq)`. It must fit composition length; extending length is an explicit editor command. Expansion is capped at 100,000 sounding notes. Sections use half-open ranges `[startTick,endTick)`; marker ticks may include the final end boundary. No clipping of notes at export.
+For equal PPQ, repeated event start is `clip.startTick + repetitionIndex * motif.lengthTicks + note.startTick`, with `repetitionIndex` from zero through `repeatCount - 1`. For unequal PPQ, convert the source offset/end using the endpoint rule above. The implemented 4A clip end is `startTick + repeatCount * motif.lengthTicks * compositionPPQ / motif.ppq`, accepted only when every source endpoint and the full repetition interval convert exactly; there is no rounding. It must fit composition length; extending length is an explicit editor command. Expansion is capped at 100,000 sounding notes. Sections use half-open ranges `[startTick,endTick)`; marker ticks may include the final end boundary. No clipping of notes at export.
 
 ### Live references and export snapshot
 
-Instances are live references to motif IDs. Editing a motif updates every referencing composition, including repeat spacing if motif length changes. Show affected compositions before committing a length change; require acknowledgement and flag compositions whose saved bounds become invalid. Display a change summary when reopening an affected composition. Do not silently resize a different composition file. Pinned historical motif snapshots are deferred; the live-reference choice requires approval.
+Instances are live references to motif IDs. Editing a motif updates every referencing composition, including repeat spacing if motif length changes. Show affected compositions before committing a length change; require acknowledgement and flag compositions whose saved bounds become invalid. Display a change summary when reopening an affected composition. Do not silently resize a different composition file. Prompt008 approves saved live references for 4A. Pinned historical snapshots remain deferred. The current editor diagnoses downstream changes when CANVAS resolves sources; it does not intercept every MOTIF save with a cross-composition approval dialog.
 
 At export, capture and validate all referenced records and detect changes during capture. Freeze that in-memory set for compiler/serializer use. An export report records source IDs/fingerprints, note counts, channel mapping, warnings, and source versions. Its creation follows MIDI creation and may be retried if it fails; a report failure does not destroy a valid MIDI. Exports never rewrite their source notes.
 
 ### MIDI export semantics
+
+Arrangement export/channel policies below are historical proposals for 4B, not implemented or approved by 4A. MOTIF export retains its existing 3B contract.
 
 - Type 1 output: conductor track for tempo, time signature, markers/section labels; one musical track per lane at composition PPQ. A motif export uses a conductor plus one musical track at its original PPQ. All tracks end explicitly at the entity length; preserve trailing silence using end-of-track delta times.
 - Channels are zero-based internally; UI displays 1–16. Default allocation uses unique pitched channels avoiding index 9 (channel 10). Index 9 requires explicit percussion designation. MVP allows one lane per channel and up to 16 lanes, with at most 15 pitched lanes. No automatic program changes; future GM selection is independent from PATCHBOOK presets.
@@ -346,3 +348,33 @@ No absolute source path, original binary copy, proprietary preset or external ru
 The UI convention is one-based `bar:beat:tick-offset`; a beat is the written denominator, not always a quarter.6/8 at960PPQ: beat480 ticks, bar2880, position2:1:0→2880. Exact fractional offsets are accepted where the total is an integer source tick (PPQ3/6-8:1:2:1/2→2). Unrepresentable positions are rejected, never rounded. Storage remains unchanged; numeric Apply/transformations are ordinary session edits.
 
 3B MIDI policy: Types0/1 PPQ only, constant representable tempo/meter, one explicitly chosen track/channel. Timing maps, same-pitch ambiguity, stateful/unknown events and nonstandard notated beat scaling are blocked. Known annotation/instrument/release-velocity/click omissions require acknowledgment. Type1 export retains source resolution and exact endpoints, includes explicit track endings and reports excluded metadata/sound. Bounds and precise policies are in [MILESTONE_3B_REPORT](MILESTONE_3B_REPORT.md#b-midi-import). No arrangement or multi-part stored schema is implemented.
+
+## Milestone 4A composition contract
+
+The existing `composition` envelope and `mnemobard-composition` schema 1 block remain authoritative in one Markdown note. New compositions use UUID identity, 960 PPQ, 120 quarter-note BPM, 4/4 and 64 bars (245,760 ticks). Tempo/meter changes reinterpret timeline labels and future arrangement tempo; they do not move existing ticks or modify motifs. Description/notes are optional YAML properties; tags use the existing envelope. Creation/update timestamps continue to use host file metadata rather than invented mandatory schema fields.
+
+A compatible relaxation makes `midiChannel` optional and allows up to 32 lanes. Older explicit channels, percussion flags and patch references are preserved and still validated; new lanes allocate none. Lane array order is display order. New lane/clip IDs are UUIDs, but existing unique local IDs remain readable without migration. Optional lane extension fields, sections, markers and recording-reference structures remain preserved; their editors are outside 4A. No file is rewritten merely by opening it.
+
+A clip stores `id`, `motifId`, integer `startTick` and `repeatCount`; new clips also store matching `laneId`. Optional `label`, `sourceRevision` (64 hex SHA256), portable `sourcePath`, `sourceTitle` and positive integer `reviewedLengthTicks` provide source review/navigation. Paths are hints only. The current live source determines length; the reviewed period is a display hint when a source is unresolved, never an authoritative frozen length. Example clip (not a complete entity):
+
+```json
+{
+  "id": "55555555-5555-4555-8555-555555555555",
+  "laneId": "44444444-4444-4444-8444-444444444444",
+  "motifId": "22222222-2222-4222-8222-222222222222",
+  "startTick": 3840,
+  "repeatCount": 4,
+  "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "sourcePath": "MNEMOBARD/Motifs/glass-answer.md",
+  "sourceTitle": "Glass answer",
+  "reviewedLengthTicks": 7680
+}
+```
+
+Live references read saved, valid motifs only. Revision is SHA256 of Vault-read source text, including YAML/prose. Any text change is reviewable; this is deliberately more conservative than a musical-only hash. A rename with unchanged content keeps revision/UUID and reports a moved path hint. Same-plugin unsaved MOTIF changes are diagnostic only. External processes/devices' unsaved drafts cannot be detected. Existing manual `mnemobard_archived: true` or `data.archived: true` flags are recognized; no MOTIF archive UI is introduced.
+
+For source PPQ `P`, arrangement PPQ `A`, all source note starts/ends and the full source length must satisfy `tick*A % P == 0`. A cached GCD over those values proves the same condition without retaining note arrays. `period = length*A/P`; `clipEnd = start + repeats*period`. BigInt checks precede conversion to bounded integers. PPQ1000 endpoints at multiples of25 map exactly to960; a start at1 does not. An empty positive-length motif is a rest. Trailing silence remains part of every repetition. Composition tempo/meter mismatches are explicit diagnostics, not conversion instructions.
+
+Limits: 32 lanes, 1,000 clips total, 1–1,000 repeats/clip, 960 PPQ arrangement, editor length at most4,096 quarter notes, pure placement arithmetic at most1e9 ticks. The source retains existing MOTIF validation/support limits. New/moved/repeated/duplicated clips must fit composition length and reference an exact source. A later source change can make an existing clip incompatible or beyond bounds: preserve the clip, report the issue and still allow saving the composition. Overlaps are retained with warnings; final channel/pitch policy remains 4B.
+
+Unknown portable properties and unrelated Markdown retain the existing codec preservation contract. Unsupported envelope/block versions and recognized timing-map extensions are protected. There is no destructive migration, automatic merge, source note duplication or source rewrite. Explicit recovery uses the existing checkpoint formats and stale-save protection; an acknowledged live revision is not an immutable snapshot.

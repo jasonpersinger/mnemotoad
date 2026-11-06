@@ -1,0 +1,1453 @@
+{
+  "milestone": "4A",
+  "date": "2026-11-06",
+  "baseline": {
+    "commit": "50583e1",
+    "signature": "good",
+    "tests": 349,
+    "testFiles": 30,
+    "preserved3ARestoration": "90eed00"
+  },
+  "verification": {
+    "tests": 386,
+    "testFiles": 33,
+    "typecheck": "passed",
+    "lint": "passed",
+    "productionBuild": "passed",
+    "dependencyAuditReportedVulnerabilities": 0,
+    "bundleBytes": 369017,
+    "bundleSha256": "fa79aa1357183b225c86b12917a7a61c3cfcc91a0b1da9e0a31a107fc6972346",
+    "scriptSyntaxFiles": 19,
+    "markdownFiles": 31,
+    "localLinksChecked": 180,
+    "credentialPatternFindings": 0
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+    "dpr": 0.9999999767169356,
+    "width": 1360,
+    "height": 1100,
+    "cpu": "AMD Ryzen 7 5700G with Radeon Graphics",
+    "logicalCpus": 16,
+    "memoryBytes": 29300412416,
+    "kernel": "7.3.1-1-cachyos",
+    "softwareRendering": "isolated host --disable-gpu"
+  },
+  "native": {
+    "canvasChecks": [
+      "Created a100BPM6/8 composition; added, renamed and reordered four stable unallocated lanes",
+      "Placed saved UUID references at explicit musical positions, exact PPQ480 conversion and four parametric repeats including trailing silence",
+      "Native pointer drag grouped into one history edit; Escape cancelled; numeric6/8 placement, duplication/deletion and Undo/Redo preserved exact structure",
+      "Keyboard timeline nudge and scoped Undo work; explicit Save creates portable arrangement Markdown",
+      "Clip navigation opened MOTIF; unsaved edits stayed excluded; saved revision changes were visible and explicitly reviewed through undoable acknowledgment",
+      "Supported rename retained UUID and timing; temporarily unavailable source showed a warning without deleting the clip; restoring its file resolved it",
+      "PPQ1000 motif with an unrepresentable endpoint was rejected atomically with a no-rounding explanation",
+      "Actual dark/light/narrow UI screenshots captured without horizontal pane overflow",
+      "Recoverable unsaved arrangement checkpoint created without replacing authoritative Markdown",
+      "Cold Obsidian restart preserved exact arrangement, stable lane/clip/source UUIDs and repetitions",
+      "Recovery discovered/inspected a composition checkpoint; loading stayed unsaved until explicit protected Save",
+      "External composition modification rejected stale Save and preserved authoritative prose plus arrangement checkpoint",
+      "CANVAS disable/re-enable released frames, subscriptions, observer ownership and gestures without deleting data",
+      "Plugin unload/reload restored a real CANVAS view with exactly three module commands"
+    ],
+    "additionalChecks": [
+      "Trusted keyboard text entry and Enter applied exact bar:beat:tick placement and retained useful focus",
+      "DPR2 Canvas backing size and CSS viewport clip culling verified in native host",
+      "Saved clip label can be explicitly cleared through native controls without restoring the old owned field",
+      "Explicit composition Save with missing source retained clip data; restoring source resolved its UUID without source edits",
+      "Owning-view closure aborts listeners, disconnects observers and cancels its pending frame"
+    ],
+    "motifChecks": [
+      "Created and named a motif; set100BPM/6-8; drew a four-note melody and three-note chord using native pointer events",
+      "Graphical movement/resizing preserve starts, map pitch/time accurately and commit one undo entry per drag",
+      "Native keyboard numeric editing, duplication with independent identity, deletion, Undo and Redo passed",
+      "Grid selection, anchored zoom and two-axis scrolling retain musical notes and selection",
+      "Audio-clock audition produced simultaneous chord voices and a live playhead; Stop released voices/context/timer",
+      "Saved motif reopened through the same stable UUID with exact note/settings data",
+      "Unsaved musical checkpoint confirmed before cold restart without replacing the saved motif",
+      "Cold application restart preserved exact saved note bytes, IDs, PPQ/tempo/meter and motif reopening",
+      "MOTIF-only checkpoint discovery/inspection/loading remained unsaved until explicit normal Save",
+      "Native Delete/Ctrl-Z/Ctrl-Shift-Z/Ctrl-S preserve musical history and active-editor keyboard scope",
+      "Trusted modifier group selection/movement and Escape cancellation preserve one-entry history and source notes",
+      "External edit rejected stale Save, retained both versions, undo history and recoverable musical draft",
+      "MOTIF disable/re-enable released voices, scheduler and audio context while preserving records",
+      "Owning editor close released musical playback and reopened cleanly",
+      "Plugin unload/reload released musical services and retained exactly three commands",
+      "Actual light/dark and narrow-pane screenshots captured without pane overflow",
+      "Native DPR2 backing and CSS coordinate separation verified",
+      "Native production Canvas benchmarks completed at100/1000/5000/10000 notes",
+      "Trusted native pointer gestures measured production roll/history latency at100/1000/5000 notes"
+    ],
+    "patchbookChecks": [
+      "Created instrument/patch, selected audio/preset/screenshot, imported confirmed local copy and persisted eight portable references; original hash unchanged",
+      "Arbitrary preset opens in inert native inspection; text is read only after explicit request",
+      "Native WAV/MP3/OGG/FLAC decoder probes, unsupported-file error, pause/resume/seek and stop/release verified",
+      "Simulated file move without link maintenance; missing reference repaired by explicit file selection and protected Save",
+      "Record navigation/reopen retains associations",
+      "Confirmed unsaved draft checkpoint is durable before application restart; authoritative source unchanged",
+      "Cold restart preserved authoritative assets; discovery/inspection/load wrote nothing; explicit recovered Save succeeded and checkpoint remained byte-identical",
+      "Disabling and re-enabling PATCHBOOK releases playback and retains records",
+      "Closing owning native view stops and releases preview",
+      "Plugin unload/reload releases media and listeners without duplicate commands",
+      "Actual light/dark and narrow-pane layouts captured; no horizontal overflow in measured pane",
+      "Native renderer ran production index/query/navigation/reference benchmarks at100/1000/5000 synthetic in-memory records"
+    ],
+    "midiChecks": [
+      "Created and saved a native melody/chord motif for exchange without bypassing piano-roll controls",
+      "Type1 export independently parsed by Python; pitches/ticks/durations/velocities/PPQ/tempo/meter/end silence match; existing-file collision refused",
+      "Exported MIDI imported as a separate preview-confirmed motif with exact musical events and fresh identities",
+      "Independent Type0 and multi-track Type1 fixtures imported explicit channels at PPQ1000 without normalization or track merging",
+      "Sustain/controller and tempo-map imports blocked; program/instrument loss requires acknowledgment; previews created no authoritative records",
+      "Explicit selected-note quantization, transpose, velocity and existing one-operation Undo/Redo work through native controls",
+      "Keyboard-entered bar:beat:tick position uses eighth-note beats in6/8 while preserving exact source ticks",
+      "PATCHBOOK UUID association survives Save/reopen and navigates to the existing library record without changing its sound/data",
+      "Actual import/export/transform/patch/position and light/dark/narrow screenshots captured",
+      "Confirmed recoverable musical draft created without replacing the saved imported motif",
+      "All explicitly selected external synthetic MIDI source files remain byte-identical",
+      "Cold application restart preserved imported notes, source PPQ, stable identity and PATCHBOOK association",
+      "Musical checkpoint discovery/inspection/loading preserved source until explicit protected Save",
+      "External modification rejected stale musical Save and retained source plus recoverable draft",
+      "MOTIF disable/re-enable released playback and retained imported authoritative records",
+      "Plugin unload/reload retained exactly three module commands"
+    ],
+    "foundationChecks": [
+      "native load and three commands",
+      "three view shells and repeated open deduplication",
+      "native settings rendering",
+      "native Vault create/update and prose retention",
+      "identity after native rename",
+      "stale-write rejection",
+      "original/draft recovery copy",
+      "all three typed entity records and reference resolution",
+      "module-disable view cleanup and data preservation",
+      "plugin unload command cleanup and closed old repository",
+      "re-enable settings/data persistence and no command/view duplicates"
+    ],
+    "observedRendererExceptions": [],
+    "reviewChecks": [
+      "Actual empty CANVAS browser captured from a fresh host view without deleting records",
+      "Recovery discovery completed; changed-source inspection requires explicit consent and did not write authoritative records"
+    ]
+  },
+  "screenshots": [
+    {
+      "path": "output/canvas/milestone-4a/01-empty-canvas.png",
+      "sha256": "0637103eb016e9934c006a719d3d653a29946a747ab21b22c670701b6a6e91a0"
+    },
+    {
+      "path": "output/canvas/milestone-4a/02-new-composition.png",
+      "sha256": "f35b2924215117e7dcaaf1884a4568862f7528c35eeb94dcace2e8d1092c4237"
+    },
+    {
+      "path": "output/canvas/milestone-4a/08-lane-management.png",
+      "sha256": "f7e7c676f3679e899e83c009c7a3d969645ddfae8c564a7a7ad6a24a4edd078d"
+    },
+    {
+      "path": "output/canvas/milestone-4a/03-four-lane-arrangement.png",
+      "sha256": "fc39eeeb9f66f878fd371837b6d7c545551f755f6fe584ee1372ad1b54748ddc"
+    },
+    {
+      "path": "output/canvas/milestone-4a/09-motif-selector.png",
+      "sha256": "c352098ed7017d9f4324f70afbf3873fa76d7ffcdc4c68d8c16f247ab7ee70d4"
+    },
+    {
+      "path": "output/canvas/milestone-4a/05-repeated-clips.png",
+      "sha256": "7d7f2ce498ce6cc9bbe97e32134aab2277d4e43b0dc2f0e423c7695400428e55"
+    },
+    {
+      "path": "output/canvas/milestone-4a/04-multiple-motifs.png",
+      "sha256": "60487df22196e4c4b167ca2c1e71bcd49d2cf37e4ee3b8ac4b3cfe2f052b8899"
+    },
+    {
+      "path": "output/canvas/milestone-4a/06-selected-clip.png",
+      "sha256": "10606317e854c6fe694e4dfe24d2f97623943c3793a11f1a05749d04a6deaf16"
+    },
+    {
+      "path": "output/canvas/milestone-4a/07-clip-numeric-editor.png",
+      "sha256": "c17344d5b4a4a4e769673c21d5ba07df59980a18165451657555ea9d52fcbf83"
+    },
+    {
+      "path": "output/canvas/milestone-4a/10-changed-source.png",
+      "sha256": "bb83c30e9dcb8c7d938d49d25ab71e27a90aa46ea6ebadd9ac12166cc61f2c00"
+    },
+    {
+      "path": "output/canvas/milestone-4a/11-missing-reference.png",
+      "sha256": "def5000b19574ab2c687aa6cc6eed2b6291805c5506c0135b77d5e6f4212d3db"
+    },
+    {
+      "path": "output/canvas/milestone-4a/12-dark-theme.png",
+      "sha256": "dc9e92763adcf2a2248847014be7f831206cb143ead39eaa603ee92b12d30ba9"
+    },
+    {
+      "path": "output/canvas/milestone-4a/13-light-theme.png",
+      "sha256": "010a8b6c86ff66c7d45653795df871a1310dc825c4cfb4b5b0968f0f7bca4743"
+    },
+    {
+      "path": "output/canvas/milestone-4a/14-narrow-pane.png",
+      "sha256": "857a64eb3f60927207aa903909e9ff0d91ef90a8b0f9e7454019d27bd305aa78"
+    },
+    {
+      "path": "output/canvas/milestone-4a/15-saved-reopened.png",
+      "sha256": "bb3a19fdd22f45918d188f08f1ba47694b4a277f5cf821665f61ff7b6474af30"
+    },
+    {
+      "path": "output/canvas/milestone-4a/16-recovery-conflict.png",
+      "sha256": "a5e6e80d44ba188ca5310124d1d35b5ec9b214703f35e214089c86590ee8d36a"
+    },
+    {
+      "path": "output/canvas/milestone-4a/17-external-conflict.png",
+      "sha256": "c628a390b8017061806fb62141fba4927ec51ddab38b7be5f8e10b5d3e0e39e9"
+    }
+  ],
+  "narrowPane": {
+    "clientWidth": 565,
+    "scrollWidth": 565,
+    "canvasWidth": 538
+  },
+  "benchmarks": {
+    "methodology": "Warm saved-source summaries; production full view at1360x1100, DPR1;15 sync draw/reference/selection samples,12 scroll/zoom/committed pointer-to-next-frame samples,10 reorder/undo-redo pairs,3 protected saves including recovery per workload. Initial attach-to-next-frame is one sample. No audible/output or arrangement export test.",
+    "workloads": [
+      {
+        "lanes": 4,
+        "clips": 20,
+        "samples": {
+          "referenceResolution": [
+            0.29999998211860657,
+            0.10000002384185791,
+            0.19999998807907104,
+            0.19999998807907104,
+            0.10000002384185791,
+            0.19999998807907104,
+            0.19999998807907104,
+            0.10000002384185791,
+            0,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.09999999403953552,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.09999999403953552
+          ],
+          "draw": [
+            0.19999998807907104,
+            0.20000001788139343,
+            0.09999999403953552,
+            0.09999999403953552,
+            0.19999998807907104,
+            0.10000002384185791,
+            0.09999999403953552,
+            0.19999998807907104,
+            0,
+            0.20000001788139343,
+            0.09999999403953552,
+            0.09999999403953552,
+            0.19999998807907104,
+            0.10000002384185791,
+            0.09999999403953552
+          ],
+          "selection": [
+            0.9000000059604645,
+            0.5,
+            0.699999988079071,
+            0.5,
+            0.5,
+            0.5999999940395355,
+            0.5,
+            0.5,
+            0.5999999940395355,
+            0.6000000238418579,
+            0.5,
+            0.5,
+            0.5999999940395355,
+            0.5999999940395355,
+            0.5999999940395355
+          ],
+          "scrollToFrame": [
+            8.900000005960464,
+            10.699999988079071,
+            10.5,
+            9.5,
+            9.599999994039536,
+            10.599999994039536,
+            10.599999994039536,
+            9.400000005960464,
+            10.199999988079071,
+            10.300000011920929,
+            10.400000005960464,
+            10.200000017881393
+          ],
+          "zoomToFrame": [
+            9.900000005960464,
+            10.599999994039536,
+            10.5,
+            10.5,
+            10.599999994039536,
+            10.699999988079071,
+            10.5,
+            10.599999994039536,
+            10.400000005960464,
+            10.400000005960464,
+            10.900000005960464,
+            10.300000011920929
+          ],
+          "laneReorderHistory": [
+            2.899999976158142,
+            3.100000023841858,
+            2.7999999821186066,
+            2.7000000178813934,
+            2.699999988079071,
+            2.7000000178813934,
+            2.899999976158142,
+            3,
+            2.600000023841858,
+            2.7999999821186066
+          ],
+          "undoRedo": [
+            5.9000000059604645,
+            5,
+            4.800000011920929,
+            4.899999976158142,
+            5.5,
+            5,
+            5.600000023841858,
+            5.299999982118607,
+            5.300000011920929,
+            5.5
+          ],
+          "saveWithRecovery": [
+            45.29999998211861,
+            45.900000005960464,
+            45.5
+          ],
+          "dragToFrame": [
+            7.600000023841858,
+            7.4000000059604645,
+            7.4000000059604645,
+            7,
+            8.099999994039536,
+            7.700000017881393,
+            7.5999999940395355,
+            7.200000017881393,
+            7.699999988079071,
+            7.5999999940395355,
+            8,
+            7.700000017881393
+          ]
+        },
+        "initialToFrameMs": 8.200000017881393,
+        "visibleClips": 12,
+        "domClipButtons": 20,
+        "approxHeapDeltaBytes": 10764214,
+        "historyEntries": 11,
+        "serializedEntityBytes": 8776,
+        "historyEntriesAfterDrag": 26,
+        "statisticsMs": {
+          "referenceResolution": {
+            "n": 15,
+            "median": 0.19999998807907104,
+            "p95": 0.29999998211860657,
+            "max": 0.29999998211860657
+          },
+          "draw": {
+            "n": 15,
+            "median": 0.10000002384185791,
+            "p95": 0.20000001788139343,
+            "max": 0.20000001788139343
+          },
+          "selection": {
+            "n": 15,
+            "median": 0.5999999940395355,
+            "p95": 0.9000000059604645,
+            "max": 0.9000000059604645
+          },
+          "scrollToFrame": {
+            "n": 12,
+            "median": 10.300000011920929,
+            "p95": 10.699999988079071,
+            "max": 10.699999988079071
+          },
+          "zoomToFrame": {
+            "n": 12,
+            "median": 10.5,
+            "p95": 10.900000005960464,
+            "max": 10.900000005960464
+          },
+          "laneReorderHistory": {
+            "n": 10,
+            "median": 2.7999999821186066,
+            "p95": 3.100000023841858,
+            "max": 3.100000023841858
+          },
+          "undoRedo": {
+            "n": 10,
+            "median": 5.300000011920929,
+            "p95": 5.9000000059604645,
+            "max": 5.9000000059604645
+          },
+          "saveWithRecovery": {
+            "n": 3,
+            "median": 45.5,
+            "p95": 45.900000005960464,
+            "max": 45.900000005960464
+          },
+          "dragToFrame": {
+            "n": 12,
+            "median": 7.600000023841858,
+            "p95": 8.099999994039536,
+            "max": 8.099999994039536
+          }
+        }
+      },
+      {
+        "lanes": 16,
+        "clips": 200,
+        "samples": {
+          "referenceResolution": [
+            1.100000023841858,
+            1,
+            1,
+            1,
+            0.8999999761581421,
+            1,
+            1,
+            0.9000000059604645,
+            1,
+            1,
+            1,
+            0.9000000059604645,
+            0.9000000059604645,
+            0.9000000059604645,
+            0.9000000059604645
+          ],
+          "draw": [
+            0.3999999761581421,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.30000001192092896,
+            0.09999999403953552,
+            0.30000001192092896,
+            0.19999998807907104,
+            0.09999999403953552,
+            0.30000001192092896,
+            0.09999999403953552,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.09999999403953552
+          ],
+          "selection": [
+            2.4000000059604645,
+            2.0999999940395355,
+            2.199999988079071,
+            2.100000023841858,
+            2.0999999940395355,
+            2.0999999940395355,
+            2,
+            2.0999999940395355,
+            2.100000023841858,
+            2,
+            2.0999999940395355,
+            2.0999999940395355,
+            2,
+            2.199999988079071,
+            2
+          ],
+          "scrollToFrame": [
+            8.299999982118607,
+            12.800000011920929,
+            10.5,
+            10.300000011920929,
+            10.199999988079071,
+            10.599999994039536,
+            11.399999976158142,
+            11.199999988079071,
+            10.5,
+            10.699999988079071,
+            11.199999988079071,
+            10.600000023841858
+          ],
+          "zoomToFrame": [
+            10.599999994039536,
+            10.5,
+            10.700000017881393,
+            9.600000023841858,
+            10.5,
+            10.5,
+            10.5,
+            10.400000005960464,
+            10.599999994039536,
+            22.900000005960464,
+            6.5999999940395355,
+            10
+          ],
+          "laneReorderHistory": [
+            6.700000017881393,
+            7.5,
+            7.199999988079071,
+            7.300000011920929,
+            7.299999982118607,
+            7.4000000059604645,
+            8,
+            7.199999988079071,
+            7.200000017881393,
+            7.299999982118607
+          ],
+          "undoRedo": [
+            11,
+            10.599999994039536,
+            11.199999988079071,
+            11,
+            10.5,
+            11.5,
+            11,
+            10.700000017881393,
+            12.599999994039536,
+            11.799999982118607
+          ],
+          "saveWithRecovery": [
+            84.5,
+            119.40000000596046,
+            142.19999998807907
+          ],
+          "dragToFrame": [
+            14.800000011920929,
+            14.699999988079071,
+            13.300000011920929,
+            13.699999988079071,
+            13.299999982118607,
+            13.5,
+            14,
+            13.599999994039536,
+            14,
+            13.800000011920929,
+            13.599999994039536,
+            13.700000017881393
+          ]
+        },
+        "initialToFrameMs": 13.799999982118607,
+        "visibleClips": 27,
+        "domClipButtons": 50,
+        "approxHeapDeltaBytes": -93658991,
+        "historyEntries": 11,
+        "serializedEntityBytes": 83209,
+        "historyEntriesAfterDrag": 26,
+        "statisticsMs": {
+          "referenceResolution": {
+            "n": 15,
+            "median": 1,
+            "p95": 1.100000023841858,
+            "max": 1.100000023841858
+          },
+          "draw": {
+            "n": 15,
+            "median": 0.19999998807907104,
+            "p95": 0.3999999761581421,
+            "max": 0.3999999761581421
+          },
+          "selection": {
+            "n": 15,
+            "median": 2.0999999940395355,
+            "p95": 2.4000000059604645,
+            "max": 2.4000000059604645
+          },
+          "scrollToFrame": {
+            "n": 12,
+            "median": 10.600000023841858,
+            "p95": 12.800000011920929,
+            "max": 12.800000011920929
+          },
+          "zoomToFrame": {
+            "n": 12,
+            "median": 10.5,
+            "p95": 22.900000005960464,
+            "max": 22.900000005960464
+          },
+          "laneReorderHistory": {
+            "n": 10,
+            "median": 7.299999982118607,
+            "p95": 8,
+            "max": 8
+          },
+          "undoRedo": {
+            "n": 10,
+            "median": 11,
+            "p95": 12.599999994039536,
+            "max": 12.599999994039536
+          },
+          "saveWithRecovery": {
+            "n": 3,
+            "median": 119.40000000596046,
+            "p95": 142.19999998807907,
+            "max": 142.19999998807907
+          },
+          "dragToFrame": {
+            "n": 12,
+            "median": 13.700000017881393,
+            "p95": 14.800000011920929,
+            "max": 14.800000011920929
+          }
+        }
+      },
+      {
+        "lanes": 32,
+        "clips": 1000,
+        "samples": {
+          "referenceResolution": [
+            5.200000017881393,
+            4.9000000059604645,
+            5,
+            4.899999976158142,
+            4.800000011920929,
+            4.699999988079071,
+            5.100000023841858,
+            4.799999982118607,
+            4.9000000059604645,
+            5.5999999940395355,
+            5,
+            5.0999999940395355,
+            4.9000000059604645,
+            4.9000000059604645,
+            4.9000000059604645
+          ],
+          "draw": [
+            0.4000000059604645,
+            0.29999998211860657,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.29999998211860657,
+            0.10000002384185791,
+            0.19999998807907104,
+            0.30000001192092896,
+            0.19999998807907104,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.29999998211860657,
+            0.20000001788139343
+          ],
+          "selection": [
+            6,
+            5.4000000059604645,
+            5.399999976158142,
+            5.600000023841858,
+            5.5,
+            5.299999982118607,
+            5.300000011920929,
+            5.299999982118607,
+            5.299999982118607,
+            7.700000017881393,
+            5.899999976158142,
+            5.600000023841858,
+            5.5999999940395355,
+            5.5,
+            5.799999982118607
+          ],
+          "scrollToFrame": [
+            14.399999976158142,
+            7.4000000059604645,
+            10.900000005960464,
+            11.200000017881393,
+            10.700000017881393,
+            10.899999976158142,
+            10.900000005960464,
+            10.900000005960464,
+            9.699999988079071,
+            10,
+            9.900000005960464,
+            10.800000011920929
+          ],
+          "zoomToFrame": [
+            10,
+            10.600000023841858,
+            10.900000005960464,
+            2.5,
+            3.699999988079071,
+            10,
+            10.5,
+            10.799999982118607,
+            9.900000005960464,
+            10.900000005960464,
+            10.599999994039536,
+            10.099999994039536
+          ],
+          "laneReorderHistory": [
+            24.19999998807907,
+            25.5,
+            25,
+            26.400000005960464,
+            24.5,
+            24.599999994039536,
+            27,
+            24.80000001192093,
+            24.69999998807907,
+            26.5
+          ],
+          "undoRedo": [
+            33.599999994039536,
+            35.70000001788139,
+            33.900000005960464,
+            33.79999998211861,
+            42.70000001788139,
+            34.29999998211861,
+            33.80000001192093,
+            35.099999994039536,
+            33.400000005960464,
+            36.900000005960464
+          ],
+          "saveWithRecovery": [
+            258.40000000596046,
+            411.7000000178814,
+            409.09999999403954
+          ],
+          "dragToFrame": [
+            43.5,
+            44.099999994039536,
+            42.400000005960464,
+            43.900000005960464,
+            42,
+            44.900000005960464,
+            42,
+            43.5,
+            45.39999997615814,
+            42.900000005960464,
+            44.80000001192093,
+            42.099999994039536
+          ]
+        },
+        "initialToFrameMs": 27.299999982118607,
+        "visibleClips": 27,
+        "domClipButtons": 50,
+        "approxHeapDeltaBytes": 14125994,
+        "historyEntries": 10,
+        "serializedEntityBytes": 412050,
+        "historyEntriesAfterDrag": 10,
+        "statisticsMs": {
+          "referenceResolution": {
+            "n": 15,
+            "median": 4.9000000059604645,
+            "p95": 5.5999999940395355,
+            "max": 5.5999999940395355
+          },
+          "draw": {
+            "n": 15,
+            "median": 0.20000001788139343,
+            "p95": 0.4000000059604645,
+            "max": 0.4000000059604645
+          },
+          "selection": {
+            "n": 15,
+            "median": 5.5,
+            "p95": 7.700000017881393,
+            "max": 7.700000017881393
+          },
+          "scrollToFrame": {
+            "n": 12,
+            "median": 10.899999976158142,
+            "p95": 14.399999976158142,
+            "max": 14.399999976158142
+          },
+          "zoomToFrame": {
+            "n": 12,
+            "median": 10.5,
+            "p95": 10.900000005960464,
+            "max": 10.900000005960464
+          },
+          "laneReorderHistory": {
+            "n": 10,
+            "median": 25,
+            "p95": 27,
+            "max": 27
+          },
+          "undoRedo": {
+            "n": 10,
+            "median": 34.29999998211861,
+            "p95": 42.70000001788139,
+            "max": 42.70000001788139
+          },
+          "saveWithRecovery": {
+            "n": 3,
+            "median": 409.09999999403954,
+            "p95": 411.7000000178814,
+            "max": 411.7000000178814
+          },
+          "dragToFrame": {
+            "n": 12,
+            "median": 43.5,
+            "p95": 45.39999997615814,
+            "max": 45.39999997615814
+          }
+        }
+      }
+    ],
+    "heapCaveat": "Renderer-wide approximate usedJSHeapSize deltas include GC and unrelated retained sessions; not isolated or retained-memory measurements.",
+    "precedingRepeatWorkloads": [
+      {
+        "lanes": 4,
+        "clips": 20,
+        "samples": {
+          "referenceResolution": [
+            0.4000000059604645,
+            0.29999998211860657,
+            0.30000001192092896,
+            0.19999998807907104,
+            0.10000002384185791,
+            0.19999998807907104,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.699999988079071,
+            0.10000002384185791,
+            0.19999998807907104,
+            0.30000001192092896
+          ],
+          "draw": [
+            0.29999998211860657,
+            0.09999999403953552,
+            0.20000001788139343,
+            0.09999999403953552,
+            0.19999998807907104,
+            0.20000001788139343,
+            0,
+            0.19999998807907104,
+            0.09999999403953552,
+            0.20000001788139343,
+            0.09999999403953552,
+            0.09999999403953552,
+            0.20000001788139343,
+            0.09999999403953552,
+            0.09999999403953552
+          ],
+          "selection": [
+            0.9000000059604645,
+            0.699999988079071,
+            0.7000000178813934,
+            0.5999999940395355,
+            0.5999999940395355,
+            0.5999999940395355,
+            0.5,
+            0.9000000059604645,
+            0.699999988079071,
+            0.5,
+            0.6000000238418579,
+            0.5999999940395355,
+            0.5,
+            0.5,
+            0.5999999940395355
+          ],
+          "scrollToFrame": [
+            9.699999988079071,
+            10.099999994039536,
+            10.5,
+            10.5,
+            10.5,
+            10.5,
+            10.300000011920929,
+            9.700000017881393,
+            10.400000005960464,
+            10.599999994039536,
+            10.5,
+            10.400000005960464
+          ],
+          "zoomToFrame": [
+            10.899999976158142,
+            10.599999994039536,
+            10.800000011920929,
+            9.900000005960464,
+            10.5,
+            10.800000011920929,
+            9.699999988079071,
+            10.5,
+            10.900000005960464,
+            10.5,
+            10.599999994039536,
+            15
+          ],
+          "laneReorderHistory": [
+            2.7999999821186066,
+            3.4000000059604645,
+            3.0999999940395355,
+            2.800000011920929,
+            3.199999988079071,
+            3.0999999940395355,
+            2.9000000059604645,
+            3,
+            3.300000011920929,
+            5
+          ],
+          "undoRedo": [
+            7.4000000059604645,
+            6.899999976158142,
+            6.9000000059604645,
+            7.200000017881393,
+            10.899999976158142,
+            6.4000000059604645,
+            5.5,
+            5.700000017881393,
+            5.699999988079071,
+            5.800000011920929
+          ],
+          "saveWithRecovery": [
+            69.80000001192093,
+            95.7999999821186,
+            85.69999998807907
+          ],
+          "dragToFrame": [
+            7.5,
+            7.5999999940395355,
+            7.199999988079071,
+            6.9000000059604645,
+            7.9000000059604645,
+            6.800000011920929,
+            7.4000000059604645,
+            7.300000011920929,
+            7,
+            8.099999994039536,
+            8,
+            8.099999994039536
+          ]
+        },
+        "initialToFrameMs": 10.5,
+        "visibleClips": 12,
+        "domClipButtons": 20,
+        "approxHeapDeltaBytes": 3317443,
+        "historyEntries": 11,
+        "serializedEntityBytes": 8776,
+        "historyEntriesAfterDrag": 26,
+        "statisticsMs": {
+          "referenceResolution": {
+            "n": 15,
+            "median": 0.19999998807907104,
+            "p95": 0.699999988079071,
+            "max": 0.699999988079071
+          },
+          "draw": {
+            "n": 15,
+            "median": 0.09999999403953552,
+            "p95": 0.29999998211860657,
+            "max": 0.29999998211860657
+          },
+          "selection": {
+            "n": 15,
+            "median": 0.5999999940395355,
+            "p95": 0.9000000059604645,
+            "max": 0.9000000059604645
+          },
+          "scrollToFrame": {
+            "n": 12,
+            "median": 10.5,
+            "p95": 10.599999994039536,
+            "max": 10.599999994039536
+          },
+          "zoomToFrame": {
+            "n": 12,
+            "median": 10.599999994039536,
+            "p95": 15,
+            "max": 15
+          },
+          "laneReorderHistory": {
+            "n": 10,
+            "median": 3.0999999940395355,
+            "p95": 5,
+            "max": 5
+          },
+          "undoRedo": {
+            "n": 10,
+            "median": 6.899999976158142,
+            "p95": 10.899999976158142,
+            "max": 10.899999976158142
+          },
+          "saveWithRecovery": {
+            "n": 3,
+            "median": 85.69999998807907,
+            "p95": 95.7999999821186,
+            "max": 95.7999999821186
+          },
+          "dragToFrame": {
+            "n": 12,
+            "median": 7.5,
+            "p95": 8.099999994039536,
+            "max": 8.099999994039536
+          }
+        }
+      },
+      {
+        "lanes": 16,
+        "clips": 200,
+        "samples": {
+          "referenceResolution": [
+            1.5,
+            1.5,
+            1.4000000059604645,
+            1.2999999821186066,
+            1.800000011920929,
+            1.4000000059604645,
+            1.5,
+            1.399999976158142,
+            1.4000000059604645,
+            1.5999999940395355,
+            1.5,
+            1.4000000059604645,
+            1.5,
+            1.4000000059604645,
+            1.4000000059604645
+          ],
+          "draw": [
+            0.4000000059604645,
+            0.29999998211860657,
+            0.20000001788139343,
+            0.29999998211860657,
+            0.20000001788139343,
+            0.29999998211860657,
+            0.20000001788139343,
+            0.29999998211860657,
+            0.30000001192092896,
+            0.09999999403953552,
+            0.30000001192092896,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.29999998211860657,
+            0.20000001788139343
+          ],
+          "selection": [
+            3,
+            2.399999976158142,
+            7.4000000059604645,
+            1.7000000178813934,
+            1.899999976158142,
+            1.7000000178813934,
+            1.5999999940395355,
+            1.5999999940395355,
+            1.5999999940395355,
+            1.600000023841858,
+            1.5999999940395355,
+            1.5999999940395355,
+            1.699999988079071,
+            1.5,
+            1.800000011920929
+          ],
+          "scrollToFrame": [
+            11.700000017881393,
+            6.699999988079071,
+            10.199999988079071,
+            10.400000005960464,
+            10.300000011920929,
+            10.200000017881393,
+            10.300000011920929,
+            11.299999982118607,
+            10.399999976158142,
+            11.200000017881393,
+            10.099999994039536,
+            10.299999982118607
+          ],
+          "zoomToFrame": [
+            10.399999976158142,
+            10.599999994039536,
+            10.300000011920929,
+            10.300000011920929,
+            10.699999988079071,
+            10.400000005960464,
+            10.5,
+            10.400000005960464,
+            10.599999994039536,
+            31,
+            10.199999988079071,
+            10.199999988079071
+          ],
+          "laneReorderHistory": [
+            8,
+            9.400000005960464,
+            9,
+            8.700000017881393,
+            8.299999982118607,
+            7.700000017881393,
+            7.5999999940395355,
+            7.800000011920929,
+            8.599999994039536,
+            7.5999999940395355
+          ],
+          "undoRedo": [
+            11.400000005960464,
+            11.5,
+            11.5,
+            11.5,
+            13.400000005960464,
+            11.599999994039536,
+            11.599999994039536,
+            12,
+            11.800000011920929,
+            12.299999982118607
+          ],
+          "saveWithRecovery": [
+            134.59999999403954,
+            140.69999998807907,
+            132.59999999403954
+          ],
+          "dragToFrame": [
+            14,
+            13.800000011920929,
+            13.299999982118607,
+            13.400000005960464,
+            13.699999988079071,
+            13.5,
+            13.699999988079071,
+            14.899999976158142,
+            14,
+            13.700000017881393,
+            13.900000005960464,
+            14.300000011920929
+          ]
+        },
+        "initialToFrameMs": 13.800000011920929,
+        "visibleClips": 27,
+        "domClipButtons": 50,
+        "approxHeapDeltaBytes": 19252270,
+        "historyEntries": 11,
+        "serializedEntityBytes": 83209,
+        "historyEntriesAfterDrag": 26,
+        "statisticsMs": {
+          "referenceResolution": {
+            "n": 15,
+            "median": 1.4000000059604645,
+            "p95": 1.800000011920929,
+            "max": 1.800000011920929
+          },
+          "draw": {
+            "n": 15,
+            "median": 0.29999998211860657,
+            "p95": 0.4000000059604645,
+            "max": 0.4000000059604645
+          },
+          "selection": {
+            "n": 15,
+            "median": 1.699999988079071,
+            "p95": 7.4000000059604645,
+            "max": 7.4000000059604645
+          },
+          "scrollToFrame": {
+            "n": 12,
+            "median": 10.300000011920929,
+            "p95": 11.700000017881393,
+            "max": 11.700000017881393
+          },
+          "zoomToFrame": {
+            "n": 12,
+            "median": 10.400000005960464,
+            "p95": 31,
+            "max": 31
+          },
+          "laneReorderHistory": {
+            "n": 10,
+            "median": 8.299999982118607,
+            "p95": 9.400000005960464,
+            "max": 9.400000005960464
+          },
+          "undoRedo": {
+            "n": 10,
+            "median": 11.599999994039536,
+            "p95": 13.400000005960464,
+            "max": 13.400000005960464
+          },
+          "saveWithRecovery": {
+            "n": 3,
+            "median": 134.59999999403954,
+            "p95": 140.69999998807907,
+            "max": 140.69999998807907
+          },
+          "dragToFrame": {
+            "n": 12,
+            "median": 13.800000011920929,
+            "p95": 14.899999976158142,
+            "max": 14.899999976158142
+          }
+        }
+      },
+      {
+        "lanes": 32,
+        "clips": 1000,
+        "samples": {
+          "referenceResolution": [
+            4.700000017881393,
+            4.699999988079071,
+            4.5,
+            4.5999999940395355,
+            4.700000017881393,
+            4.5,
+            4.699999988079071,
+            4.5999999940395355,
+            4.5,
+            5.300000011920929,
+            4.800000011920929,
+            4.699999988079071,
+            4.800000011920929,
+            4.699999988079071,
+            4.5999999940395355
+          ],
+          "draw": [
+            0.4000000059604645,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.20000001788139343,
+            0.29999998211860657,
+            0.20000001788139343,
+            0.19999998807907104,
+            0.30000001192092896,
+            0.19999998807907104
+          ],
+          "selection": [
+            5.800000011920929,
+            5.5999999940395355,
+            5.5,
+            5.699999988079071,
+            5.5,
+            5.5,
+            5.600000023841858,
+            5.5,
+            5.899999976158142,
+            6.800000011920929,
+            5.699999988079071,
+            5.600000023841858,
+            5.5,
+            5.899999976158142,
+            5.700000017881393
+          ],
+          "scrollToFrame": [
+            12.5,
+            14.199999988079071,
+            12.800000011920929,
+            10.099999994039536,
+            10.200000017881393,
+            10.299999982118607,
+            11.299999982118607,
+            10.300000011920929,
+            10.199999988079071,
+            11.300000011920929,
+            11.400000005960464,
+            10.199999988079071
+          ],
+          "zoomToFrame": [
+            10.400000005960464,
+            10.900000005960464,
+            10.599999994039536,
+            66.69999998807907,
+            5.4000000059604645,
+            8.900000005960464,
+            10.700000017881393,
+            10.099999994039536,
+            10.599999994039536,
+            10.700000017881393,
+            10.599999994039536,
+            10.599999994039536
+          ],
+          "laneReorderHistory": [
+            25,
+            25.099999994039536,
+            25.400000005960464,
+            26.69999998807907,
+            25.100000023841858,
+            25.299999982118607,
+            27.30000001192093,
+            25.19999998807907,
+            25.599999994039536,
+            27.600000023841858
+          ],
+          "undoRedo": [
+            33.400000005960464,
+            35.39999997615814,
+            33.400000005960464,
+            33.5,
+            34.80000001192093,
+            42.69999998807907,
+            33.70000001788139,
+            33.39999997615814,
+            34.60000002384186,
+            33.79999998211861
+          ],
+          "saveWithRecovery": [
+            265.2000000178814,
+            427.39999997615814,
+            431.30000001192093
+          ],
+          "dragToFrame": [
+            43.400000005960464,
+            45.20000001788139,
+            43.5,
+            45.099999994039536,
+            43.099999994039536,
+            43,
+            45.099999994039536,
+            44.400000005960464,
+            42.900000005960464,
+            45.89999997615814,
+            44.60000002384186,
+            42.900000005960464
+          ]
+        },
+        "initialToFrameMs": 28.099999994039536,
+        "visibleClips": 27,
+        "domClipButtons": 50,
+        "approxHeapDeltaBytes": 16114675,
+        "historyEntries": 10,
+        "serializedEntityBytes": 412050,
+        "historyEntriesAfterDrag": 10,
+        "statisticsMs": {
+          "referenceResolution": {
+            "n": 15,
+            "median": 4.699999988079071,
+            "p95": 5.300000011920929,
+            "max": 5.300000011920929
+          },
+          "draw": {
+            "n": 15,
+            "median": 0.20000001788139343,
+            "p95": 0.4000000059604645,
+            "max": 0.4000000059604645
+          },
+          "selection": {
+            "n": 15,
+            "median": 5.600000023841858,
+            "p95": 6.800000011920929,
+            "max": 6.800000011920929
+          },
+          "scrollToFrame": {
+            "n": 12,
+            "median": 11.299999982118607,
+            "p95": 14.199999988079071,
+            "max": 14.199999988079071
+          },
+          "zoomToFrame": {
+            "n": 12,
+            "median": 10.599999994039536,
+            "p95": 66.69999998807907,
+            "max": 66.69999998807907
+          },
+          "laneReorderHistory": {
+            "n": 10,
+            "median": 25.400000005960464,
+            "p95": 27.600000023841858,
+            "max": 27.600000023841858
+          },
+          "undoRedo": {
+            "n": 10,
+            "median": 33.79999998211861,
+            "p95": 42.69999998807907,
+            "max": 42.69999998807907
+          },
+          "saveWithRecovery": {
+            "n": 3,
+            "median": 427.39999997615814,
+            "p95": 431.30000001192093,
+            "max": 431.30000001192093
+          },
+          "dragToFrame": {
+            "n": 12,
+            "median": 44.400000005960464,
+            "p95": 45.89999997615814,
+            "max": 45.89999997615814
+          }
+        }
+      }
+    ],
+    "repeatNote": "Preceding repeat is retained rather than hiding its slower zoom/IO observations; it preceded the final optional clip-field removal fix. The table in the report uses the final deployed-build run.",
+    "sourceWorkload": "One shared saved four-note motif, one repeat per clip, regular nonoverlapping placements; warm source catalog. Many-distinct-source/long-session stress remains future work."
+  },
+  "preservation": {
+    "legacyHead": "bc2749e2877738bd443a1d3ace66f919d23fe837",
+    "legacyTrackedFiles": 121,
+    "legacyAggregateSha256": "4e217cc4f22b1a049470feb31d5955ece52542619497e97c0924e592f6928ff2",
+    "legacyGitStatus": "clean",
+    "historicalReportsExperimentsDependencies": "unchanged from50583e1",
+    "personalVaults": "not targeted; every CDP evaluation guards the marked dev-vault",
+    "remoteChanges": "none; no configured remote",
+    "isolatedHost": "Stopped only the verified project-local profile/9227 parent after checkpoints and audio/resource release."
+  },
+  "limitations": [
+    "Linux Obsidian1.15.0 only; no Windows/macOS/mobile/pop-out or screen-reader certification.",
+    "Saved live motifs are not snapshots or an atomic multi-file source set.",
+    "Inexact PPQ endpoints/repetition intervals are rejected, not rounded.",
+    "Arrangement playback, multitrack MIDI export/channel allocation, sections/markers/recording UI remain4B or later.",
+    "Unapplied form controls and edits before checkpoint completion are not crash-durable.",
+    "1,000-clip committed edits and protected saves have measured main-thread/IO costs."
+  ],
+  "repository": {
+    "head": "50583e1",
+    "newCommits": [
+      "50583e1"
+    ],
+    "modified": 31,
+    "untracked": 29,
+    "staged": 0,
+    "conflicts": 0,
+    "pendingPaths": [
+      "AGENTS.md",
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/DATA_MODEL.md",
+      "docs/DECISIONS.md",
+      "docs/DESIGN_DIRECTION.md",
+      "docs/DEVELOPMENT.md",
+      "docs/PRODUCT_SPEC.md",
+      "docs/RISKS.md",
+      "docs/ROADMAP.md",
+      "findings.md",
+      "progress.md",
+      "scripts/motif-midi-native.mjs",
+      "src/application/services.ts",
+      "src/domain/entities.ts",
+      "src/domain/validation.ts",
+      "src/main.ts",
+      "src/modules/motif/commands.ts",
+      "src/modules/motif/geometry.ts",
+      "src/modules/motif/library.ts",
+      "src/modules/motif/positions.ts",
+      "src/modules/motif/session.ts",
+      "src/storage/document.ts",
+      "src/storage/index.ts",
+      "styles.css",
+      "task_plan.md",
+      "tests/motif-view.test.ts",
+      "tests/patchbook-view.test.ts",
+      "tests/plugin.test.ts",
+      "tests/support/obsidian.ts",
+      "vitest.config.ts",
+      "docs/MILESTONE_4A_REPORT.md",
+      "docs/superpowers/plans/2026-11-06-milestone-4a.md",
+      "docs/validation/milestone-4a-native.json",
+      "scripts/canvas-benchmark.mjs",
+      "scripts/canvas-edge-native.mjs",
+      "scripts/canvas-native.mjs",
+      "scripts/canvas-review.mjs",
+      "scripts/stop-dev-obsidian.mjs",
+      "src/application/history-session.ts",
+      "src/arrangement/catalog.ts",
+      "src/arrangement/preflight.ts",
+      "src/arrangement/sources.ts",
+      "src/arrangement/timing.ts",
+      "src/modules/canvas/commands.ts",
+      "src/modules/canvas/geometry.ts",
+      "src/modules/canvas/inspector.ts",
+      "src/modules/canvas/library.ts",
+      "src/modules/canvas/motif-picker.ts",
+      "src/modules/canvas/session.ts",
+      "src/modules/canvas/timeline.ts",
+      "src/modules/canvas/view.ts",
+      "src/music/grid.ts",
+      "src/music/positions.ts",
+      "src/storage/content-revision.ts",
+      "src/ui/canvas-metrics.ts",
+      "tests/canvas-domain.test.ts",
+      "tests/canvas-geometry.test.ts",
+      "tests/canvas-view.test.ts",
+      "tests/setup.ts"
+    ]
+  }
+}
