@@ -11,20 +11,26 @@ import { resolveArrangement } from '../../arrangement/preflight';
 import type { SourceSummary } from '../../arrangement/sources';
 import { editableComposition, placeClip, editClip, duplicateClip, acknowledgeSource } from './commands';
 import { CanvasSession } from './session';
+import { SourceCapture } from '../../arrangement/capture';
+import { ArrangementPreparation } from '../../arrangement/preparation';
+import { MidiFiles } from '../../midi/files';
 export class CanvasLibrary {
     readonly sources: SourceCatalog;
     readonly recovery: CheckpointRecovery<Composition>;
+    readonly capture:SourceCapture;readonly midiFiles:MidiFiles;
     private sessions = new Map<string, CanvasSession>();
     private owners = new Map<CanvasSession, Set<object>>();
     private closed = false;
     constructor(readonly index: EntityIndex, private readonly repository: EntityRepository, vault: VaultPort & AssetPort, private readonly unsavedSource: (id: string) => boolean = () => false) {
         this.sources = new SourceCatalog(index);
+        this.capture=new SourceCapture(this.sources,index,repository,vault);this.midiFiles=new MidiFiles(vault);
         this.recovery = new CheckpointRecovery(vault, index, repository, raw => { const fields = object(raw, 'composition recovery'), title = fields.title, e = validateEntity({ ...fields, title: title === '' ? 'Untitled recovery' : title }); if (e.kind !== 'composition')
             throw new FoundationError('wrong-kind', 'Use the original module for this checkpoint.'); if (title === '')
             e.title = ''; return editableComposition(e); });
     }
     items(search = '') { const heads = this.index.heads(); return heads.filter(h => h.kind === 'composition' && h.title?.toLocaleLowerCase().includes(search.toLocaleLowerCase())).map(h => ({ ...h, ambiguous: heads.filter(x => x.id === h.id).length > 1 })).sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '')); }
     drafts(): CanvasSession[] { return [...this.sessions.values()].filter(s => s.dirty); }
+    preparation(session:CanvasSession):ArrangementPreparation{checkActive(undefined,this.closed);return new ArrangementPreparation(this.capture,this.repository,this.midiFiles,()=>({composition:session.draft,base:session.base}));}
     plan(composition: Composition) { return resolveArrangement(composition, id => this.sources.get(id), this.unsavedSource); }
     source(id: string): SourceSummary { const state = this.sources.get(id); if (state.status !== 'ready')
         throw new FoundationError('invalid', `Saved motif is ${state.status}. Inspect/repair it; no clip/source data changed.`); return state.source; }
@@ -71,6 +77,6 @@ export class CanvasLibrary {
     discard(s: CanvasSession): void { this.owners.delete(s); this.sessions.delete(s.draft.id.toLowerCase()); s.dispose(); }
     async checkpointAll(): Promise<void> { for (const s of this.drafts())
         await s.checkpoint(); }
-    dispose(): void { this.closed = true; this.recovery.dispose(); for (const s of this.sessions.values())
+    dispose(): void { this.closed = true; this.capture.dispose();this.recovery.dispose(); for (const s of this.sessions.values())
         s.dispose(); this.sessions.clear(); this.owners.clear(); }
 }

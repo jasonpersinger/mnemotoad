@@ -1,0 +1,942 @@
+{
+  "milestone": "4B",
+  "status": "CONDITIONAL PASS \u2014 verified Linux scope; DAW import/other platforms unverified",
+  "baseline": {
+    "commit": "3f5c67f",
+    "signature": "good existing GPG signature",
+    "tests": 386,
+    "files": 33
+  },
+  "verification": {
+    "tests": 449,
+    "testFiles": 37,
+    "typecheck": "pass",
+    "eslint": "pass",
+    "build": "pass",
+    "auditVulnerabilities": 0,
+    "auditReportedDependencies": 229,
+    "independentMidi": {
+      "valid": [
+        {
+          "name": "single-lane",
+          "notes": 1,
+          "tracks": 2,
+          "endTick": 245760,
+          "sha256": "85c8ecf39936d1de7612f65d17d3df2f4599472cda8027096bced1c93bb3ab77"
+        },
+        {
+          "name": "four-lane",
+          "notes": 4,
+          "tracks": 5,
+          "endTick": 245760,
+          "sha256": "7260596a47d5c8519ab44fbfe573adf3b0c6f1b2f11bec5eed78cb1570a60de8"
+        },
+        {
+          "name": "repeated",
+          "notes": 4,
+          "tracks": 2,
+          "endTick": 245760,
+          "sha256": "cd756b1121b0ec8db375c5e472c15b859aedf0b7965a13b6044b92597ae6e885"
+        },
+        {
+          "name": "mixed-ppq",
+          "notes": 3,
+          "tracks": 4,
+          "endTick": 245760,
+          "sha256": "8bf7990859f9377ddfaf8ea5849ed1c4055da8b46e6703ceaff60d0f1f3e843b"
+        },
+        {
+          "name": "polyphonic-chord",
+          "notes": 4,
+          "tracks": 2,
+          "endTick": 245760,
+          "sha256": "1efe6c874502611c243cf4a2353a9b91fcfa47a2c24cb53dbbd66e87184ecd5a"
+        },
+        {
+          "name": "adjacent-repeated",
+          "notes": 2,
+          "tracks": 2,
+          "endTick": 245760,
+          "sha256": "a4d5860a7a5c4565409cf815e25309b8b35424d7986f69668338ca9bd7493185"
+        },
+        {
+          "name": "simultaneous-lanes",
+          "notes": 4,
+          "tracks": 5,
+          "endTick": 245760,
+          "sha256": "5e87ffd15779529f1daec4bb84d4c714a63209cb1b9f43824b212e3e3496d2d9"
+        },
+        {
+          "name": "percussion",
+          "notes": 1,
+          "tracks": 2,
+          "endTick": 245760,
+          "sha256": "940c169825fdc0079f4d7064eadaffab4138d2e7a389342704f308d7d8833aee"
+        },
+        {
+          "name": "sparse-six-eight",
+          "notes": 4,
+          "tracks": 5,
+          "endTick": 245760,
+          "sha256": "16985287f0b3fa36345a5d47adce8cb926a3129820d7bcb19832756f97fbcf06"
+        },
+        {
+          "name": "trailing-silence",
+          "notes": 1,
+          "tracks": 2,
+          "endTick": 122880,
+          "sha256": "cb97d472d8de3652d8187bb40fee3e2bea71df0b4e670b042068047def4e5f61"
+        }
+      ],
+      "rejected": [
+        {
+          "name": "channel-allocation-failure",
+          "code": "channel-exhausted"
+        },
+        {
+          "name": "source-revision-conflict",
+          "code": "source-changed"
+        },
+        {
+          "name": "unrepresentable-timing",
+          "code": "inexact-timing"
+        },
+        {
+          "name": "event-limit",
+          "code": "event-limit"
+        }
+      ],
+      "parser": "scripts/verify-midi.py, independent Python stdlib",
+      "python": "Python 3.14.9"
+    },
+    "nativeMidi": {
+      "passed": true,
+      "notes": 23,
+      "events": 46,
+      "tracks": 5,
+      "ppq": 960,
+      "tempo": [
+        [
+          0,
+          500000
+        ]
+      ],
+      "meter": [
+        [
+          0,
+          6,
+          8
+        ]
+      ],
+      "endTick": 245760,
+      "method": "Independent Python SMF reader compared against compiler stream AND expected tuples reconstructed from original saved source texts and clip positions/repetitions."
+    }
+  },
+  "native": {
+    "environment": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+      "dpr": 0.9999999767169356,
+      "width": 1360,
+      "height": 1100
+    },
+    "hardware": {
+      "cpu": "AMD Ryzen 7 5700G with Radeon Graphics",
+      "logicalCpus": 16,
+      "memoryBytes": 29300412416,
+      "kernel": "7.3.1-1-cachyos"
+    },
+    "checks": [
+      "Reviewed4A composition opens without migration: four lanes, three clips, original source unchanged",
+      "Four saved sources at480/960/1000PPQ compile through embedded worker; exact notes, repeats,6/8 and trailing silence retained",
+      "Explicit melodic/percussion routing, rejected duplicate assignment, Auto removal, and one-step routing Undo/Redo work in actual host",
+      "Intentional same-lane same-channel/pitch overlap blocks compilation/export with note/clip provenance; deleting offending clip restores readiness",
+      "Native Type1 export is byte-identical on repetition and accepted by independent Python parser; authoritative composition stays clean",
+      "Export cancellation creates no file; invalid parent destination fails safely with original exported MIDI retained",
+      "Actual audio-clock transport plays, pauses, resumes, seeks across sustaining notes, and stops; disabling MOTIF leaves CANVAS ownership intact",
+      "A saved source edit stops playback and invalidates compilation; unreviewed revision blocks export until explicit revision-specific acknowledgment and recompile",
+      "Actual dark/light themes,650px pane and2xDPI render the same arrangement without changing musical data",
+      "Keyboard-focused standard seek form applies exact6/8 musical position without mouse",
+      "Cold restart preserved exact composition, lane/clip identities, routing including Auto, and source review revisions",
+      "Cold recovery discovery/inspection/load preserved authoritative source until explicit protected Save",
+      "External composition write blocked stale Save and preserved both external prose and recoverable unsaved draft",
+      "External composition write blocked stale Save and preserved both external prose and recoverable unsaved draft",
+      "CANVAS disable and plugin unload during actual playback stopped transport, settled audio, and reopened without duplicate module commands"
+    ],
+    "edgeChecks": [
+      {
+        "kind": "missing",
+        "diagnostics": [
+          {
+            "code": "source-missing",
+            "severity": "error",
+            "message": "Saved motif is missing. Inspect/restore its original note; arrangement is unchanged.",
+            "motifId": "3a54e830-1c3c-4b81-bebf-00419f8d3de3"
+          }
+        ]
+      },
+      {
+        "kind": "malformed",
+        "diagnostics": [
+          {
+            "code": "source-malformed",
+            "severity": "error",
+            "message": "Saved motif is malformed. Inspect/restore its original note; arrangement is unchanged.",
+            "motifId": "3a54e830-1c3c-4b81-bebf-00419f8d3de3"
+          }
+        ]
+      },
+      {
+        "kind": "future",
+        "diagnostics": [
+          {
+            "code": "source-unsupported",
+            "severity": "error",
+            "message": "Saved motif is unsupported. Inspect/restore its original note; arrangement is unchanged.",
+            "motifId": "3a54e830-1c3c-4b81-bebf-00419f8d3de3"
+          }
+        ]
+      },
+      {
+        "kind": "supported-rename",
+        "passed": true
+      },
+      {
+        "kind": "compilation-cancellation",
+        "passed": true
+      },
+      {
+        "kind": "unsaved-draft-excluded",
+        "passed": true
+      },
+      {
+        "kind": "natural-trailing-silence-completion",
+        "passed": true
+      },
+      {
+        "kind": "actual-audio-context-suspension",
+        "passed": true
+      },
+      {
+        "kind": "composition-edit-invalidation",
+        "passed": true
+      },
+      {
+        "kind": "view-closure-cleanup",
+        "passed": true
+      }
+    ],
+    "finalBuild": {
+      "passed": true,
+      "checks": [
+        "Final deployed build compiles protected saved sources",
+        "Updated routing control and diagnostic screenshots",
+        "Collision probe undo leaves exact composition unchanged",
+        "Real MOTIF Play hands off to CANVAS Play through one owner",
+        "Final Stop settles voices/timers/contexts"
+      ],
+      "screenshots": [
+        "22-final-routing.png",
+        "23-final-ready.png",
+        "24-final-collision.png"
+      ],
+      "rendererExceptions": []
+    },
+    "rendererExceptions": [],
+    "screenshots": [
+      "01-canvas-transport.png",
+      "02-four-lane-ready.png",
+      "03-auto-routing.png",
+      "04-explicit-routing.png",
+      "05-channel-conflict.png",
+      "06-note-collision.png",
+      "07-source-revision.png",
+      "08-export-ready.png",
+      "09-midi-export.png",
+      "10-playing.png",
+      "11-paused.png",
+      "12-after-seek.png",
+      "13-dark-arrangement.png",
+      "14-light-arrangement.png",
+      "15-narrow-pane.png",
+      "16-saved-reopened.png",
+      "17-recovery.png",
+      "18-save-conflict.png",
+      "19-failed-write.png",
+      "20-high-dpi.png",
+      "22-final-routing.png",
+      "23-final-ready.png",
+      "24-final-collision.png"
+    ],
+    "screenshotCount": 23,
+    "reaper": {
+      "status": "not verified",
+      "version": "7.84/linux-x86_64",
+      "resourcePath": "/home/jason/MNEMOBARD/.runtime/reaper-4b",
+      "procedure": "New isolated instance with explicit -cfgfile; original synthetic sparse-six-eight.mid; ReaScript GetResourcePath guard. MIDI import dialog appeared; no verified import completed.",
+      "limitation": "Installed xdotool could not load libxdo.so.4; direct XTest interaction did not activate the modal. No global install/configuration changes made.",
+      "trackCountObserved": 0,
+      "claim": "No DAW interoperability claim. Independent Python comparisons passed separately."
+    }
+  },
+  "performance": {
+    "method": "Three repetitions; saved sources vary PPQ480/960/1000,4/8/16 notes and2/4/6/8-quarter full lengths; placements at global3840-tick slots, every third clip repeats twice.5ms heartbeat is responsiveness observation, not guaranteed event latency. Heap is renderer-wide approximate/no forced GC. Independent Python parse includes process startup.",
+    "results": [
+      {
+        "name": "small",
+        "lanes": 4,
+        "clips": 20,
+        "distinctSources": 4,
+        "setup": {
+          "id": "12833dd1-c2bb-4c4d-8aa9-4018edda546e",
+          "heap": 47621110
+        },
+        "samples": [
+          {
+            "totalPrepareMs": 81.59999999403954,
+            "worker": {
+              "compileMs": 5.199999988079071,
+              "serializeMs": 2
+            },
+            "sourceAndVerificationAndTransferMs": 74.40000000596046,
+            "revisionVerifyMs": 5.4000000059604645,
+            "routingMs": 0.29999998211860657,
+            "collisionMs": 0.10000002384185791,
+            "audioInitMs": 6.299999982118607,
+            "seekMs": 0.30000001192092896,
+            "stopMs": 0,
+            "maxHeartbeatGapMs": 6.700000017881393,
+            "expandedNotes": 216,
+            "events": 432,
+            "bytes": 2081,
+            "capturedBytes": 6592,
+            "cacheHits": 0,
+            "heapBefore": 47621110,
+            "heapAfter": 42423096
+          },
+          {
+            "totalPrepareMs": 70,
+            "worker": {
+              "compileMs": 4.800000011920929,
+              "serializeMs": 1.800000011920929
+            },
+            "sourceAndVerificationAndTransferMs": 63.39999997615814,
+            "revisionVerifyMs": 6,
+            "routingMs": 0,
+            "collisionMs": 0.20000001788139343,
+            "audioInitMs": 1.199999988079071,
+            "seekMs": 0.30000001192092896,
+            "stopMs": 0.09999999403953552,
+            "maxHeartbeatGapMs": 6.5,
+            "expandedNotes": 216,
+            "events": 432,
+            "bytes": 2081,
+            "capturedBytes": 6592,
+            "cacheHits": 4,
+            "heapBefore": 42423096,
+            "heapAfter": 49843619
+          },
+          {
+            "totalPrepareMs": 74.19999998807907,
+            "worker": {
+              "compileMs": 4.799999982118607,
+              "serializeMs": 2.0999999940395355
+            },
+            "sourceAndVerificationAndTransferMs": 67.30000001192093,
+            "revisionVerifyMs": 5.300000011920929,
+            "routingMs": 0.09999999403953552,
+            "collisionMs": 0,
+            "audioInitMs": 1.2000000178813934,
+            "seekMs": 0.19999998807907104,
+            "stopMs": 0,
+            "maxHeartbeatGapMs": 7,
+            "expandedNotes": 216,
+            "events": 432,
+            "bytes": 2081,
+            "capturedBytes": 6592,
+            "cacheHits": 4,
+            "heapBefore": 49843619,
+            "heapAfter": 42631372
+          }
+        ],
+        "summary": {
+          "totalPrepareMs": {
+            "median": 74.19999998807907,
+            "p95": 81.59999999403954,
+            "samples": [
+              81.59999999403954,
+              70,
+              74.19999998807907
+            ]
+          },
+          "sourceAndVerificationAndTransferMs": {
+            "median": 67.30000001192093,
+            "p95": 74.40000000596046,
+            "samples": [
+              74.40000000596046,
+              63.39999997615814,
+              67.30000001192093
+            ]
+          },
+          "revisionVerifyMs": {
+            "median": 5.4000000059604645,
+            "p95": 6,
+            "samples": [
+              5.4000000059604645,
+              6,
+              5.300000011920929
+            ]
+          },
+          "routingMs": {
+            "median": 0.09999999403953552,
+            "p95": 0.29999998211860657,
+            "samples": [
+              0.29999998211860657,
+              0,
+              0.09999999403953552
+            ]
+          },
+          "collisionMs": {
+            "median": 0.10000002384185791,
+            "p95": 0.20000001788139343,
+            "samples": [
+              0.10000002384185791,
+              0.20000001788139343,
+              0
+            ]
+          },
+          "audioInitMs": {
+            "median": 1.2000000178813934,
+            "p95": 6.299999982118607,
+            "samples": [
+              6.299999982118607,
+              1.199999988079071,
+              1.2000000178813934
+            ]
+          },
+          "seekMs": {
+            "median": 0.30000001192092896,
+            "p95": 0.30000001192092896,
+            "samples": [
+              0.30000001192092896,
+              0.30000001192092896,
+              0.19999998807907104
+            ]
+          },
+          "stopMs": {
+            "median": 0,
+            "p95": 0.09999999403953552,
+            "samples": [
+              0,
+              0.09999999403953552,
+              0
+            ]
+          },
+          "maxHeartbeatGapMs": {
+            "median": 6.700000017881393,
+            "p95": 7,
+            "samples": [
+              6.700000017881393,
+              6.5,
+              7
+            ]
+          }
+        },
+        "independentParseProcessMs": 25.943824000000063,
+        "independentNotes": 216,
+        "exportBytes": 2081,
+        "exportPath": "MNEMOBARD/Exports/benchmark-small-1793984431943.mid"
+      },
+      {
+        "name": "medium",
+        "lanes": 16,
+        "clips": 200,
+        "distinctSources": 25,
+        "setup": {
+          "id": "169caa59-c362-4357-be48-67d286e580c3",
+          "heap": 45157599
+        },
+        "samples": [
+          {
+            "totalPrepareMs": 159.30000001192093,
+            "worker": {
+              "compileMs": 22.69999998807907,
+              "serializeMs": 8.300000011920929
+            },
+            "sourceAndVerificationAndTransferMs": 128.30000001192093,
+            "revisionVerifyMs": 18.69999998807907,
+            "routingMs": 0.20000001788139343,
+            "collisionMs": 0.5999999940395355,
+            "audioInitMs": 1.800000011920929,
+            "seekMs": 0.7999999821186066,
+            "stopMs": 0.09999999403953552,
+            "maxHeartbeatGapMs": 14.400000005960464,
+            "expandedNotes": 2444,
+            "events": 4888,
+            "bytes": 21121,
+            "capturedBytes": 45669,
+            "cacheHits": 0,
+            "heapBefore": 45157599,
+            "heapAfter": 66041331
+          },
+          {
+            "totalPrepareMs": 138.59999999403954,
+            "worker": {
+              "compileMs": 20.80000001192093,
+              "serializeMs": 7.799999982118607
+            },
+            "sourceAndVerificationAndTransferMs": 110,
+            "revisionVerifyMs": 18.30000001192093,
+            "routingMs": 0.09999999403953552,
+            "collisionMs": 0.19999998807907104,
+            "audioInitMs": 1.800000011920929,
+            "seekMs": 0.699999988079071,
+            "stopMs": 0.20000001788139343,
+            "maxHeartbeatGapMs": 13.800000011920929,
+            "expandedNotes": 2444,
+            "events": 4888,
+            "bytes": 21121,
+            "capturedBytes": 45669,
+            "cacheHits": 25,
+            "heapBefore": 66041331,
+            "heapAfter": 70624757
+          },
+          {
+            "totalPrepareMs": 139.90000000596046,
+            "worker": {
+              "compileMs": 20.69999998807907,
+              "serializeMs": 7.800000011920929
+            },
+            "sourceAndVerificationAndTransferMs": 111.40000000596046,
+            "revisionVerifyMs": 17.599999994039536,
+            "routingMs": 0,
+            "collisionMs": 0.19999998807907104,
+            "audioInitMs": 1.800000011920929,
+            "seekMs": 0.9000000059604645,
+            "stopMs": 0,
+            "maxHeartbeatGapMs": 13.300000011920929,
+            "expandedNotes": 2444,
+            "events": 4888,
+            "bytes": 21121,
+            "capturedBytes": 45669,
+            "cacheHits": 25,
+            "heapBefore": 70624757,
+            "heapAfter": 73585512
+          }
+        ],
+        "summary": {
+          "totalPrepareMs": {
+            "median": 139.90000000596046,
+            "p95": 159.30000001192093,
+            "samples": [
+              159.30000001192093,
+              138.59999999403954,
+              139.90000000596046
+            ]
+          },
+          "sourceAndVerificationAndTransferMs": {
+            "median": 111.40000000596046,
+            "p95": 128.30000001192093,
+            "samples": [
+              128.30000001192093,
+              110,
+              111.40000000596046
+            ]
+          },
+          "revisionVerifyMs": {
+            "median": 18.30000001192093,
+            "p95": 18.69999998807907,
+            "samples": [
+              18.69999998807907,
+              18.30000001192093,
+              17.599999994039536
+            ]
+          },
+          "routingMs": {
+            "median": 0.09999999403953552,
+            "p95": 0.20000001788139343,
+            "samples": [
+              0.20000001788139343,
+              0.09999999403953552,
+              0
+            ]
+          },
+          "collisionMs": {
+            "median": 0.19999998807907104,
+            "p95": 0.5999999940395355,
+            "samples": [
+              0.5999999940395355,
+              0.19999998807907104,
+              0.19999998807907104
+            ]
+          },
+          "audioInitMs": {
+            "median": 1.800000011920929,
+            "p95": 1.800000011920929,
+            "samples": [
+              1.800000011920929,
+              1.800000011920929,
+              1.800000011920929
+            ]
+          },
+          "seekMs": {
+            "median": 0.7999999821186066,
+            "p95": 0.9000000059604645,
+            "samples": [
+              0.7999999821186066,
+              0.699999988079071,
+              0.9000000059604645
+            ]
+          },
+          "stopMs": {
+            "median": 0.09999999403953552,
+            "p95": 0.20000001788139343,
+            "samples": [
+              0.09999999403953552,
+              0.20000001788139343,
+              0
+            ]
+          },
+          "maxHeartbeatGapMs": {
+            "median": 13.800000011920929,
+            "p95": 14.400000005960464,
+            "samples": [
+              14.400000005960464,
+              13.800000011920929,
+              13.300000011920929
+            ]
+          }
+        },
+        "independentParseProcessMs": 37.71156299999984,
+        "independentNotes": 2444,
+        "exportBytes": 21121,
+        "exportPath": "MNEMOBARD/Exports/benchmark-medium-1793984434282.mid"
+      },
+      {
+        "name": "large",
+        "lanes": 32,
+        "clips": 1000,
+        "distinctSources": 100,
+        "setup": {
+          "id": "414f17a4-e04d-4b32-9f7b-809a45464ca0",
+          "heap": 97601582
+        },
+        "samples": [
+          {
+            "totalPrepareMs": 498.90000000596046,
+            "worker": {
+              "compileMs": 83.89999997615814,
+              "serializeMs": 54.10000002384186
+            },
+            "sourceAndVerificationAndTransferMs": 360.90000000596046,
+            "revisionVerifyMs": 71.19999998807907,
+            "routingMs": 7.800000011920929,
+            "collisionMs": 1.4000000059604645,
+            "audioInitMs": 9.5,
+            "seekMs": 0.7999999821186066,
+            "stopMs": 0.10000002384185791,
+            "maxHeartbeatGapMs": 54.900000005960464,
+            "expandedNotes": 12200,
+            "events": 24400,
+            "bytes": 102042,
+            "capturedBytes": 185138,
+            "cacheHits": 0,
+            "heapBefore": 97601582,
+            "heapAfter": 113777313
+          },
+          {
+            "totalPrepareMs": 435.69999998807907,
+            "worker": {
+              "compileMs": 85.30000001192093,
+              "serializeMs": 52.79999998211861
+            },
+            "sourceAndVerificationAndTransferMs": 297.59999999403954,
+            "revisionVerifyMs": 71.5,
+            "routingMs": 6.200000017881393,
+            "collisionMs": 1.2999999821186066,
+            "audioInitMs": 2.5999999940395355,
+            "seekMs": 0.7000000178813934,
+            "stopMs": 0.09999999403953552,
+            "maxHeartbeatGapMs": 54.69999998807907,
+            "expandedNotes": 12200,
+            "events": 24400,
+            "bytes": 102042,
+            "capturedBytes": 185138,
+            "cacheHits": 100,
+            "heapBefore": 113777313,
+            "heapAfter": 177366403
+          },
+          {
+            "totalPrepareMs": 438.2999999821186,
+            "worker": {
+              "compileMs": 84.90000000596046,
+              "serializeMs": 52.30000001192093
+            },
+            "sourceAndVerificationAndTransferMs": 301.0999999642372,
+            "revisionVerifyMs": 89.7000000178814,
+            "routingMs": 6.299999982118607,
+            "collisionMs": 1.0999999940395355,
+            "audioInitMs": 4.300000011920929,
+            "seekMs": 0.800000011920929,
+            "stopMs": 0.09999999403953552,
+            "maxHeartbeatGapMs": 54.70000001788139,
+            "expandedNotes": 12200,
+            "events": 24400,
+            "bytes": 102042,
+            "capturedBytes": 185138,
+            "cacheHits": 100,
+            "heapBefore": 177366403,
+            "heapAfter": 58257649
+          }
+        ],
+        "summary": {
+          "totalPrepareMs": {
+            "median": 438.2999999821186,
+            "p95": 498.90000000596046,
+            "samples": [
+              498.90000000596046,
+              435.69999998807907,
+              438.2999999821186
+            ]
+          },
+          "sourceAndVerificationAndTransferMs": {
+            "median": 301.0999999642372,
+            "p95": 360.90000000596046,
+            "samples": [
+              360.90000000596046,
+              297.59999999403954,
+              301.0999999642372
+            ]
+          },
+          "revisionVerifyMs": {
+            "median": 71.5,
+            "p95": 89.7000000178814,
+            "samples": [
+              71.19999998807907,
+              71.5,
+              89.7000000178814
+            ]
+          },
+          "routingMs": {
+            "median": 6.299999982118607,
+            "p95": 7.800000011920929,
+            "samples": [
+              7.800000011920929,
+              6.200000017881393,
+              6.299999982118607
+            ]
+          },
+          "collisionMs": {
+            "median": 1.2999999821186066,
+            "p95": 1.4000000059604645,
+            "samples": [
+              1.4000000059604645,
+              1.2999999821186066,
+              1.0999999940395355
+            ]
+          },
+          "audioInitMs": {
+            "median": 4.300000011920929,
+            "p95": 9.5,
+            "samples": [
+              9.5,
+              2.5999999940395355,
+              4.300000011920929
+            ]
+          },
+          "seekMs": {
+            "median": 0.7999999821186066,
+            "p95": 0.800000011920929,
+            "samples": [
+              0.7999999821186066,
+              0.7000000178813934,
+              0.800000011920929
+            ]
+          },
+          "stopMs": {
+            "median": 0.09999999403953552,
+            "p95": 0.10000002384185791,
+            "samples": [
+              0.10000002384185791,
+              0.09999999403953552,
+              0.09999999403953552
+            ]
+          },
+          "maxHeartbeatGapMs": {
+            "median": 54.70000001788139,
+            "p95": 54.900000005960464,
+            "samples": [
+              54.900000005960464,
+              54.69999998807907,
+              54.70000001788139
+            ]
+          }
+        },
+        "independentParseProcessMs": 86.63469200000145,
+        "independentNotes": 12200,
+        "exportBytes": 102042,
+        "exportPath": "MNEMOBARD/Exports/benchmark-large-1793984444251.mid"
+      }
+    ]
+  },
+  "sourcePerformance": {
+    "method": "Fresh plugin after restart: one cold then two warm captures; each capture includes fresh source text and a full consistency recheck; separate verification reads again. Actual Vault adapter and existing index/catalog.",
+    "results": [
+      {
+        "name": "small",
+        "sources": 4,
+        "samples": [
+          {
+            "captureMs": 132.10000002384186,
+            "verifyMs": 0.29999998211860657,
+            "cacheHits": 0,
+            "textBytes": 6592
+          },
+          {
+            "captureMs": 1.399999976158142,
+            "verifyMs": 0.30000001192092896,
+            "cacheHits": 4,
+            "textBytes": 6592
+          },
+          {
+            "captureMs": 1.399999976158142,
+            "verifyMs": 0.4000000059604645,
+            "cacheHits": 4,
+            "textBytes": 6592
+          }
+        ]
+      },
+      {
+        "name": "medium",
+        "sources": 25,
+        "samples": [
+          {
+            "captureMs": 19.900000005960464,
+            "verifyMs": 2.0999999940395355,
+            "cacheHits": 0,
+            "textBytes": 45669
+          },
+          {
+            "captureMs": 6.9000000059604645,
+            "verifyMs": 2.0999999940395355,
+            "cacheHits": 25,
+            "textBytes": 45669
+          },
+          {
+            "captureMs": 6.5,
+            "verifyMs": 2.0999999940395355,
+            "cacheHits": 25,
+            "textBytes": 45669
+          }
+        ]
+      },
+      {
+        "name": "large",
+        "sources": 100,
+        "samples": [
+          {
+            "captureMs": 76.89999997615814,
+            "verifyMs": 8.100000023841858,
+            "cacheHits": 0,
+            "textBytes": 185138
+          },
+          {
+            "captureMs": 26,
+            "verifyMs": 8.100000023841858,
+            "cacheHits": 100,
+            "textBytes": 185138
+          },
+          {
+            "captureMs": 24.69999998807907,
+            "verifyMs": 8.100000023841858,
+            "cacheHits": 100,
+            "textBytes": 185138
+          }
+        ]
+      }
+    ]
+  },
+  "preservation": {
+    "root": "/home/jason/troubadour",
+    "trackedFiles": 121,
+    "head": "bc2749e2877738bd443a1d3ace66f919d23fe837",
+    "aggregateSha256": "4e217cc4f22b1a049470feb31d5955ece52542619497e97c0924e592f6928ff2",
+    "matchesBaseline": true,
+    "gitStatus": ""
+  },
+  "repository": {
+    "head": "3f5c67f",
+    "newLocalCommits": [
+      "3f5c67f"
+    ],
+    "pendingPathCount": 57,
+    "pendingPaths": [
+      "AGENTS.md",
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/DATA_MODEL.md",
+      "docs/DECISIONS.md",
+      "docs/DEVELOPMENT.md",
+      "docs/RISKS.md",
+      "docs/ROADMAP.md",
+      "findings.md",
+      "progress.md",
+      "src/arrangement/preflight.ts",
+      "src/main.ts",
+      "src/midi/export.ts",
+      "src/midi/files.ts",
+      "src/midi/job.ts",
+      "src/midi/worker.ts",
+      "src/modules/canvas/commands.ts",
+      "src/modules/canvas/library.ts",
+      "src/modules/canvas/timeline.ts",
+      "src/modules/canvas/view.ts",
+      "src/modules/motif/library.ts",
+      "src/music/compiler.ts",
+      "src/music/transport.ts",
+      "src/storage/document.ts",
+      "src/storage/index.ts",
+      "styles.css",
+      "task_plan.md",
+      "tests/canvas-view.test.ts",
+      "docs/MILESTONE_4B_REPORT.md",
+      "docs/superpowers/plans/2026-11-06-milestone-4b.md",
+      "docs/validation/milestone-4b-native.json",
+      "scripts/arrangement-fixtures.mjs",
+      "scripts/canvas-4b-benchmark.mjs",
+      "scripts/canvas-4b-edges.mjs",
+      "scripts/canvas-4b-final-native.mjs",
+      "scripts/canvas-4b-native.mjs",
+      "scripts/canvas-4b-source-profile.mjs",
+      "scripts/canvas-4b-verify.mjs",
+      "src/arrangement/audition.ts",
+      "src/arrangement/capture.ts",
+      "src/arrangement/collisions.ts",
+      "src/arrangement/compiled.ts",
+      "src/arrangement/compiler.ts",
+      "src/arrangement/export.ts",
+      "src/arrangement/job.ts",
+      "src/arrangement/preparation.ts",
+      "src/arrangement/routing.ts",
+      "src/midi/serialize.ts",
+      "src/modules/canvas/export-dialog.ts",
+      "src/modules/canvas/performance-panel.ts",
+      "tests/arrangement-capture.test.ts",
+      "tests/arrangement-compiler.test.ts",
+      "tests/arrangement-job.test.ts",
+      "tests/arrangement-transport.test.ts",
+      "tests/fixtures/README.md",
+      "tests/fixtures/arrangement-single.mid",
+      "tests/support/arrangement-fixtures.ts"
+    ],
+    "staged": false,
+    "conflicts": false,
+    "remotePush": false,
+    "publication": false,
+    "packageAndLockfileUnchanged": true,
+    "historicalReportsAndExperimentsUnchanged": true,
+    "deployedBundleManifestStylesMatch": true,
+    "personalVaultsUsed": false
+  },
+  "evidenceDirectory": "output/canvas/milestone-4b/",
+  "report": "docs/MILESTONE_4B_REPORT.md"
+}

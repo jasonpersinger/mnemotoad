@@ -1,6 +1,6 @@
 # Engineering risks and feasibility experiments
 
-Status: the original five risks below are qualitative Milestone0 estimates. The Milestone 4A update records current arrangement evidence and remaining risks. Historical experiments remain evidence for their tested scope, not cross-platform guarantees.
+Status: the original five risks below are qualitative Milestone0 estimates. The Milestone4B update records current compilation/export/playback evidence and remaining risks. Historical experiments remain evidence for their tested scope, not cross-platform guarantees.
 
 ## R1 — Vault integrity and relationship consistency
 
@@ -127,3 +127,15 @@ See [3A report](MILESTONE_3A_REPORT.md) for exact environment, bounds and measur
 | Vault/lifecycle compatibility (medium/critical) | Existing per-file protected saves/checkpoints, non-destructive recovery, native restart/conflict/disable/unload regressions. The native `open` helper collision and Escape propagation issue were fixed; tests now include a host open wrapper. | No multi-file/distributed transaction, crash-durable last keystroke, screen-reader certification or Windows/macOS validation is claimed. Pending form controls need Apply before checkpointing. |
 
 The five original risk studies remain historical proposals where they discuss rounded arrangement conversion, unique lane channels or synchronized audio. Prompt008's exact-only planner policy and explicit4B boundary take precedence.
+
+## Milestone4B residual risks
+
+| Risk | Evidence and mitigation | Remaining work / approval |
+| --- | --- | --- |
+| Multi-file source races | Fresh saved-text capture, immutable compile input and pre/post-write checks; source changes/unreviewed revisions block; submitted writes may still finish. Retain/report derivative rather than delete or claim rollback. | No transaction guarantee after final check. Future snapshots are a separate product decision. |
+| MIDI channel semantics | Explicit channels preserved, unknown state blocked, context-aware Auto reuse, full-provenance collision rejection and cross-track boundary gap. | Conservative rejection can exhaust15 melodic channels. Broader program/controller/port policies need separate scope. |
+| Expanded resource pressure |24000notes/48000events, text/estimate/timeout/polyphony budgets and worker. Diverse100-source/1000-clip native preparation median438ms; heartbeat worst55ms. Renderer heap observations include GC and cannot prove64MiB actual cap. | Event transfer/main-thread verification still costs time; do not raise limits without allocation/UI profiling. |
+| Audio reliability | One owner, audio-clock lookahead, explicit stop on stall/suspension/blur/changes, seek retriggers crossing notes and releases old context. |50ms restart lead; audible envelope/latency/device behavior not measured; Linux-only host validation. Preview can stop during heavy load rather than catch up incorrectly. |
+| Interoperability/compatibility | Independent Python and separate expected musical tuples, golden bytes, native restart and module regressions. No source mutation/schema migration/dependency addition. | Isolated REAPER import modal was not successfully automated; no DAW result claimed. Windows/macOS, physical output/device latency and screen-reader certification remain unverified. |
+
+See [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md) for exact workloads/results and required human review. These limitations do not authorize4C, maps, snapshot migrations, release or legacy copying.

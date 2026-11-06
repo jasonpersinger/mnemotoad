@@ -9,7 +9,7 @@ export function editableComposition(value: Composition): Composition {
     if (entity.data.lengthTicks > 960 * 4096)
         throw Error('CANVAS supports at most4096 quarter notes; the larger original remains available in Markdown.');
     if (['tempoMap', 'tempos', 'tempoChanges', 'meterChanges', 'timeSignatures'].some(key => entity.data[key] !== undefined) || entity.extra.mnemobard_tempo_map !== undefined || entity.extra.mnemobard_meter_map !== undefined)
-        throw Error('Timing-map composition is protected; map editing is outside4A.');
+        throw Error('Timing-map composition is protected; map editing is unsupported.');
     entity.title = value.title;
     return entity;
 }
@@ -52,3 +52,12 @@ export function editClip(c: Composition, id: string, laneId: string, startTick: 
 export function duplicateClip(c: Composition, id: string, source: SourceSummary): Composition { const { lane, clip } = findClip(c, id), period = sourcePeriod(source, c.data.ppq), startTick = clipExtent(clip.startTick, period, clip.repeatCount).endTick; checkedPlacement(c, source, startTick, clip.repeatCount); const next = { ...clip, id: crypto.randomUUID(), laneId: lane.id, startTick }; return editableComposition({ ...c, data: { ...c.data, lanes: c.data.lanes.map(l => l.id === lane.id ? { ...l, clips: [...l.clips, next] } : l) } }); }
 export function deleteClip(c: Composition, id: string): Composition { findClip(c, id); return editableComposition({ ...c, data: { ...c.data, lanes: c.data.lanes.map(l => ({ ...l, clips: l.clips.filter(clip => clip.id !== id) })) } }); }
 export function acknowledgeSource(c: Composition, id: string, source: SourceSummary): Composition { const { lane, clip } = findClip(c, id), period = checkedPlacement(c, source, clip.startTick, clip.repeatCount); return editableComposition({ ...c, data: { ...c.data, lanes: c.data.lanes.map(l => l.id === lane.id ? { ...l, clips: l.clips.map(item => item.id === id ? { ...item, ...reviewFields(source, period) } : item) } : l) } }); }
+/** Existing schema preferences only; duplicate explicit channels remain protected. */
+export function setLaneRouting(c:Composition,id:string,channel:number|undefined,percussion:boolean):Composition{
+  const lane=laneAt(c,id);
+  if(channel!==undefined&&(!Number.isInteger(channel)||channel<0||channel>15))throw Error('Choose Auto or a channel1–16.');
+  const other=c.data.lanes.find(l=>l.id!==id&&channel!==undefined&&l.midiChannel===channel);
+  if(other)throw Error(`Channel ${Number(channel)+1} is explicitly assigned to ${other.name}. Choose Auto for verified sharing or another explicit channel. Arrangement unchanged.`);
+  const next={...lane,percussion};if(channel===undefined)delete next.midiChannel;else next.midiChannel=channel;
+  return editableComposition({...c,data:{...c.data,lanes:c.data.lanes.map(l=>l.id===id?next:l)}});
+}

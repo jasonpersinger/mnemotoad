@@ -173,3 +173,20 @@
 .mnemobard-canvas-picker select { width: 100%; margin-block: 8px; }
 .mnemobard-canvas-picker form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
 @media (max-width: 700px) { .mnemobard-canvas { padding: 10px; } .mnemobard-arrangement-scroll { height: 360px; } .mnemobard-canvas-toolbar button { padding-inline: 8px; } }
+
+/* CANVAS compilation/transport; secondary routing stays below the timeline. */
+.mnemobard-arrangement-transport { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-block:8px; }
+.mnemobard-arrangement-position { font-variant-numeric:tabular-nums; color:var(--text-normal); padding-inline:6px; }
+.mnemobard-arrangement-state { color:var(--text-muted); font-size:var(--font-small); }
+.mnemobard-canvas-performance details { margin-block:8px; }
+.mnemobard-canvas-performance form { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-block:8px; }
+.mnemobard-canvas-performance input[type=checkbox] { width:auto; }
+.mnemobard-canvas-performance [data-compile-diagnostic] { border-inline-start:2px solid var(--background-modifier-border); padding-inline-start:8px; overflow-wrap:anywhere; }
+.mnemobard-canvas-performance [data-compile-diagnostic] button { margin-inline:6px; }
+.mnemobard-canvas-performance small { display:block; color:var(--text-muted); }
+.mnemobard-arrangement-compilation { overflow-wrap:anywhere; }
+.mnemobard-arrangement-export { overflow-wrap:anywhere; }
+.mnemobard-arrangement-export input { width:100%; }
+
+.mnemobard-canvas-performance .mnemobard-route-percussion { display:flex; align-items:center; gap:6px; padding-block:6px; }
+.mnemobard-canvas-performance input[type=checkbox] { flex:none; justify-self:start; width:var(--checkbox-size,16px); }

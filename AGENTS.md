@@ -4,9 +4,9 @@
 
 Read README and the relevant documents in `docs/` before implementation: PRODUCT_SPEC, ARCHITECTURE, DATA_MODEL, ROADMAP, DECISIONS, TROUBADOUR_AUDIT and RISKS. DESIGN_DIRECTION and TECHNICAL_RESEARCH inform UI/dependency work. Read the decision approval log and current user instructions; do not confuse a proposal with approval. Parent workspace rules also apply.
 
-Current authority: Prompt008 authorizes **Milestone4A CANVAS only**, following3B engineering/visual review. Implement the arrangement planner, lanes/clips/repeats, exact source-PPQ preflight, saved live motif references/review, shared history and safe persistence/recovery. Preserve PATCHBOOK/MOTIF and experiments. No arrangement playback, multitrack export, final channel allocation, timing maps, hardware/recording/external hosting, broad module redesign, cloud, publication, destructive migration or legacy copying. Dark-first CANVAS must respect host light/dark variables without changing user appearance. Final branding and4B need separate authorization.
+Current authority: Prompt009 authorizes **Milestone4B only**, after4A review. Implement deterministic arrangement compilation from acknowledged saved sources, exact PPQ, verified source capture/recheck, bounded expansion, transient automatic routing plus explicit existing preferences, collision diagnostics, deterministic Type1 export and one shared audition transport with pause/resume/seek. Preserve sessions/history/repository/catalog and PATCHBOOK/MOTIF. No sections/markers/recording UI, timing maps, hardware/plugins/mixing, broad redesign, legacy adoption, publication, personal vaults or4C. Dark-first CANVAS remains host-theme compatible.
 
-Milestone4A implementation is complete; see `docs/MILESTONE_4A_REPORT.md` and its retained validation evidence. Stop before4B unless the current user explicitly authorizes it.
+Verified signed4A baseline3f5c67f preserves all60 reviewed paths;386 tests/33 files and full check passed before implementation. The older4A stop is superseded only for Prompt009 scope. Stop after4B for human review.
 
 ## Preserve work and user data
 

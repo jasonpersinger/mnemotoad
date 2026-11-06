@@ -20,7 +20,7 @@ Keep musical knowledge in the vault, accessible without the plugin. Prefer Markd
 
 ## Current status
 
-**Milestone 4A: CANVAS now provides a multitrack arrangement planner.** Create lanes, place saved motifs, repeat or move clips, review source changes, and save/reopen ordinary Markdown. PATCHBOOK and MOTIF remain intact. Arrangement playback and multitrack MIDI export await Milestone 4B.
+**Milestone4B: CANVAS compiles, exports and auditions multitrack arrangements.** Create lanes/clips, review saved source revisions, configure MIDI routing, compile exact events, export Type1 MIDI and use Play/Pause/Seek/Stop. Existing Markdown, history, conflict protection and recovery remain authoritative. PATCHBOOK and MOTIF remain intact. See the [4B report](docs/MILESTONE_4B_REPORT.md) for verified behavior and limitations.
 
 The instrument/patch/effects-chain registers retain search/filter/sort, stable relationships, Markdown access, explicit Save, conflict protection and reversible archiving. **Manage assets** selects existing vault files, imports a confirmed local copy, repairs a missing reference or removes an association while keeping the file. **Play preview** auditions one recording at a time; no instrument is hosted or synthesized. **Recovery register** discovers checkpoints and loads a reviewed draft without saving it automatically.
 
@@ -30,9 +30,9 @@ Open **MNEMOBARD: Open MOTIF** → New motif. Draw notes/chords, drag or resize,
 
 Open **MNEMOBARD: Open CANVAS** → New composition → Add lane → Place motif. Select a clip for precise bar:beat:tick placement, repetition, duplication and source review. Use the lane manager and clip list for keyboard access. Saved motif revisions are live references; unsaved MOTIF notes are excluded. Inexact PPQ conversion blocks placement instead of rounding. See the [4A report](docs/MILESTONE_4A_REPORT.md) and [actual screenshots](output/canvas/milestone-4a/).
 
-Signed commit `50583e1` preserves the reviewed 3B foundation; `90eed00` remains the 3A restoration point. Experiments are unchanged. Stop after 4A: 4B, legacy copying and publication require separate authorization. Final branding remains unapproved.
+Signed commit `3f5c67f` preserves the reviewed4A foundation; `50583e1`/`90eed00` retain3B/3A restoration points. Experiments are unchanged. Stop after4B:4C, legacy copying and publication require separate authorization. Final branding remains unapproved.
 
-`pnpm check` passes 386 tests across 33 files, typecheck, lint and production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow. The basic musical workflow, cold restart, conflicts and recovery were validated in Linux Obsidian1.15.0; Windows/macOS, physical audio latency and screen-reader behavior remain unverified.
+`pnpm check` passes449 tests across37 files, typecheck, lint and production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow. The basic musical workflow, cold restart, conflicts and recovery were validated in Linux Obsidian1.15.0; Windows/macOS, physical audio latency and screen-reader behavior remain unverified.
 
 The kickoff’s `/home/troubadour` path was corrected by the user to `~/troubadour` (`/home/jason/troubadour`). The [Milestone 0 audit](docs/TROUBADOUR_AUDIT.md) remains the read-only reference. No legacy source/tests/assets were copied, and no legacy reuse has been authorized. All foundation code was implemented independently.
 

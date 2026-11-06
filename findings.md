@@ -1,3 +1,7 @@
+# Milestone4B active — Prompt009
+
+Signed4A baseline3f5c67f verifies good after386/33 check;60 reviewed paths matched manifest. Plan: docs/superpowers/plans/2026-11-06-milestone-4b.md. Preserve unique stored explicit channels; safe derived Auto reuse, exact acknowledged source capture and shared compiler/transport.4C excluded. Historical entries follow.
+
 # Milestone4A complete — Prompt008
 
 Signed3B baseline50583e1 verifies good.386 tests/33 files, strict typecheck/lint/build and audits pass. CANVAS21 native groups and58 MOTIF/MIDI/PATCHBOOK/foundation regressions passed, including cold restart/conflicts/recovery/cleanup.17 actual screenshots, exact saved-source preflight and32-lane/1,000-clip measurements are recorded in docs/MILESTONE_4A_REPORT.md and docs/validation/milestone-4a-native.json. Final drag p95≈45.4ms/Save maximum≈411.7ms remain host-specific costs; preceding slower repeats are retained. No new dependency, legacy copying/modification, personal-vault or remote changes.4A remains uncommitted after the signed baseline. Stop before4B; human review and separate authorization required.
@@ -108,3 +112,11 @@ User explicitly corrected TROUBADOUR location to ~/troubadour, authorizing /home
 - midi-file1.2.4 candidate is dev-only,10,700 minified/3,155gzip browser bytes. Header-only declared tracks are accepted; production requires outer validation. No legacy extraction or new runtime dependency.
 - Legacy121 tracked hashes/HEAD/clean status unchanged; current reference path remains user-corrected ~/troubadour. No legacy execution/copy or personal-vault change.
 - Final report: docs/MILESTONE_1B_REPORT.md. Production recommendations B01–B04 remain unapproved; next milestone requires a separate prompt.
+
+##4B confirmed implementation findings
+
+- Schema1 explicit channels are unique; preserving that contract avoids migration. Auto reuse is transient and state/context-verified. Same-track adjacency is safe; shared-channel cross-track same-pitch touching boundaries are rejected because external SMF merge order cannot be guaranteed.
+- Shared exact MusicalEvent stream supports arrangement provenance, MIDI output and one audio owner. Compiler/serializer work belongs in the existing owned MIDI worker after measured synchronous24k-note≈126ms cost.
+-100 distinct saved sources/1000clips expanded12200notes: worker compile≈81ms and serialization≈55ms, full prepare median443ms. Main-thread transfer/verification remain measurable; no universal real-time promise.
+- Exact saved source text rechecks catch missed notifications, renames, duplicate/future/malformed/missing sources. Final binary submission still has a race window: retain and report stale/unacknowledged derivatives.
+- Native tests confirmed revision invalidation, pause/resume/seek, context suspension, natural completion, recovery, external conflicts and disposal. Isolated REAPER7.84 resource path was verified, but import modal interaction failed; external DAW validation remains unavailable.

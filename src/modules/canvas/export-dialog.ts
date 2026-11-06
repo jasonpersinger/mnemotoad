@@ -1,0 +1,12 @@
+import{Modal,Notice,type App}from'obsidian';
+import{element,button}from'../../ui/dom';
+import type{ArrangementPreparation}from'../../arrangement/preparation';
+export class ArrangementExportDialog extends Modal{
+  private closed=false;
+  constructor(app:App,private readonly preparation:ArrangementPreparation,private readonly root:string,private readonly valid:()=>boolean,private readonly alive:()=>boolean=()=>true){super(app);}
+  override onOpen():void{const root=this.contentEl;root.classList.add('mnemobard-arrangement-export');element(root,'h2','Export arrangement MIDI');element(root,'p','Type1: one conductor and nonempty lane tracks,960PPQ. Complete composition ending includes silence. Exports the explicitly compiled working arrangement with acknowledged saved motifs; this does not save the composition.');element(root,'p','No audio, patch sounds, sections/markers or recording references are embedded. Existing files are never replaced.');const prepared=this.preparation.prepared;if(!prepared){element(root,'p','Compile a valid arrangement first.');return;}element(root,'p',`Input ${prepared.arrangement.inputRevision} · ${prepared.arrangement.expandedNotes} notes · ${prepared.arrangement.lengthTicks} ticks`,'mnemobard-hint');
+    const label=element(root,'label');element(label,'span','New vault MIDI destination');const path=element(label,'input');path.setAttribute('aria-label','New arrangement MIDI destination');path.value=`${this.root}/Exports/arrangement-${prepared.arrangement.compositionId.slice(0,8)}-${Date.now()}.mid`;const status=element(root,'p');status.setAttribute('role','status');
+    const submit=button(root,'Create arrangement MIDI',()=>{void(async()=>{submit.disabled=true;try{if(!this.valid())throw Error('Apply/discard pending controls and recompile the current arrangement first.');const outcome=await this.preparation.export(path.value);if(this.closed){if(this.alive())new Notice(outcome.message);return;}status.textContent=outcome.message;}catch(error){if(!this.closed)status.textContent=error instanceof Error?error.message:String(error);}finally{if(!this.closed)submit.disabled=false;}})();},'mod-cta');button(root,'Cancel export',()=>{if(this.preparation.state==='exporting')this.preparation.invalidate('Export cancelled. Submitted host I/O may still complete; inspect its destination.');this.close();});
+  }
+  override onClose():void{this.closed=true;if(this.preparation.state==='exporting')this.preparation.invalidate('Export dialog closed; pending work cancelled.');this.contentEl.replaceChildren();}
+}

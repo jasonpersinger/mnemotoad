@@ -13,6 +13,7 @@ import { addLane, renameLane, reorderLane, deleteLane, deleteClip, findClip } fr
 import { ArrangementTimeline } from './timeline';
 import { ArrangementMotifPicker } from './motif-picker';
 import { clipInspector } from './inspector';
+import { CanvasPerformancePanel } from './performance-panel';
 export class CanvasView extends ModuleView {
     private active = false;
     private epoch = 0;
@@ -21,6 +22,7 @@ export class CanvasView extends ModuleView {
     private session?: CanvasSession;
     private sessionUnsubscribe?: () => void;
     private timeline?: ArrangementTimeline;
+    private performancePanel?:CanvasPerformancePanel;
     private picker?: ArrangementMotifPicker;
     private recoveryPanel?: RecoveryInspector<Composition, CanvasSession>;
     private recoveryRoot?: HTMLElement;
@@ -91,6 +93,7 @@ export class CanvasView extends ModuleView {
             this.draftEpoch++;
             this.refreshScene();
         } }));
+        if(typeof this.app.workspace.on==='function'){const event=this.app.workspace.on('active-leaf-change',leaf=>{if(leaf!==this.leaf)this.performancePanel?.stop();});this.cleanup.push(()=>this.app.workspace.offref(event));}
         this.bindKeys();
         this.renderBrowser();
         this.renderEditor();
@@ -177,6 +180,7 @@ export class CanvasView extends ModuleView {
         button(root, draft.draft.title || 'Untitled draft', () => { void this.leave().then(() => { if (this.active)
             this.attach(draft); }).catch(e => this.fail(e)); }); }
     private renderEditor(): void {
+        this.performancePanel?.dispose();this.performancePanel=undefined;
         this.timeline?.dispose();
         this.timeline = undefined;
         const root = this.editor, s = this.available;
@@ -191,7 +195,7 @@ export class CanvasView extends ModuleView {
         const session = this.session;
         if (!session) {
             element(root, 'h3', 'A place for the piece.');
-            element(root, 'p', this.selectedId ? 'Composition unavailable/read-only. Inspect its original Markdown or recovery.' : 'Create a composition, then place saved musical fragments in lanes. No arrangement audio or MIDI export is performed.', 'mnemobard-hint');
+            element(root, 'p', this.selectedId ? 'Composition unavailable/read-only. Inspect its original Markdown or recovery.' : 'Create a composition, then place and review saved musical fragments. Compile for verified MIDI export and sine audition.', 'mnemobard-hint');
             if (this.selectedId) {
                 const state = s.index.resolve(this.selectedId);
                 if (state.status === 'ready')
@@ -234,6 +238,7 @@ export class CanvasView extends ModuleView {
             void this.openComposition(session.draft.id).catch(e => this.fail(e)); });
         button(more, 'Discard arrangement draft…', () => { const confirm = element(root, 'div', undefined, 'mnemobard-confirm'); element(confirm, 'p', 'Discard the working arrangement and its in-memory history? Saved files and checkpoints remain.'); button(confirm, 'Keep arrangement', () => confirm.remove()); button(confirm, 'Confirm discard arrangement', () => { this.sessionUnsubscribe?.(); s.canvas.discard(session); this.session = undefined; this.renderEditor(); this.renderDrafts(); if (session.base)
             void this.openComposition(session.draft.id).catch(e => this.fail(e)); }); });
+        const performanceToolbar=element(root,'div');
         this.musicalSettings(root, session);
         const tools = element(root, 'div', undefined, 'mnemobard-canvas-navigation');
         const gridLabel = element(tools, 'label');
@@ -259,6 +264,8 @@ export class CanvasView extends ModuleView {
         element(root, 'p', 'Drag clips to move · double-click empty time to place · Ctrl/Cmd-wheel zoom · Shift-wheel scroll. Saved motifs are live references; no source notes are copied.', 'mnemobard-hint');
         this.laneRoot = element(root, 'section', undefined, 'mnemobard-canvas-lane-manager');
         this.inspector = element(root, 'section', undefined, 'mnemobard-canvas-inspector');
+        const secondary=element(root,'section',undefined,'mnemobard-canvas-performance');
+        this.performancePanel=new CanvasPerformancePanel(performanceToolbar,secondary,this.app,s,session,this,(fn,form)=>this.act(fn,form),()=>this.hasPending(),()=>this.active&&this.app.workspace.activeLeaf===this.leaf,tick=>this.timeline?.playhead(tick),(lane,clip)=>{if(this.select(lane,clip)&&clip)this.timeline?.reveal(clip);});
         this.clipRegister = element(root, 'details', undefined, 'mnemobard-canvas-clip-register');
         element(this.clipRegister, 'summary', 'Clip list · keyboard alternative');
         const diagnostics = element(root, 'details', undefined, 'mnemobard-canvas-diagnostics');
@@ -296,9 +303,9 @@ export class CanvasView extends ModuleView {
         fields.set(label, input);
     } const submit = element(form, 'button', 'Apply composition settings'); submit.type = 'submit'; const pending = element(form, 'span'); pending.setAttribute('role', 'status'); form.addEventListener('input', () => { form.dataset.pending = 'true'; pending.textContent = 'Unapplied composition settings'; }); button(form, 'Discard composition settings', () => { delete form.dataset.pending; pending.textContent = ''; this.updateStatus(); }); form.addEventListener('submit', e => { e.preventDefault(); this.act(() => { const bpm = Number(fields.get('Composition tempo BPM')?.value); if (!Number.isFinite(bpm) || bpm < 20 || bpm > 300)
         throw Error('Tempo must be20..300 quarter-note BPM.'); session.edit('Composition settings', value => { const next = { ...value, data: { ...value.data, tempoMicrosecondsPerQuarter: Math.round(60000000 / bpm), meter: { ...value.data.meter, numerator: Number(fields.get('Composition meter numerator')?.value), denominator: Number(fields.get('Composition meter denominator')?.value) }, lengthTicks: Number(fields.get('Composition length ticks')?.value) } }; if (this.available?.canvas.plan(next).diagnostics.some(d => d.code === 'beyond-end'))
-        throw Error('Length would exclude a resolved clip. Extend or edit placements explicitly.'); return next; }); delete form.dataset.pending; pending.textContent = ''; }, form); }); element(details, 'p', 'PPQ960 is fixed for schema1 arrangements. Tempo/meter reinterpret the composition timeline; source motifs stay unchanged. No maps, playback or channel allocation in4A.', 'mnemobard-hint'); }
+        throw Error('Length would exclude a resolved clip. Extend or edit placements explicitly.'); return next; }); delete form.dataset.pending; pending.textContent = ''; }, form); }); element(details, 'p', 'PPQ960 is fixed for schema1 arrangements. Tempo/meter reinterpret the composition timeline; source motifs stay unchanged. No tempo/meter maps. Compile for derived routing and note-only playback/export.', 'mnemobard-hint'); }
     private refreshScene(): void { const s = this.available, session = this.session; if (!this.active || !s || !session || session.disposed)
-        return; this.updateStatus(); const key = `${session.changeVersion}:${s.index.currentRevision}:${this.draftEpoch}`; if (key !== this.planKey) {
+        return; this.performancePanel?.refresh();this.updateStatus(); const key = `${session.changeVersion}:${s.index.currentRevision}:${this.draftEpoch}`; if (key !== this.planKey) {
         this.planKey = key;
         this.plan = s.canvas.plan(session.draft);
         this.timeline?.update(session.draft, this.plan);
@@ -450,7 +457,7 @@ export class CanvasView extends ModuleView {
         if (this.selectedId)
             await this.openComposition(this.selectedId);
     } }
-    override release(): void { this.active = false; this.epoch++; this.lifetime.abort(); this.picker?.close(); this.picker = undefined; this.timeline?.dispose(); this.timeline = undefined; this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.sessionUnsubscribe?.(); this.sessionUnsubscribe = undefined; if (this.session)
+    override release(): void { this.active = false; this.epoch++; this.lifetime.abort(); this.picker?.close(); this.picker = undefined; this.performancePanel?.dispose();this.performancePanel=undefined;this.timeline?.dispose(); this.timeline = undefined; this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.sessionUnsubscribe?.(); this.sessionUnsubscribe = undefined; if (this.session)
         this.foundation()?.canvas.release(this.session, this); if (this.editorScope)
         this.app.keymap.popScope(this.editorScope); this.editorScope = undefined; for (const fn of this.cleanup.splice(0))
         fn(); super.release(); }

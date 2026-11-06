@@ -59,7 +59,7 @@ export class EntityIndex {
             if (this.vault.exists(path)) {
               source = await this.vault.read(path);
               const parsed = parseEntityDocument(source);
-              if (parsed) entry = { path, id: parsed.entity.id.toLowerCase(), entity: parsed.entity, ...(parsed.entity.kind==='motif'?{revision:await contentRevision(source)}:{}) };
+              if (parsed) entry = { path, id: parsed.entity.id.toLowerCase(), entity: parsed.entity, ...(['motif','composition'].includes(parsed.entity.kind)?{revision:await contentRevision(source)}:{}) };
             }
           } catch (error) {
             const hint = source === undefined ? this.entries.get(path)?.id : entityIdentityHint(source);

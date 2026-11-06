@@ -30,6 +30,7 @@ export class ArrangementTimeline {
     private scale = 48;
     private gesture?: Gesture;
     private selectedClip?: string;
+    private playheadTick?:number;
     private selectedLane?: string;
     private fallbackPeriods = new Map<string, number>();
     private warned = new Set<string>();
@@ -212,7 +213,9 @@ export class ArrangementTimeline {
             if (x >= LANE_GUTTER)
                 ctx.fillText(String(Math.round(tick / bar) + 1), x + 5, RULER / 2);
         }
+        if(this.playheadTick!==undefined){const x=LANE_GUTTER+(this.playheadTick-v.startTick)/v.ppq*this.scale;if(x>=LANE_GUTTER&&x<=v.width){ctx.strokeStyle=text;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,v.height);ctx.stroke();ctx.fillStyle=text;ctx.fillRect(x-4,0,8,6);}}
     }
+    playhead(tick:number|undefined):void{this.playheadTick=tick;this.request();}
     private point(e: MouseEvent): {
         x: number;
         y: number;

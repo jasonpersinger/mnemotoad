@@ -1,6 +1,6 @@
 # Development roadmap
 
-Milestone 4A status: Prompt008 authorizes the arrangement foundation after 3B engineering/visual review. Signed baseline50583e1 preserves 3B; 90eed00 preserves 3A. See [MILESTONE_4A_REPORT.md](MILESTONE_4A_REPORT.md) for implementation, native tests and limits. Stop after 4A. Playback, arrangement export and channel allocation need separate 4B approval.
+Milestone4B implementation and validation are recorded in [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md). Signed baseline3f5c67f preserves4A;50583e1 preserves3B;90eed00 preserves3A. Arrangement compilation/routing/export/audition are implemented under Prompt009. Stop for human review;4C is not authorized.
 
 This plan follows the [product acceptance criteria](PRODUCT_SPEC.md#integrated-mvp-acceptance-criteria), [architecture](ARCHITECTURE.md), [data contracts](DATA_MODEL.md), [risk experiments](RISKS.md), and [decision register](DECISIONS.md). It is not an executable implementation plan or permission to modify a vault.
 
@@ -139,3 +139,11 @@ Authorized legacy extraction may reduce discovery/debugging, but adaptation/test
 ## Approval discipline
 
 G0 is required before implementation. Later gates identify meaningful product/scope/release decisions, not permission for every reversible edit or routine test within authorized scope. Record approval evidence and exact scope in [DECISIONS.md](DECISIONS.md). Obtain separate consent for code/fixture extraction, schema migrations, destructive data replacement, final branding, external distribution, and any existing-vault work. Preserve any wider authority explicitly given by the user in a future session.
+
+## Milestone4B completion and review gate
+
+Implemented under Prompt009: pure deterministic arrangement compilation, immutable saved-source capture/rechecks, revision-specific review, bounded expansion, deterministic explicit/Auto channel routing, full-provenance collision diagnostics, shared Type1 writer, new-path MIDI exports, and one shared pause/resume/seek audition transport. No schema migration/new dependency. Existing PATCHBOOK/MOTIF behavior and source records are preserved.
+
+Validation:386 baseline tests→449 tests/37files; independent10 valid MIDI fixtures/4 rejection fixtures plus native23-note/five-track comparison; actual Linux Obsidian restart/recovery/conflict/lifecycle and regression workflows;4/20/4,16/200/25,32/1000/100 lane/clip/source benchmarks; actual screenshots. See [the report](MILESTONE_4B_REPORT.md) for conditional limitations, including unverified DAW import and other platforms.
+
+**Stop gate:** human review of4B is required before any4C work. Possible later priorities, not authorized implementation: stronger source-review/diagnostic usability, sections/markers, recording references, pinned-source product policy, more DAW/platform testing, performance/seek continuity refinement. Final channel-wide state/maps/mixing/ports/branding/release and legacy adoption remain separate decisions. No4C code is included.

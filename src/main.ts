@@ -73,7 +73,8 @@ export default class MnemobardPlugin extends Plugin {
   async setModule(id: ModuleId, enabled: boolean): Promise<void> {
     const services = this.services; if (!this.active || !services) return;
     if (id === 'patchbook' && !enabled) { services.preview.stop(); await services.patchbook.checkpointAll(); }
-    if (id === 'motif' && !enabled) { services.musical.stop(); await services.motifs.checkpointAll(); }
+    if ((id==='motif'||id==='canvas')&&!enabled)for(const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPES[id]))services.musical.stop(leaf.view);
+    if (id === 'motif' && !enabled) await services.motifs.checkpointAll();
     if (id === 'canvas' && !enabled) await services.canvas.checkpointAll();
     const confirmed = await services.settings.update({ modules: { [id]: enabled } });
     if (this.active) services.modules.setEnabled(id, confirmed.modules[id]);

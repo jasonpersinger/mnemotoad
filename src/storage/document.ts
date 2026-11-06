@@ -160,7 +160,7 @@ function retainExtensions(previous: unknown, next: unknown, context = 'data'): u
   });
   if (!previous || !next || typeof previous !== 'object' || typeof next !== 'object' || Array.isArray(previous) || Array.isArray(next)) return next;
   const old = previous as Record<string, unknown>, result = { ...old, ...next };
-  const optionalFields = context === 'data' ? ['importSourceChannel'] : context === 'lanes' ? ['patchId', 'percussion'] : context === 'clips' ? ['laneId', 'label', 'sourceRevision', 'sourcePath', 'sourceTitle', 'reviewedLengthTicks'] : context === 'steps' ? ['parameterNotes', 'presetLink'] : [];
+  const optionalFields = context === 'data' ? ['importSourceChannel'] : context === 'lanes' ? ['patchId', 'percussion', 'midiChannel'] : context === 'clips' ? ['laneId', 'label', 'sourceRevision', 'sourcePath', 'sourceTitle', 'reviewedLengthTicks'] : context === 'steps' ? ['parameterNotes', 'presetLink'] : [];
   for (const optional of optionalFields) if (!Object.hasOwn(next, optional)) delete result[optional];
   for (const [k, v] of Object.entries(next)) result[k] = retainExtensions(old[k], v, k);
   return result;

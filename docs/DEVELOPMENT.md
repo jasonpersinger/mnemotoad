@@ -1,6 +1,6 @@
 # Development guide
 
-Current implementation: shared safe persistence; PATCHBOOK library/assets/recorded preview; MOTIF piano roll/history/audition/recovery, MIDI interchange and transformations; CANVAS lane/clip arrangement planning with exact saved-source preflight. Historical reports remain unchanged. [Milestone 4A](MILESTONE_4A_REPORT.md) records current behavior and verification.
+Current implementation: shared safe persistence; PATCHBOOK library/assets/recorded preview; MOTIF piano roll/history/audition/MIDI interchange; CANVAS arrangement planning plus bounded compilation, routing, MIDI export and shared transport. [Milestone4B](MILESTONE_4B_REPORT.md) distinguishes verified Linux behavior from platform, DAW and timing limitations. Historical reports remain unchanged.
 
 ## Setup and commands
 
@@ -260,3 +260,27 @@ MNEMOBARD_FOUNDATION_REVIEW_DIR=output/canvas/milestone-4a/foundation-regression
 Save explicitly. Applied edits enter the shared draft/history and delayed checkpoints; unsubmitted clip/lane/settings forms are guarded and require Apply or Discard. Closing a pane warns that unapplied controls were not checkpointed. Dirty sessions survive ordinary view transitions while the plugin is enabled; restart recovery requires explicit discovery/review/loading, then Save. Clean unowned sessions can be evicted; unsaved sessions and recovery files are never automatically pruned. A file rename preserves identity; incompatible source timing blocks new placement while retaining existing clips.
 
 Known boundaries: 32 lanes/1,000 clips/1,000 repeats and4,096-quarter editor length are validation limits, not universal performance promises. Preflight is planning-only. No arrangement audio, export, MIDI-channel policy or tempo/meter maps are implemented. Do not promote the unused source-summary GCD into a playback event stream:4B still needs validated source notes, captured revisions and collision policy.
+
+## Milestone4B validation workflow
+
+```sh
+pnpm check
+node scripts/arrangement-fixtures.mjs
+node scripts/canvas-4b-native.mjs
+# Stop only the guarded project host; then relaunch with pnpm dev:obsidian.
+node scripts/stop-dev-obsidian.mjs
+pnpm dev:obsidian
+# In another project terminal after that isolated host has loaded:
+node scripts/canvas-4b-native.mjs --verify-restart
+node scripts/canvas-4b-verify.mjs
+node scripts/canvas-4b-edges.mjs
+node scripts/canvas-4b-benchmark.mjs
+node scripts/canvas-4b-source-profile.mjs
+pnpm audit --json
+```
+
+Run native commands sequentially: they share the same guarded renderer and must not race plugin restoration. The native first phase stores synthetic fixture/recovery IDs; restart verification consumes them. `--continue-restart` is a narrowly scoped harness continuation after its recovery phase, not a substitute for a real cold restart. The benchmark creates retained synthetic saved motifs/compositions in the disposable vault. No automatic cleanup deletes them or recovery data. Output under `output/canvas/milestone-4b/` is ignored local review evidence, not release content. Small retained summaries are in `docs/validation/`; the original synthetic golden SMF is in `tests/fixtures/`.
+
+MOTIF/PATCHBOOK/foundation regressions use the existing scripts with `MNEMOBARD_MOTIF_REVIEW_DIR`, `MNEMOBARD_MIDI_REVIEW_DIR`, `MNEMOBARD_ASSET_REVIEW_DIR`, `MNEMOBARD_FOUNDATION_REVIEW_DIR` pointing to new4B subfolders. Never overwrite earlier milestone evidence or run an unqualified Obsidian CLI against a personal instance.
+
+In CANVAS: Save arrangement, review changed source clips, then **Compile arrangement**. Inspect **MIDI routing** and **Compilation / export diagnostics** below the timeline. Explicit routing edits are undoable and require Save; Auto assignments are derived and are shown after compilation. Use **Seek / export** for bar:beat:tick and a new `.mid` vault path. Compilation can use the explicitly displayed working arrangement; only saved acknowledged MOTIF sources are captured. Playing/exporting does not save or dirty it. A failed destination or stale snapshot requires another compile. Stop/close/disabling cancels owned audio and worker work; submitted binary I/O may still finish and must be inspected, never blindly retried at the same path.

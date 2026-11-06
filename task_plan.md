@@ -1,3 +1,7 @@
+# Milestone4B complete for review — Prompt009
+
+Signed4A baseline3f5c67f verified;449 tests/37files and full checks pass. Pure compilation, source revision capture, routing/collisions, deterministic Type1 export and shared arrangement transport are implemented. Independent fixtures/native workflows/cold restart/regressions and23 Obsidian screenshots are recorded in docs/MILESTONE_4B_REPORT.md. Final varied-length large preparation median438ms/worst heartbeat55ms; DAW import and other platforms remain unverified. Stop for human review before4C. Historical entries follow.
+
 # Milestone4A complete — Prompt008
 
 Signed3B baseline50583e1 verifies good.386 tests/33 files, strict typecheck/lint/build and audits pass. CANVAS21 native groups and58 MOTIF/MIDI/PATCHBOOK/foundation regressions passed, including cold restart/conflicts/recovery/cleanup.17 actual screenshots, exact saved-source preflight and32-lane/1,000-clip measurements are recorded in docs/MILESTONE_4A_REPORT.md and docs/validation/milestone-4a-native.json. Final drag p95≈45.4ms/Save maximum≈411.7ms remain host-specific costs; preceding slower repeats are retained. No new dependency, legacy copying/modification, personal-vault or remote changes.4A remains uncommitted after the signed baseline. Stop before4B; human review and separate authorization required.

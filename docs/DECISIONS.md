@@ -1,6 +1,6 @@
 # Decision register
 
-Updated: 2026-11-06. **Proposed is not approved.** Prompt008 authorizes Milestone4A CANVAS planning after3B engineering/visual review. Current scoped decisions C01–C08 are recorded below. Arrangement audio/export/channel allocation require4B approval; maps, final branding/release and legacy copying remain unapproved. Older log entries describe authority at their original milestones.
+Updated:2026-11-06. **Proposed is not approved.** Prompt009 authorizes Milestone4B after4A review. R01–R10 below record scoped implementation decisions under that authority.4C, maps, final branding/release and all legacy copying remain unapproved. Older log entries describe their original milestone authority.
 
 ## Confirmed requirements and authority
 
@@ -151,3 +151,22 @@ Authority: explicit user approval after 3B engineering/visual review supersedes 
 | C08 — Provisional CANVAS design | Dark-first scoped host-variable surfaces and violet host accent; readable light theme, large timeline and collapsed secondary controls. No MOTIF/PATCHBOOK redesign or final brand approval. |
 
 Current evidence and limitations are in [MILESTONE_4A_REPORT.md](MILESTONE_4A_REPORT.md). These scoped implementation decisions do not approve 4B. Human review must define captured-source consistency, allocation across at most16 MIDI channels, same-pitch collisions between clips, supported arrangement bounds and any future pinned-source policy. Sections/markers/recording UI, final branding, distribution license, destructive migration and all legacy reuse remain separately gated. No legacy-code adoption is requested.
+
+### Prompt009 / Milestone4B
+
+Authority: explicit user approval after4A review. Verified signed4A baseline **3f5c67f**;386 baseline tests/33files passed. These are scoped implementation choices under Prompt009, not4C/release/legacy approval.
+
+| ID | Decision and rationale | Status |
+| --- | --- | --- |
+| R01 | Extend existing MusicalEvent/Plan with optional provenance; pure bounded arrangement compiler. A second event representation would fragment timing/export/playback semantics. | Implemented/tested under009. |
+| R02 | Immutable saved-source capture with fresh exact-text checks and revision-specific acknowledgment. Cache validated data only while text matches. Verify before/after compilation, before binary submission and after acknowledgment. No distributed transaction claim. | Implemented/tested; post-submission races reported, files retained. |
+| R03 |24000 expanded notes/48000 events;128 sources;8/16MiB text;64MiB estimated budget; existing4096-quarter bound;10s worker. Synchronous24k probe≈126ms justified extending the existing cancellable worker. | Implemented; native diverse-source measurements in report. |
+| R04 | Preserve explicit-channel uniqueness from existing schema1. Auto routing can reuse proven compatible channels without changing persisted preferences; no destructive/incompatible schema change. | Documented repository-contract exception to duplicate explicit sharing recommendation. |
+| R05 | Stable lane UUID allocation order, explicit channels first, melodic channels excluding10, explicit channel10 percussion. Sharing requires matching organizational patch context and verified note-only state. | Implemented;32 sparse lanes tested. No instrument hosting/program generation. |
+| R06 | Reject same-channel/pitch overlaps, preserving clips/notes. Cross-track same-pitch touching boundaries also cannot share a channel because external SMF merge order is unspecified. Same-track adjacency remains valid. | Conservative interoperability restriction, tested. |
+| R07 | Shared Type1 writer; conductor + nonempty lane tracks in authored order, all ending at composition length. Stable UUID-prefixed names and no timestamp metadata; byte-identical output. New visible vault destination only. | Implemented; independent Python/golden/native comparisons. External DAW import not verified. |
+| R08 | Narrowly extend existing MusicalTransport for pause/resume/seek and one owner. Seek/pause closes resources and retriggers held notes after50ms lead; bounded audio-clock lookahead. | Implemented/native verified; no seamless or sample-accurate output claim. |
+| R09 | Prepared playback is a captured snapshot. Applied edits, saved-source/draft revision changes, save-base conflicts invalidate; view/blur/module/plugin closure stops. Compile again; never use unsaved source notes. | Implemented/native verified. |
+| R10 | Existing fields/history/persistence; transient readiness/routing/transport separated. No new dependencies, state framework, event bus, database, map/mixing/section editor or legacy adoption. | Implemented. Final branding and4C remain unapproved. |
+
+Review the [4B report](MILESTONE_4B_REPORT.md) before authorizing follow-on work. Optional pinned snapshots, broader routing/state/schema support, cross-platform/DAW validation, sections/markers/recording UI and final brand work remain proposals. No legacy-code reuse request is made.

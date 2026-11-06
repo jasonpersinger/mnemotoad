@@ -18,6 +18,7 @@ export class MotifLibrary {
   private owners = new Map<MotifSession, Set<object>>();
   private draftListeners=new Set<()=>void>();
   isDirty(id:string):boolean{return this.sessions.get(id.toLowerCase())?.dirty??false;}
+  draftRevision(id:string):number|undefined{return this.sessions.get(id.toLowerCase())?.changeVersion;}
   subscribeDrafts(listener:()=>void):()=>void{this.draftListeners.add(listener);return()=>{this.draftListeners.delete(listener);};}
   private publishDrafts():void{if(!this.closed)for(const listener of this.draftListeners)listener();}
   constructor(readonly index: EntityIndex, private readonly repository: EntityRepository, vault: VaultPort & AssetPort) {
