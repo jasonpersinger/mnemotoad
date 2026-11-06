@@ -7,5 +7,5 @@
     "noFallthroughCasesInSwitch": true, "skipLibCheck": true,
     "noEmit": true, "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "experiments", "tests", "vitest.config.ts"]
+  "include": ["src", "experiments", "tests", "benchmarks", "vitest.config.ts"]
 }

@@ -15,6 +15,8 @@ export class EntityIndex {
   private listeners = new Set<() => void>();
   private closed = false;
   private started = false;
+  private revision = 0;
+  get currentRevision(): number { return this.revision; }
   constructor(private readonly vault: VaultPort) {}
 
   start(): Promise<void> {
@@ -87,7 +89,7 @@ export class EntityIndex {
   }
   all(): IndexEntry[] { return [...this.entries.values()].map(cloneEntry); }
   subscribe(listener: () => void): () => void { if (this.closed) return () => {}; this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
-  private publish(): void { if (!this.closed) for (const listener of this.listeners) listener(); }
+  private publish(): void { if (!this.closed) { this.revision++; for (const listener of this.listeners) listener(); } }
   dispose(): void { this.closed = true; this.unsubscribe?.(); this.listeners.clear(); this.entries.clear(); this.versions.clear(); }
 }
 

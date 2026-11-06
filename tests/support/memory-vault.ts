@@ -1,5 +1,18 @@
 import type { VaultPort, VaultChange } from '../../src/storage/vault-port';
-export class MemoryVault implements VaultPort {
+import type { AssetPort, VaultAsset } from '../../src/storage/asset-port';
+export class MemoryVault implements VaultPort, AssetPort {
+  binaries = new Map<string, ArrayBuffer>();
+  failBinary?: 'before' | 'after';
+  assetFiles(): VaultAsset[] {
+    return [...new Set([...this.files.keys(), ...this.binaries.keys()])].map(path => ({ path, name: path.split('/').at(-1) ?? path, extension: path.split('.').at(-1) ?? '', size: this.binaries.get(path)?.byteLength ?? new TextEncoder().encode(this.files.get(path) ?? '').byteLength, modified: 1 }));
+  }
+  fileInfo(path: string): VaultAsset | undefined { return this.assetFiles().find(file => file.path === path); }
+  resource(path: string): string { return `app://local/${path}`; }
+  async createBinary(path: string, bytes: ArrayBuffer): Promise<void> {
+    if (this.exists(path) || this.failBinary === 'before') throw Error('Binary creation failed');
+    this.binaries.set(path, bytes.slice(0)); this.emit({ type: 'create', path });
+    if (this.failBinary === 'after') throw Error('Binary completion unknown');
+  }
   files = new Map<string, string>();
   folders = new Set<string>();
   listeners = new Set<(change: VaultChange) => void>();
@@ -10,7 +23,7 @@ export class MemoryVault implements VaultPort {
   delayRead?: (path: string) => Promise<void>;
   private queues = new Map<string, Promise<unknown>>();
   markdownPaths(): string[] { return [...this.files.keys()].filter(p => p.endsWith('.md')); }
-  exists(path: string): boolean { return this.files.has(path) || this.folders.has(path); }
+  exists(path: string): boolean { return this.files.has(path) || this.binaries.has(path) || this.folders.has(path); }
   async read(path: string): Promise<string> {
     this.reads.push(path); const text = this.files.get(path); if (text === undefined) throw Error('File missing');
     await this.delayRead?.(path); return text;

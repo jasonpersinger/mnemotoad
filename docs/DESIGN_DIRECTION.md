@@ -82,3 +82,8 @@ Use device-pixel ratio for backing resolution, retain CSS-sized geometry for poi
 ## Decisions requiring design review
 
 Approve the interaction hierarchy and hub-versus-direct-view navigation first. Then compare two or three static style directions using approved local assets: restrained manuscript, laboratory ledger, or minimal instrument panel. Evaluate a dense piano roll, a conflict dialog, and PATCHBOOK in light/dark themes before selecting a style. No asset generation or frontend implementation is part of this milestone.
+
+
+## Milestone2B provisional review
+
+The existing archival register now includes plain asset rows, inline vault selection/import confirmation, a compact audition control and a recovery register with comparison sections. Controls use host variables/fonts and visible focus; no brand assets or typography were finalized. Nine actual light/dark/narrow application captures live under `output/patchbook/milestone-2b/`; see the2B report. Screen-reader/community-theme certification remains open.

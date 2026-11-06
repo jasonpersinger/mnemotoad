@@ -1,3 +1,7 @@
+# Milestone 2B complete — Prompt005
+
+Signed baseline300eba2 verified;209 tests/21 files, typecheck/lint/build pass. Native2B workflow/cold restart plus keyboard/image/hash probes passed (14 groups), foundation11 and clean-start2A17 passed. Nine actual screenshots,100/1000/5000 benchmarks, limits and host queue stress are in docs/MILESTONE_2B_REPORT.md / docs/validation/milestone-2b-native.json. Legacy hash matches baseline; no copy/personal-vault/remote changes. Implementation uncommitted for review; stop pending separate authorization. Historical entries follow.
+
 # Milestone 2A completion
 
 2026-11-05: Reviewed all37 pending1B changes, ignores/credential patterns and123-test verification; signed baseline f0d90d1 verifies good. Implemented typed instrument/patch/chain library, shared safe persistence extensions, sessions/recovery, native forms/browser/relations/queries and confirmed archive/restore. No new dependency or legacy copying.

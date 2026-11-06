@@ -84,3 +84,12 @@ The five risks above remain active. [MILESTONE_1B_REPORT.md](MILESTONE_1B_REPORT
 | R5 ownership/adoption | Native 50 start/stop, 20 play/view-close cycles, pending benchmark cancellation and unload cleanup pass; legacy tracked hash unchanged. | Short process-global heap samples are not a leak proof. OS sleep/device changes/pop-outs and 3-OS tests remain. No legacy rights clearance; prefer independent code and keep experimental dependencies dev-only until reviewed. |
 
 The old p95 audible lateness/drift and 16.7ms frame targets remain proposed acceptance goals, not guarantees established by 1B. Wall-clock poll intervals, audio-clock deltas, scheduled lead time and perceived output latency are different quantities.
+
+
+## Milestone2B risk update
+
+- Asset copies and note saves are separate operations. Cancellation/uncertain writes may leave a file: report path, keep original and copy, and require inspection before retry. Public vault APIs are not a distributed or crash-proof transaction.
+- Recorded-audio support is an OS/installer codec property. Linux synthetic WAV/MP3/OGG/FLAC passed; corrupt WAV failed gracefully. No universal codec, audible-latency or Windows/macOS claim. Limits100MiB import/250MiB preview bound usual work, not guaranteed allocation under an external race.
+- Audio owns one lazy media element, releases src/listeners on stop/error/owner close/disable/unload and guards late promises. Main-window tests passed. Pop-outs, hardware/audible output and extended OS-suspend/device-loss stress remain unverified.
+- Recovery is discoverable but not a backup application. It retains all versions, bounds inspection, never merges automatically and requires explicit reviewed consent for changed-source rebasing. No automatic pruning; checkpoints can grow substantially. Invalid structures may be text-only; missing/duplicate originals require manual resolution.
+- In-memory5k search benefits from a catalog snapshot; full-result sorting/cloning and startup parsing remain linear. Native disk-scale indexing/full DOM redraw and memory-retention profiles are still unmeasured. A stressed host metadata/link queue temporarily stalled native FileManager rename; the full suite passed after a clean restart. Keep long-session compatibility testing before beta.

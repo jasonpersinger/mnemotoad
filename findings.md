@@ -1,3 +1,7 @@
+# Milestone 2B complete — Prompt005
+
+Signed baseline300eba2 verified;209 tests/21 files, typecheck/lint/build pass. Native2B workflow/cold restart plus keyboard/image/hash probes passed (14 groups), foundation11 and clean-start2A17 passed. Nine actual screenshots,100/1000/5000 benchmarks, limits and host queue stress are in docs/MILESTONE_2B_REPORT.md / docs/validation/milestone-2b-native.json. Legacy hash matches baseline; no copy/personal-vault/remote changes. Implementation uncommitted for review; stop pending separate authorization. Historical entries follow.
+
 # Milestone 2A findings
 
 - Signed baseline f0d90d1 preserves reviewed1B work; good signature, no signing override/remote. Production library independently implemented on the shared repository/codec/index.

@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Milestone 2A status: Prompt 004 authorizes the production PATCHBOOK library after report-level 1B review. Instruments, patches and reusable effects chains consume the shared foundation; MOTIF/CANVAS remain shells and musical experiments remain isolated. See [MILESTONE_2A_REPORT.md](MILESTONE_2A_REPORT.md) for verification/limits. Musical proposals below remain unapproved production recommendations. No legacy source was extracted.
+Milestone2B status: Prompt005 authorizes PATCHBOOK asset selection/import, recorded-media preview and explicit recovery. Existing entity repository/contracts remain authoritative. See [MILESTONE_2B_REPORT.md](MILESTONE_2B_REPORT.md) for tested behavior and limitations. Musical production recommendations below remain separately gated.
 
 ## Recommended stack
 
@@ -163,3 +163,16 @@ The [completed static audit](TROUBADOUR_AUDIT.md) recommends hybrid A+C: selecte
 | `core/development.ts` | Later domain transforms | Separate post-MVP feature/reuse approval. |
 
 Imported motif source PPQ should remain exact, as legacy fixtures demonstrate; composition compilation converts to its explicit PPQ with diagnostics. The new piano-roll renderer, patch catalog, standalone entity graph, lane compiler and Type1 exporter are new work. The old all-vault refresh, DOM piano roll, section clipping, entity graph, build system and lockfile are not adopted. Every authorized extraction needs clear licensing/provenance and MNEMOBARD contract tests; [L1–L5](DECISIONS.md#proposed-legacy-authorization-groups) define the proposed review scope.
+
+
+## Implemented PATCHBOOK asset/recovery boundary (2B)
+
+`storage/asset-port.ts` adds file metadata, transient resource URLs and binary creation to the same `ObsidianVaultPort`; authoritative entity updates still use EntityRepository. `patchbook/assets.ts` resolves native links, validates associations, and copies explicitly selected browser File bytes to a new vault path. Import confirmation, collision handling, cancellation and uncertain-copy reporting do not imply cross-file transactions. No raw runtime filesystem, fetch, separate database or legacy/experiment import.
+
+`preview.ts` owns one lazy HTMLAudioElement, generation-guarded play/resume promises, load timeout, pause/seek/stop and listener/source cleanup. It streams a chosen local resource on request; no AudioContext, synth or library-wide decoding. An AssetPanel owns its subscriptions/import cancellation and preview owner token; navigation/form replacement/close/disable/unload stops that token. Other views cannot stop another owner's playback with scoped controls. A future musical transport must explicitly coordinate focus; it is not implemented here.
+
+`recovery.ts` reads existing append-only formats through the vault port, bounds discovery and resolves original records by UUID. `recovery-panel.ts` inspects exact source/draft text and requires explicit loading. Loading creates a dirty shared LibrarySession; saving still uses the same conditional repository. Changed sources require an explicit comparison acknowledgment and a freshly verified displayed base. Later competing edits still conflict. This Prompt005 workflow supersedes the older proposed new-comparison-note restoration path: no duplicate authoritative entity is created merely to inspect recovery.
+
+A revision-keyed catalog snapshot avoids cloning every record before every filtered query. Public results remain cloned; index publication invalidates the snapshot, including renames/duplicates. This is a derived in-memory cache, never a second authority. Sorting/materialization remains linear. See the report's bounded benchmark and limitations.
+
+The ItemView scope is constructed before host activation, with handlers registered/removed per opening. Presets/arbitrary extensions open in a bounded inert Obsidian Modal; recognized audio/image extensions can open in the native workspace. No OS shell opener is called. Final design and musical technology decisions are unchanged.

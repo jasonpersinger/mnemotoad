@@ -1,12 +1,15 @@
 import { Notice, Scope, type WorkspaceLeaf } from 'obsidian';
 import type { FoundationServices } from '../../application/services';
-import type { LibraryKind } from '../../domain/entities';
+import type { AssetReference, LibraryKind } from '../../domain/entities';
 import { messageOf } from '../../domain/errors';
 import { validateEntity } from '../../domain/validation';
 import type { LibraryQuery } from './query';
 import type { LibrarySession } from './session';
 import { ModuleView } from '../../ui/module-view';
 import { element, button, renderLibraryForm } from './form';
+import { AssetPanel } from './asset-panel';
+import { RecoveryPanel } from './recovery-panel';
+import { AssetInspector } from '../../ui/asset-inspector';
 
 const LABELS: Record<LibraryKind, string> = { instrument: 'Instruments', patch: 'Patches', 'effects-chain': 'Effects chains' };
 const SINGULAR: Record<LibraryKind, string> = { instrument: 'instrument', patch: 'patch', 'effects-chain': 'effects chain' };
@@ -31,7 +34,14 @@ export class PatchbookView extends ModuleView {
   private tabs?: HTMLElement;
   private draftList?: HTMLElement;
   private saveStatus?: HTMLElement;
-  constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) { super(leaf, 'patchbook', foundation); }
+  private assetPanel?: AssetPanel;
+  private recoveryPanel?: RecoveryPanel;
+  private assetInspector?: AssetInspector;
+  constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) {
+    super(leaf, 'patchbook', foundation);
+    // The host captures a view's scope when it is activated, before async onOpen.
+    this.scope = new Scope(this.app.scope);
+  }
   private get available(): FoundationServices | undefined { const services = this.foundation(); return services?.modules.enabled('patchbook') ? services : undefined; }
   override async onOpen(): Promise<void> {
     this.release(); this.inactive = false; this.loading = true; this.lifetime = new AbortController();
@@ -54,6 +64,14 @@ export class PatchbookView extends ModuleView {
     this.filters = element(root, 'div', undefined, 'mnemobard-library-filters');
     this.feedback = element(root, 'p', '', 'mnemobard-feedback'); this.feedback.setAttribute('role', 'status'); this.feedback.setAttribute('aria-live', 'polite');
     this.draftList = element(root, 'div', undefined, 'mnemobard-drafts');
+    const recoveryRoot = element(root, 'section', undefined, 'mnemobard-recovery');
+    button(toolbar, 'Recovery register', () => {
+      this.recoveryPanel?.dispose();
+      this.recoveryPanel = new RecoveryPanel(recoveryRoot, services, session => {
+        if (!this.inactive) { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.attach(session, true); this.say('Recovered draft loaded. Inspect it and explicitly Save record.'); }
+      }, path => this.openNote(path));
+      button(recoveryRoot, 'Close recovery register', () => { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; });
+    });
     const panes = element(root, 'div', undefined, 'mnemobard-library-panes');
     this.browser = element(panes, 'section', undefined, 'mnemobard-library-browser'); this.browser.setAttribute('aria-label', 'Library records');
     this.detail = element(panes, 'section', undefined, 'mnemobard-library-detail'); this.detail.setAttribute('aria-label', 'Record detail');
@@ -165,6 +183,7 @@ export class PatchbookView extends ModuleView {
     } catch (error) { if (!this.inactive && epoch === this.epoch) { this.unsubscribeSession?.(); this.unsubscribeSession = undefined; this.selectedId = id; this.currentSession = undefined; this.editing = false; this.renderDetail(); this.fail(error); } }
   }
   private attach(session: LibrarySession, editing: boolean): void {
+    this.available?.preview.stop(this);
     this.epoch++;
     this.unsubscribeSession?.(); this.currentSession = session; this.selectedId = session.draft.id;
     if (this.queryState.kind !== session.draft.kind) {
@@ -187,9 +206,17 @@ export class PatchbookView extends ModuleView {
     const app = this.app;
     void app.workspace.openLinkText(path, '', true).catch(error => this.fail(error));
   }
+  private openAsset(path: string, role: AssetReference['role']): void {
+    const extension = path.split('.').at(-1)?.toLowerCase() ?? '';
+    // Limit host opening to built-in media/image viewers. Arbitrary presets may
+    // be executable extensions, so inspect them inside Obsidian instead.
+    if (role !== 'preset' && ['wav', 'mp3', 'ogg', 'flac', 'm4a', 'webm', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'].includes(extension)) this.openNote(path);
+    else { this.assetInspector?.close(); this.assetInspector = new AssetInspector(this.app, path); this.assetInspector.open(); }
+  }
   private related(id: string): void { void this.select(id).catch(error => this.fail(error)); }
   private renderDetail(): void {
     const services = this.available, root = this.detail; if (!services || !root || this.inactive) return;
+    this.assetPanel?.dispose(); this.assetPanel = undefined;
     root.replaceChildren(); this.saveStatus = undefined;
     if (this.loading) { element(root, 'p', 'Opening the sound archive…', 'mnemobard-hint'); return; }
     const session = this.currentSession;
@@ -209,7 +236,7 @@ export class PatchbookView extends ModuleView {
     element(root, 'p', SINGULAR[e.kind].toUpperCase(), 'mnemobard-eyebrow'); element(root, 'h2', e.title || `New ${SINGULAR[e.kind]}`);
     this.saveStatus = element(root, 'p', session.status, 'mnemobard-save-status'); this.saveStatus.setAttribute('role', 'status'); this.saveStatus.setAttribute('aria-live', 'polite');
     if (this.editing) {
-      renderLibraryForm(root, session, services.patchbook, () => { void this.save().catch(error => this.fail(error)); }, () => { void this.leaveDraft().then(() => { if (!this.inactive) { this.editing = false; this.renderDetail(); this.renderDrafts(); } }).catch(error => this.fail(error)); });
+      renderLibraryForm(root, session, services.patchbook, () => { void this.save().catch(error => this.fail(error)); }, () => { void this.leaveDraft().then(() => { if (!this.inactive) { this.editing = false; this.renderDetail(); this.renderDrafts(); } }).catch(error => this.fail(error)); }, target => { this.assetPanel = new AssetPanel(target, services, session, this, true, (path, role) => this.openAsset(path, role)); });
       this.discardControls(root, session);
       return;
     }
@@ -250,7 +277,8 @@ export class PatchbookView extends ModuleView {
       const related = services.patchbook.related(e.id); element(root, 'h3', `Associated patches · ${related.length}`);
       for (const patch of related) button(root, `${patch.entity.title}${patch.entity.archived ? ' (archived)' : ''}`, () => this.related(patch.entity.id));
     }
-    if (e.assets?.length) { element(root, 'h3', 'File references'); for (const asset of e.assets) element(root, 'p', `${asset.role} · ${asset.link}`, 'mnemobard-record-text'); }
+    this.assetPanel = new AssetPanel(root, services, session, this, false, (path, role) => this.openAsset(path, role));
+    if (!services.settings.readOnly) button(root, 'Manage assets', () => { this.editing = true; this.renderDetail(); this.detail?.querySelector('.mnemobard-asset-section')?.scrollIntoView({ block: 'nearest' }); });
     if (e.externalReferences?.length) {
       element(root, 'h3', 'External references');
       for (const link of e.externalReferences) { const a = element(root, 'a', link); a.href = link; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
@@ -301,6 +329,9 @@ export class PatchbookView extends ModuleView {
     if (!this.inactive) { const search = this.contentEl.querySelector<HTMLInputElement>('input[type="search"]'); if (search) search.value = this.queryState.search ?? ''; this.renderFilters(); this.renderBrowser(); if (this.selectedId) await this.select(this.selectedId); }
   }
   override release(): void {
+    this.assetInspector?.close(); this.assetInspector = undefined;
+    this.assetPanel?.dispose(); this.assetPanel = undefined; this.recoveryPanel?.dispose(); this.recoveryPanel = undefined;
+    this.foundation()?.preview.stop(this);
     this.inactive = true; this.epoch++; this.lifetime.abort(); this.unsubscribeSession?.(); this.unsubscribeSession = undefined;
     for (const unsubscribe of this.unsubscribers.splice(0)) unsubscribe();
     super.release();

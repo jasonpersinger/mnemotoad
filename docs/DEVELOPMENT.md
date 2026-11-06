@@ -1,6 +1,6 @@
 # Development guide
 
-Production implementation: shared source-preserving domain/storage/settings and a functional PATCHBOOK instrument/patch/effects-chain library. MOTIF/CANVAS remain shells. Musical capabilities remain planned. Earlier reports are historical; [Milestone2A](MILESTONE_2A_REPORT.md) records current library behavior/validation.
+Current implementation: shared safe persistence, the PATCHBOOK library, asset management, recorded-audio preview and explicit recovery. Musical editors remain shells. Historical reports are preserved; [Milestone2B](MILESTONE_2B_REPORT.md) records current behavior and validation.
 
 ## Setup and commands
 
@@ -153,3 +153,16 @@ Raw results/screenshot are ignored at `output/experiments/native.json`, `native-
 Each render case uses the same 960×360 CSS-pixel viewport, five warmups, 30 redraw samples, 20 pan frames, 20 zoom frames and 30 hit/preview/redraw samples. Initial time includes building the static index. Forced layout and frame-interval data are distinct metrics; neither measures physical display latency. Node counts/backing bytes are deterministic approximate resource indicators, while heap deltas are global/noisy. The full report explains hardware and software rendering. No arbitrary CI timing threshold is enforced.
 
 On close/disable the test transport cancels timers/voices, guards pending resumes, disconnects nodes and closes its context. Blur/pagehide/hidden-document policy stops playback. A >100ms audio/wall polling gap or a late event stops instead of catching up. Pause cancels sound; resume retriggers still-held notes for the remaining duration. The normal production plugin has no transport yet. A future shared transport will need explicit focus ownership, sessions, export preflight and platform/latency validation before adoption.
+
+
+## Asset and recovery development (2B)
+
+`pnpm test:asset-fixtures` creates/preserves only synthetic fixtures in `.runtime/synthetic/milestone-2b` (8s quiet tone, image and inert preset). Existing fixtures are never overwritten. WAV generation uses Node; the optional MP3/OGG/FLAC fixture generation requires an already installed ffmpeg, with no installation performed. `pnpm test:assets-native` uses native form controls/File input and the guarded CDP endpoint9227, then stores `output/patchbook/milestone-2b/native.json` and screenshots. This modifies only synthetic records in the marked disposable vault.
+
+For cold validation, checkpoint/save the test state, flush layout preferences, terminate **only** the isolated app whose parent command includes the exact `.runtime/config/obsidian` profile and port9227, then relaunch with `pnpm dev:obsidian`. Never use an unqualified kill/pkill or CLI command against a last-active personal vault. Run `node scripts/patchbook-assets-native.mjs --verify-restart`. It verifies unchanged source, explicit recovery loading/save, module/view/plugin audio cleanup and theme/narrow screenshots. Screenshots are actual app captures, ignored by Git. A new normal run creates a new synthetic identity set; retain previous fixtures/checkpoints.
+
+`pnpm benchmark:patchbook` runs the same production-code synthetic in-memory benchmark under Node. The native workflow runs it in the Electron renderer. Dataset generation is excluded;25 samples after3 warmups. These are parser/index/query/repository/resolver measurements, not disk or full DOM navigation certification. Results remain under the ignored review directory; the report/validation summary records measured numbers.
+
+Manual review: create instrument/patch → Manage assets → Select vault asset (category and search) → Save. Play, pause, seek, resume, stop. Import local file → inspect name/type/size → confirm visible vault destination → Save association. Remove it and confirm the file remains. Simulate a synthetic missing file, explicitly repair, then Save. Edit and wait for a confirmed checkpoint; restart; Recovery register → inspect original/current/draft → Load draft without saving → explicitly Save. Changed sources require the comparison acknowledgment; a later external change must still reject Save. Future/malformed notes/checkpoints stay read-only. No automatic cleanup exists.
+
+Known host issue: a long-lived stressed development session stalled FileManager link updates while its metadata resolver remained busy. The same full2A native suite passed after a clean isolated restart; do not weaken or bypass source conflicts or force host queues. Broader long-session/OS validation remains required. Raw failure evidence is retained in output; final successful runs have no observed renderer exceptions.

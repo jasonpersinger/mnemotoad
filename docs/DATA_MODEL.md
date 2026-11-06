@@ -1,6 +1,6 @@
 # Data model proposal
 
-Milestone2A status: shared schema1 persistence now supports production instrument/patch/effects-chain records under Prompt004. Musical processing/export semantics below remain specifications; no production MIDI editor exists. See the2A library extension and [DEVELOPMENT.md](DEVELOPMENT.md) for actual preservation, conflicts, recovery and limits.
+Milestone2B status: ordinary schema1 entity notes and portable asset links remain unchanged. Asset management and recoverable unsaved sessions are implemented without a migration. See the2B section below and [MILESTONE_2B_REPORT.md](MILESTONE_2B_REPORT.md). Musical contracts remain planned.
 
 ## Storage and authority
 
@@ -305,3 +305,16 @@ Creation validates its serialized result against the same8Mi-character readable-
 `EntityRepository.saveEditorDraft` appends JSON under the existing Recovery/<UUID> folder: format `mnemobard-editor-draft`, schemaVersion1, entity ID, optional original path/source, timestamp, raw draft, candidateSource when valid, and validationError when invalid. Blank names or invalid references are therefore recoverable without creating invalid authoritative notes. Checkpoints never replace entity files, are not indexed as notes and do not create multi-file transactions. Sessions retain edits arriving while an earlier version saves.
 
 Recovery JSON is manually inspectable; automatic rehydration/history/pruning is not implemented. Drafts remain in memory across view/module closure while the plugin is enabled. Full plugin/application restart relies on Saved notes or confirmed recovery files, not workspace state. Last unacknowledged edits before a checkpoint are not guaranteed durable. Restore into a new comparison note before explicitly replacing an original.
+
+
+## Milestone2B assets and explicit recovery
+
+No entity schema change: `assets: {role: audio|image|preset, link: "[[vault/relative/file.ext]]"}[]` still maps to `mnemobard_audio/images/presets`. This applies to instruments, patches and chains. Selected files use portable full vault paths; native metadata resolution also supports existing contextual links. Ephemeral `app://` resources, browser File handles, absolute external paths and playback positions are never written into entity records. Asset categories describe use, not file-extension restrictions.
+
+Removing/replacing an association changes only a pending draft until explicit Save; neither action deletes the attachment. Native FileManager link maintenance follows Obsidian's own settings. Asset identity remains path/link based, unlike entity UUIDs: moves without link maintenance become missing and require explicit selection. Malformed/future entity notes remain read-only and may require original Markdown repair before any form can open.
+
+Preferences add `assetDirectory` to settings schema1 (default `<creationRoot>/Assets`, or `MNEMOBARD/Assets` for fresh settings). Existing unknown preferences remain preserved. Only visible vault-relative folders are allowed; imports confirm the destination each time. A selected external File is read at most100MiB, copied with public createBinary to an unoccupied path (UUID suffix on collision), then associated with the draft. Copy failure/cancellation may leave an unassociated complete/partial file; its path is reported and retained. Source files are read only; no remote URL import, move, overwrite retry or asset cleanup. Submitted host writes cannot be rolled back or reliably cancelled. No distributed/exclusive filesystem transaction guarantee.
+
+Recovery storage formats remain the2A `mnemobard-editor-draft` and foundation `mnemobard-recovery`, both schemaVersion1. Discovery covers JSON files in visible documented `/Recovery/` subfolders, including earlier creation roots,100 per page with32MiB read budget. Individual inspection is limited to20MiB and display to64Ki characters per section; larger originals remain openable. Unknown/future/malformed/duplicate-key envelopes remain inspection-only. Common empty draft name/instrument/stage fields can load for correction; other invalid structures remain text-only. No musical checkpoint is edited by PATCHBOOK.
+
+Recovery loading never rewrites source/checkpoint. For unchanged source, the loaded session captures that exact base; renamed notes resolve by UUID. Missing/duplicate/unreadable sources block restoration. A changed source is displayed alongside original/draft; only an explicit acknowledgment adopts that reviewed current text as the new save base, verified again before loading. The user then reviews and saves normally, including original-text backup and stale-write checks. No merge, automatic reopen, duplicate-ID comparison note, pruning or deletion. Source/backup history grows indefinitely; manual vault backup/management remains the user's responsibility. Very recent unacknowledged edits before a checkpoint are not crash-durable.

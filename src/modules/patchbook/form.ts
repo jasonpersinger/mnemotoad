@@ -22,7 +22,7 @@ function lines(value: string): string[] { return value.split(/\r?\n/).map(v => v
 function links(value: string): string[] { return lines(value).map(v => v.startsWith('[[') ? v : `[[${v}]]`); }
 
 /** Native controls; all edits update the shared draft rather than live vault files. */
-export function renderLibraryForm(parent: HTMLElement, session: LibrarySession, library: PatchbookLibrary, save: () => void, cancel: () => void): HTMLFormElement {
+export function renderLibraryForm(parent: HTMLElement, session: LibrarySession, library: PatchbookLibrary, save: () => void, cancel: () => void, renderAssets?: (root: HTMLElement) => void): HTMLFormElement {
   const draft = session.draft, form = element(parent, 'form', undefined, 'mnemobard-record-form');
   form.setAttribute('aria-label', `Edit ${draft.kind}`);
   const mutate = (change: (value: LibraryEntity) => void): void => { const value = session.draft; change(value); session.update(value); };
@@ -74,8 +74,9 @@ export function renderLibraryForm(parent: HTMLElement, session: LibrarySession, 
   field(form, 'Description', draft.description ?? '', v => mutate(e => { e.description = optional(v); }), true);
   field(form, 'Tags (comma-separated)', draft.tags?.join(', ') ?? '', v => mutate(e => { e.tags = [...new Set(v.split(',').map(t => t.trim()).filter(Boolean))]; }));
   field(form, 'General notes', draft.notes ?? '', v => mutate(e => { e.notes = optional(v); }), true);
-  const assets = element(form, 'details', undefined, 'mnemobard-assets-form'); element(assets, 'summary', 'File references and external links');
-  element(assets, 'p', 'Vault paths or [[links]], one per line. Files are referenced only; no preview or import occurs.', 'mnemobard-hint');
+  renderAssets?.(form);
+  const assets = element(form, 'details', undefined, 'mnemobard-assets-form'); element(assets, 'summary', 'Advanced references and external links');
+  element(assets, 'p', 'Portable vault paths or [[links]], one per line. Prefer the asset selector for validated references.', 'mnemobard-hint');
   for (const [role, label] of [['preset', 'Preset files'], ['image', 'Screenshots'], ['audio', 'Audio previews']] as const) {
     field(assets, label, (draft.assets ?? []).filter(a => a.role === role).map(a => a.link).join('\n'), v => mutate(e => { e.assets = [...(e.assets ?? []).filter(a => a.role !== role), ...links(v).map(link => ({ role, link }))]; }), true);
   }

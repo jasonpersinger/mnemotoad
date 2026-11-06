@@ -97,3 +97,15 @@ describe('production library application and persistence', () => {
     expect(h.vault.files.size).toBe(0); h.library.dispose();
   });
 });
+
+it('invalidates cached queries on updates, renames and duplicates, while isolating caller mutations', async () => {
+  const base = await instrument('Cached instrument'); const first = h.library.query({ kind: 'instrument' });
+  const exposed = first[0]; if (!exposed) throw Error('Missing fixture'); exposed.entity.title = 'Caller corruption';
+  expect(h.library.query({ kind: 'instrument' })[0]?.entity.title).toBe('Cached instrument');
+  h.vault.rename(base.path, 'Renamed cached.md'); await h.index.settled(); expect(h.library.query({ kind: 'instrument' })[0]?.path).toBe('Renamed cached.md');
+  const saved = await h.repository.save(await h.repository.read(base.entity.id), { ...base.entity, title: 'Updated cached instrument' });
+  expect(h.library.query({ kind: 'instrument', search: 'updated' })).toHaveLength(1);
+  h.vault.modify('Duplicate cached.md', saved.source); await h.index.settled();
+  expect(h.library.query({ kind: 'instrument' }).every(item => item.ambiguous)).toBe(true);
+  h.library.dispose(); h.repository.dispose(); h.index.dispose();
+});

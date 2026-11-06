@@ -8,6 +8,14 @@ export class TFile { constructor(public path: string) {} }
 export class TFolder { constructor(public path: string) {} }
 export const normalizePath = (path: string): string => path;
 export class Notice { static messages: string[] = []; constructor(text: string) { Notice.messages.push(text); } }
+export class Modal {
+  contentEl = document.createElement('div');
+  constructor(public app: unknown) {}
+  onOpen(): void {}
+  onClose(): void {}
+  open(): void { this.onOpen(); }
+  close(): void { this.onClose(); }
+}
 export class Scope {
   handlers = new Set<{ modifiers: unknown; key: unknown; callback: () => boolean }>();
   constructor(readonly parent?: Scope) {}
@@ -63,6 +71,7 @@ export class Setting {
 
 export function installDomHelpers(): void {
   Object.defineProperties(HTMLElement.prototype, {
+    scrollIntoView: { configurable: true, value() {} },
     empty: { configurable: true, value(this: HTMLElement) { this.replaceChildren(); } },
     addClass: { configurable: true, value(this: HTMLElement, name: string) { this.classList.add(name); } },
     setText: { configurable: true, value(this: HTMLElement, text: string) { this.textContent = text; } },

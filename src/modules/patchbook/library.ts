@@ -5,26 +5,31 @@ import type { EntityIndex } from '../../storage/index';
 import type { EntityRecord, EntityRepository } from '../../storage/repository';
 import { queryLibrary, type LibraryItem, type LibraryQuery } from './query';
 import { LibrarySession } from './session';
+import type { RecoveredDraft } from './recovery';
 
 export class PatchbookLibrary {
   private closed = false;
   private sessions = new Map<string, LibrarySession>();
+  private cached?: { revision: number; items: LibraryItem[] };
   constructor(readonly index: EntityIndex, private readonly repository: EntityRepository) {}
-  items(): LibraryItem[] {
+  private snapshot(): LibraryItem[] {
+    if (this.cached?.revision === this.index.currentRevision) return this.cached.items;
     const entries = this.index.all(), byId = new Map<string, number>(), instruments = new Map<string, string>();
     for (const entry of entries) if (entry.id) byId.set(entry.id, (byId.get(entry.id) ?? 0) + 1);
     for (const entry of entries) if (entry.entity?.kind === 'instrument' && entry.id && byId.get(entry.id) === 1) instruments.set(entry.id, entry.entity.title);
-    return entries.filter(entry => entry.entity && isLibraryEntity(entry.entity)).map(entry => {
+    const items = entries.filter(entry => entry.entity && isLibraryEntity(entry.entity)).map(entry => {
       const entity = entry.entity;
       if (!entity || !isLibraryEntity(entity)) throw new FoundationError('invalid', 'Library index entry changed');
       return { entity, path: entry.path, ambiguous: (byId.get(entity.id.toLowerCase()) ?? 0) > 1,
         ...(entity.kind === 'patch' ? { instrumentName: instruments.get(entity.instrumentId?.toLowerCase() ?? '') ?? entity.instrument } : {}) };
     });
+    this.cached = { revision: this.index.currentRevision, items }; return items;
   }
-  query(query: LibraryQuery): LibraryItem[] { return queryLibrary(this.items(), query); }
+  items(): LibraryItem[] { return structuredClone(this.snapshot()); }
+  query(query: LibraryQuery): LibraryItem[] { return structuredClone(queryLibrary(this.snapshot(), query)); }
   related(id: string): LibraryItem[] {
     const key = id.toLowerCase();
-    return this.items().filter(({ entity }) => entity.kind === 'patch' && (entity.instrumentId?.toLowerCase() === key || entity.effectsChainIds?.some(ref => ref.toLowerCase() === key)));
+    return structuredClone(this.snapshot().filter(({ entity }) => entity.kind === 'patch' && (entity.instrumentId?.toLowerCase() === key || entity.effectsChainIds?.some(ref => ref.toLowerCase() === key))));
   }
   private session(draft: LibraryEntity, base?: EntityRecord): LibrarySession {
     const session = new LibrarySession(draft, base, {
@@ -52,6 +57,16 @@ export class PatchbookLibrary {
     return this.session(record.entity, record);
   }
   getDrafts(): LibrarySession[] { return [...this.sessions.values()].filter(s => s.dirty); }
+  recover(recovered: RecoveredDraft): LibrarySession {
+    checkActive(undefined, this.closed);
+    const existing = this.sessions.get(recovered.draft.id.toLowerCase());
+    if (existing?.dirty || existing?.busy) throw new FoundationError('conflict', 'An unsaved session already exists for this record. Save or explicitly discard it before loading recovery.');
+    if (this.getDrafts().length >= 20) throw new FoundationError('invalid', 'Save or discard an existing draft before opening more than 20 drafts.');
+    existing?.dispose();
+    const session = this.session(recovered.draft, recovered.base);
+    session.update(recovered.draft); session.recoveryPath = recovered.checkpoint;
+    return session;
+  }
   private target(id: string, kind: LibraryKind): { entity: LibraryEntity; path: string } {
     const target = this.index.resolve(id);
     if (target.status !== 'ready') throw new FoundationError(target.status === 'invalid' ? 'invalid' : target.status, `Association ${id} is ${target.status}; repair or choose another record.`);
@@ -96,5 +111,5 @@ export class PatchbookLibrary {
   }
   discard(session: LibrarySession): void { session.dispose(); this.sessions.delete(session.draft.id.toLowerCase()); }
   async checkpointAll(): Promise<void> { for (const session of this.getDrafts()) await session.checkpoint(); }
-  dispose(): void { this.closed = true; for (const session of this.sessions.values()) session.dispose(); this.sessions.clear(); }
+  dispose(): void { this.closed = true; this.cached = undefined; for (const session of this.sessions.values()) session.dispose(); this.sessions.clear(); }
 }

@@ -2,11 +2,20 @@ import { TFile, TFolder, normalizePath, type Vault } from 'obsidian';
 import { FoundationError } from '../domain/errors';
 import { vaultPath } from '../domain/paths';
 import type { VaultPort, VaultChange } from '../storage/vault-port';
+import type { AssetPort, VaultAsset } from '../storage/asset-port';
 
 /** The only runtime vault writer; uses supported public APIs, never node:fs. */
-export class ObsidianVaultPort implements VaultPort {
+export class ObsidianVaultPort implements VaultPort, AssetPort {
   constructor(private readonly vault: Vault) {}
   markdownPaths(): string[] { return this.vault.getMarkdownFiles().map(f => f.path); }
+  private info(file: TFile): VaultAsset { return { path: file.path, name: file.name, extension: file.extension, size: file.stat.size, modified: file.stat.mtime }; }
+  assetFiles(): VaultAsset[] { return this.vault.getFiles().map(file => this.info(file)); }
+  fileInfo(path: string): VaultAsset | undefined {
+    const file = this.vault.getAbstractFileByPath(normalizePath(vaultPath(path)));
+    return file instanceof TFile ? this.info(file) : undefined;
+  }
+  resource(path: string): string { return this.vault.getResourcePath(this.file(path)); }
+  async createBinary(path: string, bytes: ArrayBuffer): Promise<void> { await this.vault.createBinary(normalizePath(vaultPath(path)), bytes); }
   exists(path: string): boolean { return this.vault.getAbstractFileByPath(normalizePath(vaultPath(path))) !== null; }
   private file(path: string): TFile {
     const file = this.vault.getAbstractFileByPath(normalizePath(vaultPath(path)));

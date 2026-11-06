@@ -1,0 +1,327 @@
+{
+  "milestone": "2B",
+  "baseline": "300eba2",
+  "recordedAt": "2026-11-06",
+  "environment": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+    "viewport": [
+      1280,
+      901
+    ],
+    "dpr": 0.9999999767169356,
+    "hardwareConcurrency": 16
+  },
+  "hardware": {
+    "node": "v26.13.0",
+    "platform": "linux",
+    "cpu": "AMD Ryzen 7 5700G with Radeon Graphics",
+    "logicalCpus": 16,
+    "memoryBytes": 29300412416
+  },
+  "checks": [
+    "Created instrument/patch, selected audio/preset/screenshot, imported confirmed local copy and persisted eight portable references; original hash unchanged",
+    "Arbitrary preset opens in inert native inspection; text is read only after explicit request",
+    "Native WAV/MP3/OGG/FLAC decoder probes, unsupported-file error, pause/resume/seek and stop/release verified",
+    "Simulated file move without link maintenance; missing reference repaired by explicit file selection and protected Save",
+    "Record navigation/reopen retains associations",
+    "Confirmed unsaved draft checkpoint is durable before application restart; authoritative source unchanged",
+    "Cold restart preserved authoritative assets; discovery/inspection/load wrote nothing; explicit recovered Save succeeded and checkpoint remained byte-identical",
+    "Disabling and re-enabling PATCHBOOK releases playback and retains records",
+    "Closing owning native view stops and releases preview",
+    "Plugin unload/reload releases media and listeners without duplicate commands",
+    "Actual light/dark and narrow-pane layouts captured; no horizontal overflow in measured pane",
+    "Native renderer ran production index/query/navigation/reference benchmarks at100/1000/5000 synthetic in-memory records",
+    "Native Enter/Space audio controls, Arrow seek, visible keyboard focus and built-in image opening passed",
+    "Native vault copy SHA256 matches the unchanged synthetic external original"
+  ],
+  "formats": [
+    {
+      "name": "audition.wav",
+      "status": "playing",
+      "duration": 8
+    },
+    {
+      "name": "audition.mp3",
+      "status": "playing",
+      "duration": 8
+    },
+    {
+      "name": "audition.ogg",
+      "status": "playing",
+      "duration": 8
+    },
+    {
+      "name": "audition.flac",
+      "status": "playing",
+      "duration": 8
+    },
+    {
+      "name": "unsupported.wav",
+      "status": "error",
+      "duration": 0,
+      "message": "Unsupported preview: this Obsidian runtime could not decode the file. Choose another recording or open it in Obsidian."
+    }
+  ],
+  "keyboard": {
+    "enterStarted": true,
+    "spacePaused": true,
+    "arrowSought": true,
+    "focusVisible": true,
+    "imageOpenedInHost": true
+  },
+  "importHashesMatch": true,
+  "narrow": {
+    "clientWidth": 385,
+    "scrollWidth": 385,
+    "columns": "360.896px"
+  },
+  "benchmark": {
+    "methodology": "In-memory synthetic VaultPort; production codec/index/query/repository/asset resolver. Fixture generation excluded; query warmup3, samples25; no disk IO, DOM or decoding.",
+    "results": [
+      {
+        "records": 100,
+        "indexingMs": 14.5,
+        "search": {
+          "medianMs": 0.19999998807907104,
+          "p95Ms": 0.29999998211860657
+        },
+        "filtering": {
+          "medianMs": 0.10000002384185791,
+          "p95Ms": 0.19999998807907104
+        },
+        "sorting": {
+          "medianMs": 0.4000000059604645,
+          "p95Ms": 0.5999999940395355
+        },
+        "navigation": {
+          "medianMs": 0.19999998807907104,
+          "p95Ms": 0.29999998211860657
+        },
+        "assetResolution3": {
+          "medianMs": 0,
+          "p95Ms": 0
+        }
+      },
+      {
+        "records": 1000,
+        "indexingMs": 90.69999998807907,
+        "search": {
+          "medianMs": 1.300000011920929,
+          "p95Ms": 1.5
+        },
+        "filtering": {
+          "medianMs": 1,
+          "p95Ms": 1.100000023841858
+        },
+        "sorting": {
+          "medianMs": 4.4000000059604645,
+          "p95Ms": 4.800000011920929
+        },
+        "navigation": {
+          "medianMs": 0.10000002384185791,
+          "p95Ms": 0.30000001192092896
+        },
+        "assetResolution3": {
+          "medianMs": 0,
+          "p95Ms": 0
+        }
+      },
+      {
+        "records": 5000,
+        "indexingMs": 416.19999998807907,
+        "search": {
+          "medianMs": 7.200000017881393,
+          "p95Ms": 9.299999982118607
+        },
+        "filtering": {
+          "medianMs": 5.399999976158142,
+          "p95Ms": 5.800000011920929
+        },
+        "sorting": {
+          "medianMs": 25,
+          "p95Ms": 25.80000001192093
+        },
+        "navigation": {
+          "medianMs": 0.30000001192092896,
+          "p95Ms": 0.4000000059604645
+        },
+        "assetResolution3": {
+          "medianMs": 0,
+          "p95Ms": 0
+        }
+      }
+    ]
+  },
+  "nodeBefore": [
+    {
+      "records": 100,
+      "indexingMs": 15.642048000000003,
+      "search": {
+        "medianMs": 0.8627380000000073,
+        "p95Ms": 1.4924489999999935
+      },
+      "filtering": {
+        "medianMs": 0.8272820000000252,
+        "p95Ms": 1.098760999999996
+      },
+      "sorting": {
+        "medianMs": 0.5388400000000217,
+        "p95Ms": 1.0176390000000026
+      },
+      "navigation": {
+        "medianMs": 0.18910399999998617,
+        "p95Ms": 0.35556700000000774
+      },
+      "assetResolution3": {
+        "medianMs": 0.00574100000000044,
+        "p95Ms": 0.02479700000000662
+      }
+    },
+    {
+      "records": 1000,
+      "indexingMs": 102.31562699999995,
+      "search": {
+        "medianMs": 5.255286999999953,
+        "p95Ms": 6.68186199999991
+      },
+      "filtering": {
+        "medianMs": 4.588555999999926,
+        "p95Ms": 4.908916999999974
+      },
+      "sorting": {
+        "medianMs": 4.9520089999999755,
+        "p95Ms": 5.295162000000005
+      },
+      "navigation": {
+        "medianMs": 0.13433199999997214,
+        "p95Ms": 0.26124000000004344
+      },
+      "assetResolution3": {
+        "medianMs": 0.002814999999941392,
+        "p95Ms": 0.0029960000000528453
+      }
+    },
+    {
+      "records": 5000,
+      "indexingMs": 456.56573100000014,
+      "search": {
+        "medianMs": 25.571121999999832,
+        "p95Ms": 26.575305999999728
+      },
+      "filtering": {
+        "medianMs": 23.792605999999978,
+        "p95Ms": 24.404473999999936
+      },
+      "sorting": {
+        "medianMs": 25.853531000000203,
+        "p95Ms": 27.099790000000212
+      },
+      "navigation": {
+        "medianMs": 0.23336699999981647,
+        "p95Ms": 0.35426400000051217
+      },
+      "assetResolution3": {
+        "medianMs": 0.0024539999994885875,
+        "p95Ms": 0.002725000000282307
+      }
+    }
+  ],
+  "nodeAfter": [
+    {
+      "records": 100,
+      "indexingMs": 16.912219000000007,
+      "search": {
+        "medianMs": 0.1337609999999927,
+        "p95Ms": 0.2872289999999964
+      },
+      "filtering": {
+        "medianMs": 0.11490600000000484,
+        "p95Ms": 0.1408839999999998
+      },
+      "sorting": {
+        "medianMs": 0.445005000000009,
+        "p95Ms": 0.5874419999999816
+      },
+      "navigation": {
+        "medianMs": 0.26533800000001406,
+        "p95Ms": 0.41857500000000414
+      },
+      "assetResolution3": {
+        "medianMs": 0.0032860000000027867,
+        "p95Ms": 0.015919000000025108
+      }
+    },
+    {
+      "records": 1000,
+      "indexingMs": 106.49783000000002,
+      "search": {
+        "medianMs": 1.2207799999999907,
+        "p95Ms": 1.498691000000008
+      },
+      "filtering": {
+        "medianMs": 0.8617669999999862,
+        "p95Ms": 0.9732360000000426
+      },
+      "sorting": {
+        "medianMs": 4.102726999999959,
+        "p95Ms": 4.297292000000084
+      },
+      "navigation": {
+        "medianMs": 0.14220700000009856,
+        "p95Ms": 0.2831109999999626
+      },
+      "assetResolution3": {
+        "medianMs": 0.002815000000055079,
+        "p95Ms": 0.002866000000040003
+      }
+    },
+    {
+      "records": 5000,
+      "indexingMs": 479.41949499999987,
+      "search": {
+        "medianMs": 7.162878999999975,
+        "p95Ms": 7.766851000000315
+      },
+      "filtering": {
+        "medianMs": 5.707176999999774,
+        "p95Ms": 6.260105000000294
+      },
+      "sorting": {
+        "medianMs": 23.882134999999835,
+        "p95Ms": 29.345945999999913
+      },
+      "navigation": {
+        "medianMs": 0.23035200000003897,
+        "p95Ms": 0.3856639999999061
+      },
+      "assetResolution3": {
+        "medianMs": 0.002474999999776628,
+        "p95Ms": 0.0025540000001456065
+      }
+    }
+  ],
+  "screenshots": [
+    "05a-asset-selection.png",
+    "05b-asset-import.png",
+    "04-audio-preview.png",
+    "06-recovery.png",
+    "03-patch-assets.png",
+    "01-main-browser.png",
+    "02-instrument-detail.png",
+    "07-narrow-pane.png",
+    "08-dark-theme.png"
+  ],
+  "rendererExceptions": [],
+  "foundationNativeChecks": 11,
+  "patchbook2ARegressionChecks": 17,
+  "tests": 209,
+  "testFiles": 21,
+  "preservation": {
+    "root": "/home/jason/troubadour",
+    "trackedFiles": 121,
+    "aggregateSha256": "4e217cc4f22b1a049470feb31d5955ece52542619497e97c0924e592f6928ff2",
+    "head": "bc2749e2877738bd443a1d3ace66f919d23fe837",
+    "clean": true,
+    "matchesBaseline": true
+  }
+}

@@ -2,7 +2,7 @@
 
 *Remember what you’ve yet to compose.*
 
-MNEMOBARD is a proposed offline-first musical workspace inside Obsidian for capturing sounds, developing MIDI fragments, and planning compositions. Initial support targets desktop Linux, Windows, and macOS.
+MNEMOBARD is an offline-first musical workspace under development inside Obsidian for capturing sounds, developing MIDI fragments, and planning compositions. Initial support targets desktop Linux, Windows, and macOS.
 
 The plugin brings together three modules:
 
@@ -20,13 +20,13 @@ Keep musical knowledge in the vault, accessible without the plugin. Prefer Markd
 
 ## Current status
 
-**Milestone 2A: PATCHBOOK is a usable instrument, patch and effects-chain library. Musical editors remain planned.**
+**Milestone 2B: PATCHBOOK includes asset selection/import, recorded-audio auditioning and explicit draft recovery. Musical editors remain planned.**
 
-PATCHBOOK provides three registers, create/edit forms, descriptions/tags/parameters, ordered reusable effects chains, search/filter/sort, related navigation and ordinary Markdown access. Records use stable IDs and shared source-preserving persistence with recoverable conflicts. Confirmed archive/restore removes entries from the active library while retaining their notes. File/audio/screenshot/preset references are metadata only; previews and attachment management are deferred to2B.
+The instrument/patch/effects-chain registers retain search/filter/sort, stable relationships, Markdown access, explicit Save, conflict protection and reversible archiving. **Manage assets** selects existing vault files, imports a confirmed local copy, repairs a missing reference or removes an association while keeping the file. **Play preview** auditions one recording at a time; no instrument is hosted or synthesized. **Recovery register** discovers checkpoints and loads a reviewed draft without saving it automatically.
 
-Open **MNEMOBARD: Open PATCHBOOK**, create an instrument, then a patch associated with it. Create a chain in **Effects chains** and select it on a patch. **Save record** or Ctrl/Cmd+S in a form saves to the vault. Disabling the interface preserves files. See the [2A report](docs/MILESTONE_2A_REPORT.md) for validation/limits. Signed commit `f0d90d1` preserves completed1B work before2A. Further implementation requires separate review/authorization.
+Open **MNEMOBARD: Open PATCHBOOK**, create an instrument and patch, select assets, then **Save record** (or Ctrl/Cmd+S). Preview recording support depends on the host; synthetic WAV/MP3/OGG/FLAC passed Linux Obsidian1.15.0. Import limit100MiB; preview limit250MiB. Unknown/preset files open in inert inspection rather than an external executable. See the [2B report](docs/MILESTONE_2B_REPORT.md) for exact tests, screenshots and limitations.
 
-MOTIF/CANVAS remain theme-compatible shells. Production MIDI/audio/arrangement functionality is not implemented. Separate experiments remain isolated from production records; their success does not approve adoption.
+Signed commit `300eba2` preserves the reviewed2A foundation. MOTIF/CANVAS remain shells; the independent MIDI/rendering experiments are unchanged. Further implementation, legacy copying and publication require separate authorization. Final branding is unapproved.
 
 `pnpm check` runs typecheck, lint, tests and a production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow, and [MILESTONE_1A_REPORT.md](docs/MILESTONE_1A_REPORT.md) for exact validation and limitations. Linux Obsidian 1.15.0 native smoke validation was performed; Windows/macOS and musical capabilities are unverified.
 

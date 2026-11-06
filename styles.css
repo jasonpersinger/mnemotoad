@@ -58,3 +58,22 @@
   .mnemobard-library-panes { grid-template-columns: 1fr; gap: var(--size-4-2); }
   .mnemobard-library-browser { border-right: 0; border-bottom: 1px solid var(--background-modifier-border); max-height: 300px; overflow-y: auto; }
 }
+.mnemobard-asset-section, .mnemobard-recovery:not(:empty) { border-top: 1px solid var(--background-modifier-border); margin-top: var(--size-4-4); padding-top: var(--size-4-3); }
+.mnemobard-asset-row, .mnemobard-asset-picker:not(:empty), .mnemobard-recovery-detail:not(:empty) { border: 1px solid var(--background-modifier-border); padding: var(--size-4-3); margin: var(--size-4-2) 0; min-width: 0; }
+.mnemobard-asset-row p { margin: .4em 0; font-size: var(--font-small); color: var(--text-muted); }
+.mnemobard-asset-section code, .mnemobard-recovery code { white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--font-smallest); }
+.mnemobard-asset-section label, .mnemobard-recovery label { display: block; margin: var(--size-4-2) 0; }
+.mnemobard-asset-section label > span { display: block; font-size: var(--font-small); color: var(--text-muted); margin-bottom: .3em; }
+.mnemobard-asset-section input:not([type="checkbox"]), .mnemobard-asset-section select, .mnemobard-recovery textarea { width: 100%; min-width: 0; max-width: 100%; }
+.mnemobard-asset-section input[type="file"] { height: auto; }
+.mnemobard-asset-choices { max-height: 260px; overflow: auto; }
+.mnemobard-asset-choices button, .mnemobard-recovery-row button { display: block; text-align: left; overflow-wrap: anywhere; width: 100%; white-space: normal; height: auto; min-height: 30px; }
+.mnemobard-audio-preview { background: var(--background-secondary); padding: var(--size-4-3); margin: var(--size-4-3) 0; }
+.mnemobard-audio-preview[hidden] { display: none; }
+.mnemobard-preview-status { overflow-wrap: anywhere; font-family: var(--font-monospace); font-size: var(--font-small); }
+.mnemobard-recovery-list { max-height: 240px; overflow-y: auto; }
+.mnemobard-recovery-row { border-bottom: 1px solid var(--background-modifier-border); padding: var(--size-4-1) 0; }
+.mnemobard-recovery textarea { font-family: var(--font-monospace); font-size: var(--font-smallest); resize: vertical; }
+.mnemobard-recovery details { margin: var(--size-4-2) 0; }
+.mnemobard-recovery-consent { display: flex !important; align-items: start; gap: var(--size-4-2); }
+.mnemobard-asset-text { max-height: 360px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }

@@ -14,7 +14,7 @@
     "build": "pnpm typecheck && node esbuild.config.mjs --production",
     "build:dev": "node esbuild.config.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src tests experiments",
+    "lint": "eslint src tests experiments benchmarks",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
@@ -24,7 +24,10 @@
     "experiments:build": "pnpm typecheck && node scripts/experiments-build.mjs",
     "experiments:native": "node scripts/experiments-native.mjs",
     "experiments:midi": "node scripts/experiments-midi.mjs",
-    "test:patchbook-native": "node scripts/patchbook-smoke.mjs"
+    "test:patchbook-native": "node scripts/patchbook-smoke.mjs",
+    "test:assets-native": "node scripts/patchbook-assets-native.mjs",
+    "test:asset-fixtures": "node scripts/patchbook-test-assets.mjs",
+    "benchmark:patchbook": "node scripts/patchbook-benchmark.mjs"
   },
   "dependencies": {
     "yaml": "2.9.1"

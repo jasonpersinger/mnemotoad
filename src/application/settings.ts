@@ -6,10 +6,11 @@ export type ModuleId = typeof MODULES[number];
 export interface Settings extends Record<string, unknown> {
   schemaVersion: 1;
   creationRoot: string;
+  assetDirectory: string;
   modules: Record<ModuleId, boolean> & Record<string, unknown>;
 }
 export interface SettingsPort { load(): Promise<unknown>; save(value: Settings): Promise<void> }
-export function defaultSettings(): Settings { return { schemaVersion: 1, creationRoot: 'MNEMOBARD', modules: { patchbook: true, motif: true, canvas: true } }; }
+export function defaultSettings(): Settings { return { schemaVersion: 1, creationRoot: 'MNEMOBARD', assetDirectory: 'MNEMOBARD/Assets', modules: { patchbook: true, motif: true, canvas: true } }; }
 export function parseSettings(raw: unknown): Settings {
   if (raw === null || raw === undefined) return defaultSettings();
   if (typeof raw !== 'object' || Array.isArray(raw)) throw new FoundationError('invalid', 'Settings are malformed; the original settings were retained.');
@@ -19,11 +20,15 @@ export function parseSettings(raw: unknown): Settings {
   if (typeof root !== 'string') throw new FoundationError('invalid', 'Settings creation folder must be text.');
   vaultPath(root);
   if (root.split('/').some(s => s.startsWith('.'))) throw new FoundationError('invalid', 'Choose a visible content folder, outside hidden Obsidian configuration.');
+  const assets = input.assetDirectory ?? `${root}/Assets`;
+  if (typeof assets !== 'string') throw new FoundationError('invalid', 'Asset directory must be a vault folder.');
+  vaultPath(assets);
+  if (assets.split('/').some(s => s.startsWith('.'))) throw new FoundationError('invalid', 'Asset directory must be outside hidden configuration.');
   const modules = input.modules ?? {};
   if (!modules || typeof modules !== 'object' || Array.isArray(modules)) throw new FoundationError('invalid', 'Module preferences must be an object.');
   const values = modules as Record<string, unknown>;
   for (const id of MODULES) if (values[id] !== undefined && typeof values[id] !== 'boolean') throw new FoundationError('invalid', `${id} must be enabled or disabled.`);
-  return { ...structuredClone(input), schemaVersion: 1, creationRoot: root,
+  return { ...structuredClone(input), schemaVersion: 1, creationRoot: root, assetDirectory: assets,
     modules: { ...defaultSettings().modules, ...values } as Settings['modules'] };
 }
 
@@ -46,7 +51,7 @@ export class SettingsService {
       // exposed by views; the plugin also blocks repository use in this mode.
     }
   }
-  update(change: { creationRoot?: string; modules?: Partial<Record<ModuleId, boolean>> }): Promise<Settings> {
+  update(change: { creationRoot?: string; assetDirectory?: string; modules?: Partial<Record<ModuleId, boolean>> }): Promise<Settings> {
     const frozen = structuredClone(change);
     const operation = this.tail.catch(() => {}).then(async () => {
       checkActive(undefined, this.closed);

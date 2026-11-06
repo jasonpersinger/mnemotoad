@@ -1,6 +1,6 @@
 # Development roadmap
 
-Milestone 2A status: Prompt004 authorizes production PATCHBOOK after report-level1B review. Signed commit f0d90d1 preserves the completed1B work. Instruments/patches/reusable chains, browser/forms, safe saves/draft checkpoints and confirmed archive/restore are implemented; see [MILESTONE_2A_REPORT.md](MILESTONE_2A_REPORT.md). 2B and musical production functionality remain separately gated. No legacy import.
+Milestone2B status: Prompt005 authorizes PATCHBOOK assets, recorded previews and non-destructive recovery. Signed baseline300eba2 preserves2A;2B implementation/testing is described in [MILESTONE_2B_REPORT.md](MILESTONE_2B_REPORT.md). MOTIF/CANVAS, release and legacy adoption remain gated.
 
 This plan follows the [product acceptance criteria](PRODUCT_SPEC.md#integrated-mvp-acceptance-criteria), [architecture](ARCHITECTURE.md), [data contracts](DATA_MODEL.md), [risk experiments](RISKS.md), and [decision register](DECISIONS.md). It is not an executable implementation plan or permission to modify a vault.
 
@@ -62,9 +62,11 @@ Implemented: standalone instrument and effects-chain notes; compatible patch met
 
 Exit evidence: existing/new checks, native create/edit of all three record types, shared chain links, search/filter/sort, scoped keyboard Save, conflicts, rename identity, archive confirmation, module/plugin reload, light/dark/narrow layouts and cold restart. Exact results/limits belong to the2A report, not the planned MVP claims below.
 
-### 2B — Attachment and preview workflow (not authorized)
+### 2B — Assets, auditioning and recovery (Prompt005)
 
-Next proposed priorities: reviewed vault asset picker/reference repair, bounded on-request audio preview with focus ownership/cleanup, codec fixtures, and accessible screenshot/preset navigation. Evaluate recovery-history/rehydration UX and large-library performance separately before any retention/deletion policy. No automatic original-file rewrite or preset execution. A separate prompt is required.
+Implemented: native vault-file selector; destination-confirmed external copy; asset/preset/image inspection and repair; one owned recorded-media preview; explicit checkpoint discovery/inspection/loading and reviewed conflict handling. Existing repository remains authoritative. Native disposable Linux workflow, cold restart, screenshots and100/1000/5000 in-memory benchmarks are recorded in the2B report. No automatic deletion, preset execution or musical editor.
+
+**Exit/review G2:** inspect the actual screenshots and workflows, codec/size/recovery limits and remaining OS/accessibility/stress risks. PATCHBOOK's initial library feature set is present; beta readiness still needs broader compatibility and user review. A new prompt must authorize any MOTIF work. B01–B04 musical production recommendations, legacy extraction, final branding and release remain unapproved.
 
 Implement patch create/edit, instrument/preset descriptions, parameter/effect lists, custom tags/search, native note navigation, safe vault attachment links and explicit audio preview. No proprietary preset parser or external instruments. Reuse foundation storage; do not create a separate patch database.
 

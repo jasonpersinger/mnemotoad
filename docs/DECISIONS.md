@@ -1,6 +1,6 @@
 # Decision register
 
-Date: 2026-11-05. **Proposed is not approved.** Prompt004 authorizes production PATCHBOOK in2A after report-level1B review. This supersedes older stops for that scope. It does not approve musical production adoption,2B, final branding or legacy copying.
+Date: 2026-11-05. **Proposed is not approved.** Prompt005 authorizes Milestone2B PATCHBOOK assets, auditioning and recovery after report-level2A review. This supersedes older stops for that scope. It does not approve MOTIF/CANVAS, musical production adoption, final branding, release or legacy copying.
 
 ## Confirmed requirements and authority
 
@@ -91,3 +91,15 @@ Review required: B01–B04 production adoption, final fixed-tempo/import/export 
 - Guarded native CDP tooling needed removal of an unnecessary async-wrapper promise that Chromium could collect. This is a test-harness correction, not a MIDI experiment or production API change. Startup now displays index readiness before creation.
 
 Stop after2A. Review the actual workflow/limits before separately authorizing2B. B01–B04, legacyL1–L5, distribution license, final design and destructive migrations remain unresolved.
+
+
+### Prompt005 / Milestone2B
+
+- User explicitly authorizes production PATCHBOOK assets/import, recorded auditioning, reference repair, recoverable unsaved sessions and focused scalability/native review. The old2A-only AGENTS boundary is superseded for this scope. Legacy location remains the user's previously corrected `/home/jason/troubadour`; `/home/troubadour` was absent. No copying or execution there.
+- Signed local baseline **300eba2** includes all38 reviewed2A changed/new files;165 tests and full check passed before committing; signature verifies good. No signing configuration, remote or unrelated work changed.
+- Adopted within005: public Vault getFiles/stat/getResourcePath/createBinary plus browser File selection; no filesystem runtime dependency. Arbitrary portable extensions can be associated. Imports require destination confirmation; uncertain copies are retained and reported, never silently retried/deleted.
+- Adopted: one owner-scoped on-demand HTMLAudioElement;100MiB buffered import/250MiB preview limits and30s initial playback timeout. These conservative bounds are implementation safeguards, not measured maximum capacities. Experimental tone transport stays isolated.
+- Adopted: native explicit recovery inspector and dirty-session loading. Prompt005 supersedes the earlier proposed new-file-first comparison with in-memory comparison/loading, keeping sources/checkpoints unchanged. Changed bases require explicit reviewed consent and revalidation, followed by normal conditional Save. No automatic merge/restore/pruning/migration.
+- Adopted: revision-keyed derived library snapshot after measured5k search-copy overhead; cloned query results remain isolated and publication invalidates cache. No database or framework/dependency addition.
+- Arbitrary presets are inspected inertly in a native Modal; only known media/image extensions go to host workspace viewers. No external application execution. ItemView scope initialization moved to construction after native navigation regression exposed late attachment.
+- Report-level review authorizes neither final design nor MOTIF/CANVAS/release. B01–B04 and legacyL1–L5 remain proposed. No approved-code-reuse request is needed for2B.

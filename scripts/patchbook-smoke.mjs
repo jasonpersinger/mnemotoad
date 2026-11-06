@@ -73,7 +73,7 @@ try {
     await run(`input('Search register',${JSON.stringify(stamp)});select('Instrument filter',${JSON.stringify(report.instrument.entity.id)});select('Category filter','Pad');select('Tag filter','glass');select('Sort records','title-desc');assert(root.querySelectorAll('.mnemobard-record-list li').length===2,'Combined filtering failed');assert(root.querySelector('.mnemobard-record-list strong').textContent===${JSON.stringify(names.patch)},'Descending sort failed');`);
     await check('Search, combined instrument/category/tag filters and sorting operate in native UI');
     await run(`root.querySelector('[data-record-id="${patchId}"]').click();`); await wait(`root.querySelector('.mnemobard-library-detail h2')?.textContent===${JSON.stringify(names.patch)}`);
-    await run(`assert(root.querySelector('.mnemobard-library-issues')?.textContent.includes('missing'),'Missing asset diagnostics absent');click(${JSON.stringify(names.chain)},root.querySelector('.mnemobard-library-detail'));`);
+    await run(`assert(root.querySelector('.mnemobard-library-issues')?.textContent.toLowerCase().includes('missing'),'Missing asset diagnostics absent');click(${JSON.stringify(names.chain)},root.querySelector('.mnemobard-library-detail'));`);
     await wait(`root.querySelector('.mnemobard-library-detail h2')?.textContent===${JSON.stringify(names.chain)}`);
     await run(`assert(root.textContent.includes('Associated patches · 2'),'Reverse associations missing');click(${JSON.stringify(names.patch)},root.querySelector('.mnemobard-library-detail'));`);
     await wait(`root.querySelector('.mnemobard-library-detail h2')?.textContent===${JSON.stringify(names.patch)}`);

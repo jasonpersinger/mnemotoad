@@ -1,6 +1,6 @@
 # Product specification
 
-Milestone2A status: production PATCHBOOK supports instruments, patches, reusable ordered effects chains, forms, queries, UUID relations, safe saves/draft recovery and confirmed archive/restore. P-01/P-03 and the metadata-reference portion of P-02 are implemented; asset previews/management belong to separately authorized2B. The complete integrated MVP/AC-01–10 remain targets, not musical editor/playback/export claims. See [MILESTONE_2A_REPORT.md](MILESTONE_2A_REPORT.md).
+Milestone2B status: PATCHBOOK supports the sound-library workflow including native vault assets, confirmed imports, recorded auditioning and explicit recovery. P-01–03 are implemented for the tested Linux host. The integrated musical MVP remains planned. See [MILESTONE_2B_REPORT.md](MILESTONE_2B_REPORT.md) for exact validation/support limits.
 
 ## Purpose and users
 
