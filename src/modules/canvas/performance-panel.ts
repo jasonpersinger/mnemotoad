@@ -130,6 +130,9 @@ export class CanvasPerformancePanel {
     try { if (this.services.musical.ownedBy(this.owner)) await this.services.musical.seek(this.owner, tick / 960 * this.model.data.tempoMicrosecondsPerQuarter / 1000000); this.tick = tick; this.statusUpdate(); }
     catch (error) { this.services.musical.stop(this.owner); this.say(error); }
   }
+  get currentTick(): number { return this.tick; }
+  /** 4C navigation: stop any owned audition, then place the stopped playhead. Never starts playback or edits. */
+  locate(tick: number): void { if (!this.active) return; if (this.services.musical.ownedBy(this.owner)) this.stop(); this.tick = Math.max(0, Math.min(this.model.data.lengthTicks, Math.round(tick))); this.statusUpdate(); }
   stop(): void { this.playEpoch++; this.services.musical.stop(this.owner); this.tick = 0; if (this.active) this.statusUpdate(); }
   dispose(): void { this.active = false; this.playEpoch++; this.dialog?.close(); this.preparation.dispose(); this.services.musical.stop(this.owner); this.lifetime.abort(); if (this.animation !== undefined) cancelAnimationFrame(this.animation); for (const fn of this.cleanups.splice(0)) fn(); this.playhead(undefined); }
 }

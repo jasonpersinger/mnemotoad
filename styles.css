@@ -162,6 +162,32 @@
 .mnemobard-arrangement-space { position: relative; }
 .mnemobard-arrangement-canvas { display: block; position: sticky; top: 0; left: 0; touch-action: none; outline-offset: -3px; }
 .mnemobard-arrangement-canvas:focus-visible { outline: 2px solid var(--interactive-accent); }
+/* 4C structure ruler (fixed above the scroller, same X transform) and Structure panel. */
+.mnemobard-structure-ruler { display: block; touch-action: none; outline-offset: -3px; cursor: default; }
+.mnemobard-structure-ruler:focus-visible { outline: 2px solid var(--interactive-accent); }
+.mnemobard-canvas-structure { margin-block: 8px; }
+.mnemobard-canvas-structure > div > p { margin: 0 0 var(--size-4-2); }
+.mnemobard-structure-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--size-4-3); align-items: start; }
+.mnemobard-structure-status:empty { display: none; }
+.mnemobard-structure-status { color: var(--text-normal); border-inline-start: 2px solid var(--interactive-accent); padding-inline-start: var(--size-4-2); }
+.mnemobard-structure-group { border: 1px solid var(--background-modifier-border); border-radius: var(--radius-s); padding: var(--size-4-2) var(--size-4-3); min-width: 0; }
+.mnemobard-structure-group h3 { margin: 0 0 var(--size-4-2); font-size: var(--font-ui-medium); letter-spacing: .04em; }
+.mnemobard-structure-group h4 { margin: var(--size-4-2) 0; font-size: var(--font-ui-small); color: var(--text-muted); }
+.mnemobard-structure-list { list-style: none; margin: 0 0 var(--size-4-2); padding: 0; max-height: 280px; overflow-y: auto; }
+.mnemobard-structure-list li { padding-block: 3px; border-block-end: 1px solid var(--background-modifier-border); overflow-wrap: anywhere; }
+.mnemobard-structure-list li > button { background: transparent; box-shadow: none; height: auto; padding: 2px 4px; text-align: start; white-space: normal; font-weight: var(--font-normal); }
+.mnemobard-structure-list li > button.is-selected { font-weight: var(--font-bold); outline: 1px solid var(--interactive-accent); color: var(--text-normal); }
+.mnemobard-structure-list li > button.is-selected::before { content: '▸ '; color: var(--interactive-accent); }
+.mnemobard-structure-list small { display: block; color: var(--text-muted); padding-inline-start: 4px; }
+.mnemobard-structure-references { max-height: 520px; }
+.mnemobard-structure-references li > p { margin: 2px 4px; }
+.mnemobard-structure-warning { color: var(--text-warning); font-size: var(--font-small); margin-block: 4px; }
+.mnemobard-structure-description { white-space: pre-wrap; font-size: var(--font-small); }
+.mnemobard-structure-form, .mnemobard-structure-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: end; margin-block: 6px; }
+.mnemobard-structure-form label { display: flex; flex-direction: column; gap: 2px; flex: 1 1 140px; min-width: 0; font-size: var(--font-small); }
+.mnemobard-structure-form label:has(textarea) { flex-basis: 100%; }
+.mnemobard-structure-form textarea { min-height: 3.2em; resize: vertical; }
+.mnemobard-structure-editor { border-block-start: 1px solid var(--background-modifier-border); margin-block-start: 4px; }
 .mnemobard-canvas-inspector { border-block-start: 1px solid var(--background-modifier-border); margin-block-start: 8px; padding-block-start: 8px; }
 .mnemobard-canvas-inspector h3 { margin-block: 4px; }
 .mnemobard-canvas-lane-manager, .mnemobard-canvas-clip-register, .mnemobard-canvas-diagnostics { margin-block: 8px; }

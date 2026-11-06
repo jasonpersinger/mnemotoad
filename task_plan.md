@@ -90,3 +90,13 @@ Execution plan: docs/superpowers/plans/2026-11-05-milestone-1b.md. Prompt 003 su
 20. Report/regression/preservation — complete;165 tests/17 files, typecheck/lint/build, native foundation and1B regression pass. Legacy121 tracked hashes/HEAD/clean status unchanged; experiment sources/lockfile/historical reports preserved. Stop after2A; no previews/attachment manager or musical editors.
 
 2A resolved issues: strict checks caught unused imports; invalid draft detail validation prevents unsafe links; native Mod+S required an owned Obsidian Scope; creation now validates readable serialized size; Chromium collected the redundant CDP async-wrapper promise; native rename needed host prompt handling; cold preference testing needed layout requests and a flushed debounce. No tests/rules weakened and no new dependency. Pending recovery rehydration/retention and platform/accessibility/large-library validation are documented limits.
+
+## Milestone4C (Prompt010)
+
+0. Handoff/baseline — complete; signed a64b267; CLAUDE.md created; AGENTS authority updated.
+1. Schema/pure logic — complete; additive optional fields, edit-time overlap policy.
+2. Persistence/history — complete; retainExtensions registration, library recording helpers.
+3. CANVAS UI — complete; fixed ruler canvas, Structure panel, navigation.
+4. Regression — complete; byte-identical MIDI, unchanged compiler.
+5. Native — complete; see report section M.
+6. Docs/report — complete; stop for review.

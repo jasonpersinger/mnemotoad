@@ -42,9 +42,10 @@ export interface Lane extends ExtensionFields {
 export interface CompositionData extends ExtensionFields {
   schemaVersion: 1; ppq: number; tempoMicrosecondsPerQuarter: number; meter: Meter; lengthTicks: number;
   lanes: Lane[];
-  markers: (ExtensionFields & { id: string; tick: number; label: string })[];
-  sections: (ExtensionFields & { id: string; startTick: number; endTick: number; label: string })[];
-  audioRefs: (ExtensionFields & { id: string; path: string; atTick: number; label: string })[];
+  markers: (ExtensionFields & { id: string; tick: number; label: string; description?: string })[];
+  sections: (ExtensionFields & { id: string; startTick: number; endTick: number; label: string; description?: string })[];
+  /** Vault-relative recording reference; `atTick` is its required timeline anchor. 4C adds optional description/associations. */
+  audioRefs: (ExtensionFields & { id: string; path: string; atTick: number; label: string; description?: string; sectionId?: string; markerId?: string })[];
 }
 export interface Composition extends EntityBase { kind: 'composition'; description?: string; notes?: string; data: CompositionData }
 export type LibraryEntity = Patch | Instrument | EffectsChain;

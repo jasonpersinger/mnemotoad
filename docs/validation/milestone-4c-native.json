@@ -1,0 +1,366 @@
+{
+  "milestone": "4C",
+  "authority": "Prompt010",
+  "status": "PASS (Linux desktop scope; see report limitations)",
+  "baseline": {
+    "commit": "a64b267",
+    "tests": "449/37",
+    "checkPassed": true
+  },
+  "verification": {
+    "tests": "492/38",
+    "typecheck": true,
+    "lint": true,
+    "build": true,
+    "goldenMidiSha256": "85c8ecf39936d1de7612f65d17d3df2f4599472cda8027096bced1c93bb3ab77",
+    "arrangementFixtures": "10 valid / 4 rejections",
+    "audit": "0 vulnerabilities / 229 dependencies",
+    "dependencyChanges": false
+  },
+  "native": {
+    "environment": {
+      "cpu": "AMD Ryzen 7 5700G with Radeon Graphics",
+      "logicalCpus": 16,
+      "memoryBytes": 29300412416,
+      "kernel": "7.3.1-1-cachyos",
+      "host": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.6 Safari/537.36",
+        "dpr": 0.9999999767169356
+      }
+    },
+    "stamp": "1793989797193",
+    "checks": [
+      "Plugin started; existing 4B composition opened unchanged and clean (4 lanes, 4 clips, explicit/Auto routing and source revisions intact); compiled and exported baseline (matches 4B export bytes: true)",
+      "Three named sections created from the keyboard panel in 6/8; rename + description applied; real pointer drag moved Outro by two bars and dragging its end edge resized it by one bar (grid-snapped exact ticks)",
+      "Numeric overlap and overlapping pointer drag both rejected atomically with the conflicting section named (history 3 entries for 3 successful edits, none for rejections); Undo/Redo restore move/resize exactly",
+      "Five markers (two sharing 9:1:0, kept distinct, deterministic order); real pointer drag moved a marker one quarter; Next marker navigation moved only the stopped playhead/viewport with zero history entries; pixel sampling confirms every visible marker is drawn at its tick across 4 zoom/scroll states",
+      "Two synthetic WAV references added (one associated with a section, one with a marker; anchor defaulted to the marker); Open recording navigated to the file in Obsidian’s audio view without history entries",
+      "Reference removal requires confirmation stating the file is not deleted; record removed, composition saved",
+      "Obsidian rename of a referenced recording: frontmatter link rewritten by host = true; relink suggested = true, accepted as one undoable edit and saved",
+      "Recording moved without link updates: reference record preserved with a clear Missing warning, metadata inspectable, Open disabled, no automatic relink or deletion",
+      "Saved, closed and reopened: 3 sections, 5 markers, 2 references restored with identical lanes/clips/routing; MIDI exported after 4C is byte-identical to the baseline export (532 bytes) and parses independently",
+      "During playback, Next section stopped audition and placed the stopped playhead at the section start (no auto-play, compiled state stays ready, ownership released); playback restarted from that position",
+      "Editing structure during playback conservatively invalidates/stops audition (4B composition-fingerprint policy retained); Undo then recompile returns to ready",
+      "Dark/light themes, 650px pane (no horizontal overflow: {\"panelWidth\":571,\"scrollWidth\":571,\"ruler\":567}), 2×DPI backing ({\"css\":1277,\"backing\":2554,\"dpr\":1.9999999534338713}); keyboard Enter on Next section selects and focuses the pressed list item, Tab stays in the panel, ruler is focusable ({\"focusVisible\":true,\"outline\":\"solid\"})",
+      "Protected Save refused after an external modification (vault kept the external prose, draft kept the new marker); recovery checkpoint contains the marker; discard + reopen loads the external version with all 4C structure intact",
+      "CANVAS module disable during playback stopped audio and disposed the structure panel; module and whole-plugin disable/enable cycles reopen the composition with all structure intact",
+      "All three synthetic recordings (including the renamed, moved and removed-reference files) are byte-identical to their creation hashes"
+    ],
+    "restart": [
+      "Cold restart: saved Markdown byte-identical; sections/markers/references identical; missing reference still preserved and explicitly relinked (undo/redo) then saved"
+    ],
+    "rendererExceptions": 0,
+    "baselineExportMatches4B": true,
+    "midiAfterStructureIdentical": true,
+    "renameSuggested": true,
+    "alignment": [
+      {
+        "scale": 48,
+        "startTick": 15666,
+        "rulerWidth": 1277,
+        "canvasWidth": 1277,
+        "visible": 2,
+        "aligned": true,
+        "clipTicks": 4
+      },
+      {
+        "scale": 75,
+        "startTick": 19649,
+        "rulerWidth": 1277,
+        "canvasWidth": 1277,
+        "visible": 2,
+        "aligned": true,
+        "clipTicks": 4
+      },
+      {
+        "scale": 75,
+        "startTick": 31166,
+        "rulerWidth": 1277,
+        "canvasWidth": 1277,
+        "visible": 1,
+        "aligned": true,
+        "clipTicks": 4
+      },
+      {
+        "scale": 38.4,
+        "startTick": 24430,
+        "rulerWidth": 1277,
+        "canvasWidth": 1277,
+        "visible": 1,
+        "aligned": true,
+        "clipTicks": 4
+      }
+    ],
+    "narrow": {
+      "panelWidth": 571,
+      "scrollWidth": 571,
+      "ruler": 567
+    },
+    "highDpi": {
+      "css": 1277,
+      "backing": 2554,
+      "dpr": 1.9999999534338713
+    },
+    "rulerFocus": {
+      "focusVisible": true,
+      "outline": "solid"
+    },
+    "activeDocumentRepaired": false,
+    "screenshots": [
+      "01-section-ruler.png",
+      "02-named-sections.png",
+      "03-selected-section.png",
+      "04-section-editor.png",
+      "05-overlap-rejected.png",
+      "06-marker-ruler.png",
+      "07-multiple-markers.png",
+      "09-marker-navigation.png",
+      "08-marker-editor.png",
+      "10-reference-panel.png",
+      "11-reference-section.png",
+      "20-rename-suggestion.png",
+      "12-missing-reference.png",
+      "14-dark-workspace.png",
+      "15-light-theme.png",
+      "16-narrow-pane.png",
+      "16b-narrow-structure-panel.png",
+      "17-high-dpi.png",
+      "18-save-conflict.png",
+      "19-recovery.png",
+      "13-saved-reopened.png"
+    ],
+    "regressions": {
+      "motif": "phase1 + restart pass",
+      "motifMidi": "phase1 + restart pass (order-dependent first-run failure reproduced on 4B build; see report)",
+      "patchbookAssets": "phase1 + restart pass",
+      "foundation": "phase1 + restart pass"
+    }
+  },
+  "performance": {
+    "samples": 7,
+    "setupFileCreationMsPerFile": 0.73,
+    "medians": {
+      "small": {
+        "counts": {
+          "sections": 5,
+          "markers": 10,
+          "references": 3,
+          "clips": 4
+        },
+        "markdownBytes": 6106,
+        "initialRender": {
+          "median": 35.2,
+          "max": 36.5
+        },
+        "panelRender": {
+          "median": 3.9,
+          "max": 5.1
+        },
+        "draw": {
+          "median": 0.2,
+          "max": 0.3
+        },
+        "sectionSelect": {
+          "median": 8.2,
+          "max": 10.2
+        },
+        "markerNavigate": {
+          "median": 8.3,
+          "max": 10.1
+        },
+        "sectionMove": {
+          "median": 10.6,
+          "max": 12.3
+        },
+        "sectionResize": {
+          "median": 10.8,
+          "max": 11.3
+        },
+        "markerMove": {
+          "median": 10.8,
+          "max": 11.1
+        },
+        "undoRedo": {
+          "median": 22,
+          "max": 22.4
+        },
+        "save": {
+          "median": 12.1,
+          "max": 41.9
+        },
+        "zoom": {
+          "median": 0.4,
+          "max": 1.4
+        },
+        "scroll": {
+          "median": 0.2,
+          "max": 0.5
+        },
+        "referenceResolution": {
+          "median": 0.1,
+          "max": 0.1
+        }
+      },
+      "medium": {
+        "counts": {
+          "sections": 25,
+          "markers": 100,
+          "references": 20,
+          "clips": 4
+        },
+        "markdownBytes": 25458,
+        "initialRender": {
+          "median": 50.5,
+          "max": 50.7
+        },
+        "panelRender": {
+          "median": 9.3,
+          "max": 9.9
+        },
+        "draw": {
+          "median": 0.2,
+          "max": 0.4
+        },
+        "sectionSelect": {
+          "median": 14.3,
+          "max": 16.4
+        },
+        "markerNavigate": {
+          "median": 14.2,
+          "max": 16
+        },
+        "sectionMove": {
+          "median": 19,
+          "max": 20.1
+        },
+        "sectionResize": {
+          "median": 19,
+          "max": 19.8
+        },
+        "markerMove": {
+          "median": 20.1,
+          "max": 22.1
+        },
+        "undoRedo": {
+          "median": 35.4,
+          "max": 42.4
+        },
+        "save": {
+          "median": 29.8,
+          "max": 70.7
+        },
+        "zoom": {
+          "median": 0.6,
+          "max": 1.6
+        },
+        "scroll": {
+          "median": 0.2,
+          "max": 0.7
+        },
+        "referenceResolution": {
+          "median": 0.3,
+          "max": 0.4
+        }
+      },
+      "large": {
+        "counts": {
+          "sections": 100,
+          "markers": 500,
+          "references": 100,
+          "clips": 4
+        },
+        "markdownBytes": 111137,
+        "initialRender": {
+          "median": 80.5,
+          "max": 83.1
+        },
+        "panelRender": {
+          "median": 13,
+          "max": 13.9
+        },
+        "draw": {
+          "median": 0.3,
+          "max": 0.6
+        },
+        "sectionSelect": {
+          "median": 24.4,
+          "max": 38.2
+        },
+        "markerNavigate": {
+          "median": 24.7,
+          "max": 26.4
+        },
+        "sectionMove": {
+          "median": 41.5,
+          "max": 47.1
+        },
+        "sectionResize": {
+          "median": 42.7,
+          "max": 53.4
+        },
+        "markerMove": {
+          "median": 39.7,
+          "max": 40.7
+        },
+        "undoRedo": {
+          "median": 72.9,
+          "max": 79.9
+        },
+        "save": {
+          "median": 106.5,
+          "max": 208.9
+        },
+        "zoom": {
+          "median": 0.8,
+          "max": 1.1
+        },
+        "scroll": {
+          "median": 0.4,
+          "max": 0.5
+        },
+        "referenceResolution": {
+          "median": 1.1,
+          "max": 1.4
+        }
+      }
+    }
+  },
+  "repository": {
+    "head": "a64b267",
+    "pendingPathCount": 29,
+    "pendingPaths": [
+      "AGENTS.md",
+      "docs/ARCHITECTURE.md",
+      "docs/DATA_MODEL.md",
+      "docs/DECISIONS.md",
+      "docs/RISKS.md",
+      "docs/ROADMAP.md",
+      "findings.md",
+      "progress.md",
+      "src/domain/entities.ts",
+      "src/domain/validation.ts",
+      "src/main.ts",
+      "src/modules/canvas/geometry.ts",
+      "src/modules/canvas/library.ts",
+      "src/modules/canvas/performance-panel.ts",
+      "src/modules/canvas/timeline.ts",
+      "src/modules/canvas/view.ts",
+      "src/storage/document.ts",
+      "styles.css",
+      "task_plan.md",
+      "tests/canvas-geometry.test.ts",
+      "tests/canvas-view.test.ts",
+      "CLAUDE.md",
+      "docs/MILESTONE_4C_REPORT.md",
+      "docs/validation/milestone-4c-native.json",
+      "scripts/canvas-4c-benchmark.mjs",
+      "scripts/canvas-4c-native.mjs",
+      "src/modules/canvas/structure-panel.ts",
+      "src/modules/canvas/structure.ts",
+      "tests/canvas-structure.test.ts"
+    ],
+    "remotes": "none"
+  },
+  "evidenceDirectory": "output/canvas/milestone-4c",
+  "report": "docs/MILESTONE_4C_REPORT.md"
+}

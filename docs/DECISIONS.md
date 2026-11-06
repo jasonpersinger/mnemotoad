@@ -1,6 +1,6 @@
 # Decision register
 
-Updated:2026-11-06. **Proposed is not approved.** Prompt009 authorizes Milestone4B after4A review. R01–R10 below record scoped implementation decisions under that authority.4C, maps, final branding/release and all legacy copying remain unapproved. Older log entries describe their original milestone authority.
+Updated:2026-11-06. **Proposed is not approved.** Prompt010 authorizes Milestone4C after4B review (S01–S11 below); Prompt009 authorized Milestone4B (R01–R10).4C, maps, final branding/release and all legacy copying remain unapproved. Older log entries describe their original milestone authority.
 
 ## Confirmed requirements and authority
 
@@ -170,3 +170,21 @@ Authority: explicit user approval after4A review. Verified signed4A baseline **3
 | R10 | Existing fields/history/persistence; transient readiness/routing/transport separated. No new dependencies, state framework, event bus, database, map/mixing/section editor or legacy adoption. | Implemented. Final branding and4C remain unapproved. |
 
 Review the [4B report](MILESTONE_4B_REPORT.md) before authorizing follow-on work. Optional pinned snapshots, broader routing/state/schema support, cross-platform/DAW validation, sections/markers/recording UI and final brand work remain proposals. No legacy-code reuse request is made.
+
+### Prompt010 / Milestone4C
+
+Authority: Prompt010 (Claude Code takeover) after4B review. Verified signed4B baseline **a64b267**;449 tests/37files passed before implementation. Product choices S03/S04/S06 were confirmed by the user during Phase0; the rest are scoped implementation decisions.
+
+| ID | Decision and rationale | Status |
+| --- | --- | --- |
+| S01 | Activate the existing schema1 `sections`/`markers`/`audioRefs` arrays instead of inventing structures. Additive optional fields only: `description` (all three), `sectionId`/`markerId` (references). No schema bump; older readers keep them as unknown fields. Each optional field is registered in `retainExtensions` so clearing it actually deletes it on save. | Implemented/tested. |
+| S02 | Sections are a non-overlapping partition, half-open `[start,end)`; gaps and adjacency allowed; neighbours are never moved. Enforced **at edit time only** (commands + drag preview), not in `validateEntity`, so overlapping data written by another tool still loads, is preserved and is shown as a diagnostic. | Implemented/tested. |
+| S03 | Keep `audioRefs.atTick` required (user decision): it is the reference's timeline anchor. Default when unspecified: associated marker tick, else associated section start, else0. Avoids making 4C files unreadable in 4A/4B builds. | Implemented. |
+| S04 | Recording references are audio-only (`wav mp3 flac ogg oga m4a aif aiff opus webm`), vault-relative via the existing `vaultPath()` rules, metadata-only (no byte reads/copies/moves/deletes). Each reference is mirrored in the existing `mnemobard_audio` frontmatter link list (user decision) for backlinks and so Obsidian rewrites it on rename. A relink is **suggested** only when exactly one stored path is missing and exactly one mirrored link resolves to an otherwise unused file; never applied automatically, no basename matching. | Implemented; native rename verified. |
+| S05 | Deleting a section/marker clears dependent reference associations in the same transaction; reference records are kept. Removing a reference removes only its exact mirror link and only when no other reference uses that file; user-authored links are untouched. | Implemented/tested. |
+| S06 | Colour/category deferred (user decision). Selection uses weight/outline/▸ glyph, overlap uses `!` + error stroke; unknown `color`/`category` fields from future writers are preserved. | Deferred. |
+| S07 | Section/marker ruler is a second, non-scrolling canvas above the existing scroller, drawn in the same `draw()` from the same `TimelineViewport`. Rejected: enlarging the in-canvas `RULER` (would change lane geometry and an existing geometry test) and a separate scroll container (independent timing coordinates). | Implemented; pixel-sampled alignment across zoom/scroll. |
+| S08 | Navigation is ephemeral: no history, no playback start. Next/previous are playhead-relative; while the selection sits at the playhead the ordered list is stepped so same-tick markers are each reachable. No wrap-around. During audition, navigation stops then places the stopped playhead (no new transport mode). | Implemented/native verified. |
+| S09 | Structure is excluded from compilation/export. Because the4B input fingerprint hashes the whole composition, a structure **edit** invalidates prepared audition (recompile required); navigation does not. Changing the fingerprint policy was rejected to keep the4B compiler stable. | Retained4B policy; candidate follow-up. |
+| S10 | Editor bounds: 256 sections, 1024 markers, 256 references, 200-char labels, 10000-char descriptions. Lists render 50 rows per page (clip-register convention); the panel renders from one draft snapshot per render (`session.draft` deep-clones). | Implemented; measured. |
+| S11 | No new dependency, persistence layer, history manager, event bus or source registry; existing `HistorySession.edit` provides one atomic entry per operation. | Implemented. |

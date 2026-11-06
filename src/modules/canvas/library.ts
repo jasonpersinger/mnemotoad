@@ -14,6 +14,9 @@ import { CanvasSession } from './session';
 import { SourceCapture } from '../../arrangement/capture';
 import { ArrangementPreparation } from '../../arrangement/preparation';
 import { MidiFiles } from '../../midi/files';
+import type { VaultAsset } from '../../storage/asset-port';
+import { addReference, relinkReference, relinkSuggestion, recordingPath, RECORDING_EXTENSIONS, type ReferenceInput, type RelinkSuggestion } from './structure';
+export type RecordingStatus = { status: 'available'; file: VaultAsset } | { status: 'missing' | 'invalid'; message: string };
 export class CanvasLibrary {
     readonly sources: SourceCatalog;
     readonly recovery: CheckpointRecovery<Composition>;
@@ -21,7 +24,7 @@ export class CanvasLibrary {
     private sessions = new Map<string, CanvasSession>();
     private owners = new Map<CanvasSession, Set<object>>();
     private closed = false;
-    constructor(readonly index: EntityIndex, private readonly repository: EntityRepository, vault: VaultPort & AssetPort, private readonly unsavedSource: (id: string) => boolean = () => false) {
+    constructor(readonly index: EntityIndex, private readonly repository: EntityRepository, private readonly vault: VaultPort & AssetPort, private readonly unsavedSource: (id: string) => boolean = () => false, private readonly resolveLink?: (target: string, source: string) => string | null) {
         this.sources = new SourceCatalog(index);
         this.capture=new SourceCapture(this.sources,index,repository,vault);this.midiFiles=new MidiFiles(vault);
         this.recovery = new CheckpointRecovery(vault, index, repository, raw => { const fields = object(raw, 'composition recovery'), title = fields.title, e = validateEntity({ ...fields, title: title === '' ? 'Untitled recovery' : title }); if (e.kind !== 'composition')
@@ -74,6 +77,17 @@ export class CanvasLibrary {
             this.sessions.delete(s.draft.id.toLowerCase());
         }
     } }
+    /** Vault metadata only: recording bytes are never read, copied or modified. */
+    recordingFiles(search = '', limit = 200): VaultAsset[] { checkActive(undefined, this.closed); const needle = search.toLocaleLowerCase(); return this.vault.assetFiles().filter(f => RECORDING_EXTENSIONS.includes(f.extension.toLowerCase()) && f.path.toLocaleLowerCase().includes(needle) && !f.path.split('/').some(part => part.startsWith('.')) && this.safe(f.path)).sort((a, b) => a.path.localeCompare(b.path)).slice(0, limit); }
+    private safe(path: string): boolean { try { recordingPath(path); return true; } catch { return false; } }
+    recordingStatus(path: string): RecordingStatus { try { recordingPath(path); const file = this.vault.fileInfo(path); return file ? { status: 'available', file } : { status: 'missing', message: `Missing recording: ${path}. The reference is preserved; relink it explicitly.` }; } catch (error) { return { status: 'invalid', message: error instanceof Error ? error.message : String(error) }; } }
+    private available(path: string): void { const state = this.recordingStatus(path); if (state.status !== 'available') throw new FoundationError(state.status === 'missing' ? 'missing' : 'invalid', state.status === 'missing' ? 'The selected recording no longer exists. Choose it again.' : state.message); }
+    addRecording(s: CanvasSession, input: ReferenceInput): void { checkActive(undefined, this.closed); this.available(input.path); s.edit('Add recording reference', c => addReference(c, input)); }
+    /** One undo entry even when one renamed file backs several references. */
+    relinkRecording(s: CanvasSession, ids: string | readonly string[], path: string): void { checkActive(undefined, this.closed); this.available(path); const list = typeof ids === 'string' ? [ids] : ids; s.edit('Relink recording reference', c => list.reduce((next, id) => relinkReference(next, id, path), c)); }
+    /** Vault-wide file events (create/delete/rename) for availability display; no reads. */
+    subscribeFiles(listener: () => void): () => void { return this.vault.subscribe(() => listener()); }
+    relinkSuggestion(c: Composition, sourcePath = ''): RelinkSuggestion | undefined { const exists = (p: string) => this.recordingStatus(p).status === 'available'; return relinkSuggestion(c, exists, link => this.resolveLink ? this.resolveLink(link, sourcePath) : exists(link) ? link : null); }
     discard(s: CanvasSession): void { this.owners.delete(s); this.sessions.delete(s.draft.id.toLowerCase()); s.dispose(); }
     async checkpointAll(): Promise<void> { for (const s of this.drafts())
         await s.checkpoint(); }

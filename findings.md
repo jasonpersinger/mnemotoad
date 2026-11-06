@@ -120,3 +120,10 @@ User explicitly corrected TROUBADOUR location to ~/troubadour, authorizing /home
 -100 distinct saved sources/1000clips expanded12200notes: worker compile≈81ms and serialization≈55ms, full prepare median443ms. Main-thread transfer/verification remain measurable; no universal real-time promise.
 - Exact saved source text rechecks catch missed notifications, renames, duplicate/future/malformed/missing sources. Final binary submission still has a race window: retain and report stale/unacknowledged derivatives.
 - Native tests confirmed revision invalidation, pause/resume/seek, context suspension, natural completion, recovery, external conflicts and disposal. Isolated REAPER7.84 resource path was verified, but import modal interaction failed; external DAW validation remains unavailable.
+
+##4C findings
+
+- Schema1 already validated sections/markers/audioRefs; DATA_MODEL's rename-listening text was a proposal with no implementation (discrepancy recorded).
+- `session.draft` deep-clones per read; reading it inside list rendering made a 100/500/100 panel render cost ~1.5s. One snapshot per render: 13ms.
+- Obsidian rewrites frontmatter list wikilinks on in-app rename (`Updated 1 link in 1 file`), enabling an unambiguous relink suggestion.
+- After cold restarts the host's `activeDocument` can reference a detached document, making Modals inert; reproduced with the4B build; refocus repairs.

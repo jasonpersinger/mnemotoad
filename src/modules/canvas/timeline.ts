@@ -2,7 +2,17 @@ import type { Composition } from '../../domain/entities';
 import type { ArrangementPlan } from '../../arrangement/preflight';
 import { gridTicks, snapped, type Grid } from '../../music/grid';
 import { backingSize } from '../../ui/canvas-metrics';
-import { LANE_GUTTER, LANE_HEIGHT, RULER, visibleClips, clipHit, timelinePoint, anchoredTimelineStart, type TimelineViewport, type ClipRect } from './geometry';
+import { LANE_GUTTER, LANE_HEIGHT, RULER, visibleClips, clipHit, timelinePoint, anchoredTimelineStart, type TimelineViewport, type ClipRect, SECTION_BAND, MARKER_BAND, STRUCTURE_HEIGHT, structureHit, tickX, type StructureHit } from './geometry';
+import { orderedMarkers, orderedSections, overlaps, sectionOverlaps, type Marker, type Section } from './structure';
+/** Pointer edits commit once on release; previews never edit the draft. */
+export interface StructureCallbacks {
+    select(kind: 'section' | 'marker', id: string): void;
+    moveSection(id: string, startTick: number, endTick: number): void;
+    moveMarker(id: string, tick: number): void;
+    createSection(startTick: number): void;
+    createMarker(tick: number): void;
+}
+interface StructureGesture { pointer: number; x: number; hit: StructureHit; start: number; end: number; nextStart: number; nextEnd: number; moved: boolean; valid: boolean }
 interface Gesture {
     pointer: number;
     x: number;
@@ -38,11 +48,25 @@ export class ArrangementTimeline {
     private plan: ArrangementPlan;
     private viewportState: TimelineViewport;
     private rectangles: ClipRect[] = [];
-    constructor(root: HTMLElement, model: Composition, plan: ArrangementPlan, private readonly select: (laneId: string, clipId?: string) => boolean, private readonly move: (id: string, laneId: string, start: number) => void, private readonly insert: (laneId: string, start: number) => void, private readonly status: (text: string) => void) {
+    readonly ruler: HTMLCanvasElement;
+    private rulerContext: CanvasRenderingContext2D | null;
+    private structureGesture?: StructureGesture;
+    private structureSelected?: { kind: 'section' | 'marker'; id: string };
+    private sections: Section[] = [];
+    private markers: Marker[] = [];
+    private overlapping = new Set<string>();
+    constructor(root: HTMLElement, model: Composition, plan: ArrangementPlan, private readonly select: (laneId: string, clipId?: string) => boolean, private readonly move: (id: string, laneId: string, start: number) => void, private readonly insert: (laneId: string, start: number) => void, private readonly status: (text: string) => void, private readonly structure: StructureCallbacks) {
         this.model = model;
         this.plan = plan;
         this.cache();
         const doc = root.ownerDocument;
+        this.ruler = doc.createElement('canvas');
+        this.ruler.className = 'mnemobard-structure-ruler';
+        this.ruler.tabIndex = 0;
+        this.ruler.setAttribute('role', 'img');
+        this.ruler.setAttribute('aria-label', 'Section and marker ruler. Drag a section body to move it, its edges to resize, or a marker to reposition it. Double-click empty space to add. Use the Structure panel for keyboard and numeric editing.');
+        root.append(this.ruler);
+        this.rulerContext = this.ruler.getContext('2d');
         this.scroller = doc.createElement('div');
         this.scroller.className = 'mnemobard-arrangement-scroll';
         root.append(this.scroller);
@@ -62,6 +86,13 @@ export class ArrangementTimeline {
         listen(this.canvas, 'pointermove', e => this.drag(e));
         listen(this.canvas, 'pointerup', e => this.up(e));
         listen(this.canvas, 'pointercancel', () => this.cancelGesture());
+        listen(this.ruler, 'pointerdown', e => this.structureDown(e));
+        listen(this.ruler, 'pointermove', e => this.structureDrag(e));
+        listen(this.ruler, 'pointerup', e => this.structureUp(e));
+        listen(this.ruler, 'pointercancel', () => this.cancelStructure());
+        listen(this.ruler, 'lostpointercapture', () => this.cancelStructure());
+        listen(this.ruler, 'keydown', e => { if (e.key === 'Escape' && this.structureGesture) { e.preventDefault(); e.stopPropagation(); this.cancelStructure(); } });
+        listen(this.ruler, 'dblclick', e => { const x = this.rulerPoint(e).x, y = this.rulerPoint(e).y; if (x < LANE_GUTTER || structureHit(this.sections, this.markers, x, y, this.viewportState)) return; const tick = Math.max(0, Math.min(this.model.data.lengthTicks, snapped(timelinePoint(x, 0, this.viewportState).tick, this.model.data.ppq, this.grid))); if (y < SECTION_BAND) this.structure.createSection(tick); else this.structure.createMarker(tick); });
         listen(this.canvas, 'lostpointercapture', () => this.cancelGesture());
         listen(this.canvas, 'keydown', e => { if (e.key === 'Escape') {
             e.preventDefault();
@@ -92,11 +123,11 @@ export class ArrangementTimeline {
     }
     get viewport(): TimelineViewport { return { ...this.viewportState }; }
     get visibleCount(): number { return this.rectangles.length; }
-    update(model: Composition, plan: ArrangementPlan): void { this.cancelGesture(); this.model = model; this.plan = plan; this.cache(); this.resize(); }
+    update(model: Composition, plan: ArrangementPlan): void { this.cancelGesture(); this.cancelStructure(); this.model = model; this.plan = plan; this.cache(); this.resize(); }
     selection(laneId?: string, clipId?: string): void { this.selectedLane = laneId; this.selectedClip = clipId; this.request(); }
-    private cache(): void { this.fallbackPeriods = new Map(this.model.data.lanes.flatMap(l => l.clips.map(c => [c.id, c.reviewedLengthTicks ?? this.model.data.ppq] as const))); this.warned = new Set(this.plan.diagnostics.filter(d => d.severity === 'warning' && d.clipId).map(d => d.clipId ?? '')); }
+    private cache(): void { this.sections = orderedSections(this.model); this.markers = orderedMarkers(this.model); this.overlapping = new Set(sectionOverlaps(this.model).flat().map(s => s.id)); this.fallbackPeriods = new Map(this.model.data.lanes.flatMap(l => l.clips.map(c => [c.id, c.reviewedLengthTicks ?? this.model.data.ppq] as const))); this.warned = new Set(this.plan.diagnostics.filter(d => d.severity === 'warning' && d.clipId).map(d => d.clipId ?? '')); }
     private resize(): void { if (!this.active)
-        return; const width = Math.max(240, this.scroller.clientWidth || 800), height = this.scroller.clientHeight || 400; this.spacer.style.width = `${Math.max(width, LANE_GUTTER + this.model.data.lengthTicks / this.model.data.ppq * this.scale)}px`; this.spacer.style.height = `${Math.max(height, RULER + this.model.data.lanes.length * LANE_HEIGHT)}px`; this.canvas.style.width = `${width}px`; this.canvas.style.height = `${height}px`; const backing = backingSize(width, height, this.canvas.ownerDocument.defaultView?.devicePixelRatio ?? 1); this.canvas.width = backing.width; this.canvas.height = backing.height; this.context?.setTransform(backing.scale, 0, 0, backing.scale, 0, 0); this.viewportState = { ...this.viewportState, width, height, ppq: this.model.data.ppq, pixelsPerQuarter: this.scale }; this.scroll(); }
+        return; const width = Math.max(240, this.scroller.clientWidth || 800), height = this.scroller.clientHeight || 400; this.spacer.style.width = `${Math.max(width, LANE_GUTTER + this.model.data.lengthTicks / this.model.data.ppq * this.scale)}px`; this.spacer.style.height = `${Math.max(height, RULER + this.model.data.lanes.length * LANE_HEIGHT)}px`; this.canvas.style.width = `${width}px`; this.canvas.style.height = `${height}px`; this.ruler.style.width = `${width}px`; this.ruler.style.height = `${STRUCTURE_HEIGHT}px`; const dpr = this.canvas.ownerDocument.defaultView?.devicePixelRatio ?? 1, rulerBacking = backingSize(width, STRUCTURE_HEIGHT, dpr); this.ruler.width = rulerBacking.width; this.ruler.height = rulerBacking.height; this.rulerContext?.setTransform(rulerBacking.scale, 0, 0, rulerBacking.scale, 0, 0); const backing = backingSize(width, height, this.canvas.ownerDocument.defaultView?.devicePixelRatio ?? 1); this.canvas.width = backing.width; this.canvas.height = backing.height; this.context?.setTransform(backing.scale, 0, 0, backing.scale, 0, 0); this.viewportState = { ...this.viewportState, width, height, ppq: this.model.data.ppq, pixelsPerQuarter: this.scale }; this.scroll(); }
     private scroll(): void { this.viewportState.startTick = this.scroller.scrollLeft / this.scale * this.model.data.ppq; this.viewportState.scrollY = this.scroller.scrollTop; this.request(); }
     zoom(factor: number, anchor = (this.viewportState.width + LANE_GUTTER) / 2): void { this.cancelGesture(); const next = Math.max(8, Math.min(192, this.scale * factor)), start = anchoredTimelineStart(this.viewportState, next, anchor); this.scale = next; this.resize(); this.scroller.scrollLeft = start / this.model.data.ppq * next; this.scroll(); }
     reveal(id: string): void { const clip = this.plan.clips.find(c => c.id === id); if (!clip)
@@ -177,6 +208,19 @@ export class ArrangementTimeline {
             }
             ctx.globalAlpha = 1;
         };
+        ctx.save();
+        ctx.strokeStyle = faint;
+        ctx.globalAlpha = .45;
+        ctx.setLineDash([3, 4]);
+        for (const tick of [...this.sections.flatMap(sec => [sec.startTick, sec.endTick]), ...this.markers.map(m => m.tick)]) {
+            const x = tickX(tick, v);
+            if (x < LANE_GUTTER || x > v.width) continue;
+            ctx.beginPath();
+            ctx.moveTo(x, RULER);
+            ctx.lineTo(x, v.height);
+            ctx.stroke();
+        }
+        ctx.restore();
         for (const rect of this.rectangles)
             paint(rect);
         if (this.gesture?.moved) {
@@ -214,7 +258,108 @@ export class ArrangementTimeline {
                 ctx.fillText(String(Math.round(tick / bar) + 1), x + 5, RULER / 2);
         }
         if(this.playheadTick!==undefined){const x=LANE_GUTTER+(this.playheadTick-v.startTick)/v.ppq*this.scale;if(x>=LANE_GUTTER&&x<=v.width){ctx.strokeStyle=text;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,v.height);ctx.stroke();ctx.fillStyle=text;ctx.fillRect(x-4,0,8,6);}}
+        this.drawStructure({ bg, alt, line, text, faint, accent, error });
     }
+    /** Culled to the visible tick range; selection uses weight/outline/glyph, never colour alone. */
+    private drawStructure(c: { bg: string; alt: string; line: string; text: string; faint: string; accent: string; error: string }): void {
+        const ctx = this.rulerContext, v = this.viewportState;
+        if (!ctx) return;
+        const first = v.startTick, last = v.startTick + (v.width - LANE_GUTTER) / v.pixelsPerQuarter * v.ppq, g = this.structureGesture;
+        ctx.clearRect(0, 0, v.width, STRUCTURE_HEIGHT);
+        ctx.fillStyle = c.alt;
+        ctx.fillRect(0, 0, v.width, STRUCTURE_HEIGHT);
+        ctx.font = '11px sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(LANE_GUTTER, 0, v.width - LANE_GUTTER, STRUCTURE_HEIGHT);
+        ctx.clip();
+        const current = this.playheadTick === undefined ? undefined : this.sections.find(s => s.startTick <= (this.playheadTick ?? -1) && (this.playheadTick ?? -1) < s.endTick)?.id;
+        for (const s of this.sections) {
+            const moving = g?.hit.kind === 'section' && g.hit.id === s.id && g.moved, start = moving ? g.nextStart : s.startTick, end = moving ? g.nextEnd : s.endTick;
+            if (end < first || start > last) continue;
+            const x = tickX(start, v), w = Math.max(2, tickX(end, v) - x), selected = this.structureSelected?.kind === 'section' && this.structureSelected.id === s.id, bad = this.overlapping.has(s.id) || (moving && !g.valid);
+            ctx.globalAlpha = selected ? .55 : .28;
+            ctx.fillStyle = c.accent;
+            ctx.fillRect(x, 2, w, SECTION_BAND - 4);
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = bad ? c.error : selected ? c.text : c.line;
+            ctx.lineWidth = selected || bad ? 2 : 1;
+            ctx.strokeRect(x + .5, 2.5, w - 1, SECTION_BAND - 5);
+            if (s.id === current) { ctx.fillStyle = c.text; ctx.fillRect(x, SECTION_BAND - 3, w, 2); }
+            ctx.fillStyle = bad ? c.error : c.text;
+            ctx.font = selected ? 'bold 11px sans-serif' : '11px sans-serif';
+            const labelX = Math.max(x, LANE_GUTTER) + 6;
+            if (x + w - labelX > 14) ctx.fillText(`${bad ? '! ' : selected ? '▸ ' : ''}${s.label}`, labelX, SECTION_BAND / 2, x + w - labelX - 4);
+        }
+        ctx.font = '11px sans-serif';
+        for (let i = 0; i < this.markers.length; i++) {
+            const m = this.markers[i]; if (!m) continue;
+            const movingId = g?.hit.kind === 'marker' && g.moved ? g.hit.id : undefined, moving = movingId === m.id, tick = moving && g ? g.nextStart : m.tick;
+            let same = 1; while (!moving && this.markers[i + same]?.tick === m.tick && this.markers[i + same]?.id !== movingId) same++;
+            if (tick < first - v.ppq * 64 || tick > last) { i += same - 1; continue; }
+            const x = tickX(tick, v), selected = this.structureSelected?.kind === 'marker' && (this.markers.slice(i, i + same).some(n => n.id === this.structureSelected?.id)), nextX = tickX(this.markers[i + same]?.tick ?? Infinity, v);
+            ctx.strokeStyle = selected ? c.text : c.faint;
+            ctx.lineWidth = selected ? 2 : 1;
+            ctx.beginPath(); ctx.moveTo(x, SECTION_BAND); ctx.lineTo(x, STRUCTURE_HEIGHT); ctx.stroke();
+            ctx.fillStyle = selected ? c.text : c.accent;
+            ctx.beginPath(); ctx.moveTo(x, SECTION_BAND + 1); ctx.lineTo(x + 7, SECTION_BAND + 5); ctx.lineTo(x, SECTION_BAND + 9); ctx.fill();
+            ctx.fillStyle = c.text;
+            ctx.font = selected ? 'bold 11px sans-serif' : '11px sans-serif';
+            const room = Math.min(nextX, v.width) - x - 14;
+            if (room > 14 && x >= LANE_GUTTER) ctx.fillText(`${m.label}${same > 1 ? ` +${same - 1}` : ''}`, x + 10, SECTION_BAND + MARKER_BAND / 2 + 1, room);
+            i += same - 1;
+        }
+        if (this.playheadTick !== undefined) { const x = tickX(this.playheadTick, v); ctx.strokeStyle = c.text; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, STRUCTURE_HEIGHT); ctx.stroke(); }
+        ctx.restore();
+        ctx.fillStyle = c.bg;
+        ctx.fillRect(0, 0, LANE_GUTTER, STRUCTURE_HEIGHT);
+        ctx.fillStyle = c.faint;
+        ctx.fillText('SECTIONS', 12, SECTION_BAND / 2);
+        ctx.fillText('MARKERS', 12, SECTION_BAND + MARKER_BAND / 2);
+        ctx.strokeStyle = c.line;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, STRUCTURE_HEIGHT - .5); ctx.lineTo(v.width, STRUCTURE_HEIGHT - .5); ctx.moveTo(0, SECTION_BAND - .5); ctx.lineTo(v.width, SECTION_BAND - .5); ctx.stroke();
+    }
+    structureSelection(kind?: 'section' | 'marker', id?: string): void { this.structureSelected = kind && id ? { kind, id } : undefined; this.request(); }
+    /** Ephemeral navigation: scrolls only; never edits. */
+    revealTick(tick: number): void { this.scroller.scrollLeft = Math.max(0, tick / this.model.data.ppq * this.scale - (this.viewportState.width - LANE_GUTTER) / 3); this.scroll(); }
+    private rulerPoint(e: MouseEvent): { x: number; y: number } { const r = this.ruler.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+    private structureDown(e: PointerEvent): void {
+        if (e.button !== 0) return;
+        const { x, y } = this.rulerPoint(e), hit = structureHit(this.sections, this.markers, x, y, this.viewportState);
+        if (!hit) return;
+        e.preventDefault(); this.ruler.focus();
+        this.structure.select(hit.kind, hit.id);
+        const section = hit.kind === 'section' ? this.sections.find(s => s.id === hit.id) : undefined, marker = hit.kind === 'marker' ? this.markers.find(m => m.id === hit.id) : undefined;
+        const start = section?.startTick ?? marker?.tick ?? 0, end = section?.endTick ?? start;
+        this.structureGesture = { pointer: e.pointerId, x, hit, start, end, nextStart: start, nextEnd: end, moved: false, valid: true };
+        this.ruler.setPointerCapture(e.pointerId);
+        this.request();
+    }
+    private structureDrag(e: PointerEvent): void {
+        const g = this.structureGesture; if (!g || g.pointer !== e.pointerId) return;
+        const delta = snapped((this.rulerPoint(e).x - g.x) / this.scale * this.model.data.ppq, this.model.data.ppq, this.grid), length = this.model.data.lengthTicks;
+        if (g.hit.kind === 'marker') { g.nextStart = g.nextEnd = g.start + delta; g.valid = g.nextStart >= 0 && g.nextStart <= length; }
+        else {
+            g.nextStart = g.hit.edge === 'end' ? g.start : g.start + delta; g.nextEnd = g.hit.edge === 'start' ? g.end : g.end + delta;
+            const id = g.hit.id, clash = this.sections.find(s => s.id !== id && overlaps(s, { startTick: g.nextStart, endTick: g.nextEnd }));
+            g.valid = g.nextStart >= 0 && g.nextEnd <= length && g.nextEnd > g.nextStart && !clash;
+            if (clash) this.status(`Overlaps section “${clash.label}”; release cancels. Neighbours are never moved.`);
+        }
+        g.moved = delta !== 0;
+        if (!g.valid && g.hit.kind === 'marker') this.status('Marker must stay within the composition; release cancels.');
+        this.request();
+    }
+    private structureUp(e: PointerEvent): void {
+        const g = this.structureGesture; if (!g || g.pointer !== e.pointerId) return;
+        this.structureGesture = undefined;
+        try {
+            if (g.moved && g.valid) { if (g.hit.kind === 'marker') this.structure.moveMarker(g.hit.id, g.nextStart); else this.structure.moveSection(g.hit.id, g.nextStart, g.nextEnd); }
+            else if (g.moved) this.status('Edit rejected; structure unchanged.');
+        } finally { if (this.ruler.hasPointerCapture(e.pointerId)) this.ruler.releasePointerCapture(e.pointerId); this.request(); }
+    }
+    cancelStructure(): void { const g = this.structureGesture; this.structureGesture = undefined; if (g && this.ruler.hasPointerCapture(g.pointer)) this.ruler.releasePointerCapture(g.pointer); this.request(); }
     playhead(tick:number|undefined):void{this.playheadTick=tick;this.request();}
     private point(e: MouseEvent): {
         x: number;
@@ -245,7 +390,7 @@ export class ArrangementTimeline {
     } }
     cancelGesture(): void { const g = this.gesture; this.gesture = undefined; if (g && this.canvas.hasPointerCapture(g.pointer))
         this.canvas.releasePointerCapture(g.pointer); this.request(); }
-    dispose(): void { this.active = false; this.cancelGesture(); this.lifetime.abort(); if (this.frame !== undefined)
+    dispose(): void { this.active = false; this.cancelGesture(); this.cancelStructure(); this.lifetime.abort(); if (this.frame !== undefined)
         cancelAnimationFrame(this.frame); this.frame = undefined; for (const fn of this.cleanups.splice(0))
         fn(); }
 }

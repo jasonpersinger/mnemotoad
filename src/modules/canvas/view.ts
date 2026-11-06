@@ -14,6 +14,8 @@ import { ArrangementTimeline } from './timeline';
 import { ArrangementMotifPicker } from './motif-picker';
 import { clipInspector } from './inspector';
 import { CanvasPerformancePanel } from './performance-panel';
+import { CanvasStructurePanel } from './structure-panel';
+import { addMarker, addSection, orderedSections, updateMarker, updateSection } from './structure';
 export class CanvasView extends ModuleView {
     private active = false;
     private epoch = 0;
@@ -23,6 +25,7 @@ export class CanvasView extends ModuleView {
     private sessionUnsubscribe?: () => void;
     private timeline?: ArrangementTimeline;
     private performancePanel?:CanvasPerformancePanel;
+    private structurePanel?: CanvasStructurePanel;
     private picker?: ArrangementMotifPicker;
     private recoveryPanel?: RecoveryInspector<Composition, CanvasSession>;
     private recoveryRoot?: HTMLElement;
@@ -180,7 +183,7 @@ export class CanvasView extends ModuleView {
         button(root, draft.draft.title || 'Untitled draft', () => { void this.leave().then(() => { if (this.active)
             this.attach(draft); }).catch(e => this.fail(e)); }); }
     private renderEditor(): void {
-        this.performancePanel?.dispose();this.performancePanel=undefined;
+        this.performancePanel?.dispose();this.performancePanel=undefined;this.structurePanel?.dispose();this.structurePanel=undefined;
         this.timeline?.dispose();
         this.timeline = undefined;
         const root = this.editor, s = this.available;
@@ -256,16 +259,28 @@ export class CanvasView extends ModuleView {
         button(tools, 'Time +', () => this.timeline?.zoom(1.25));
         button(tools, 'Previous clip', () => this.nextClip(-1));
         button(tools, 'Next clip', () => this.nextClip(1));
+        button(tools, 'Previous section', () => this.structurePanel?.step('section', -1));
+        button(tools, 'Next section', () => this.structurePanel?.step('section', 1));
+        button(tools, 'Previous marker', () => this.structurePanel?.step('marker', -1));
+        button(tools, 'Next marker', () => this.structurePanel?.step('marker', 1));
         this.plan = s.canvas.plan(session.draft);
         this.planKey = `${session.changeVersion}:${s.index.currentRevision}:${this.draftEpoch}`;
         const surface = element(root, 'div', undefined, 'mnemobard-arrangement-surface');
-        this.timeline = new ArrangementTimeline(surface, session.draft, this.plan, (lane, id) => this.select(lane, id), (id, lane, start) => this.act(() => { const current = findClip(session.draft, id).clip; s.canvas.move(session, id, lane, start, current.repeatCount, current.label); }), (lane, start) => this.chooseMotif(lane, start), text => this.say(text));
+        this.timeline = new ArrangementTimeline(surface, session.draft, this.plan, (lane, id) => this.select(lane, id), (id, lane, start) => this.act(() => { const current = findClip(session.draft, id).clip; s.canvas.move(session, id, lane, start, current.repeatCount, current.label); }), (lane, start) => this.chooseMotif(lane, start), text => this.say(text), {
+            select: (kind, id) => { this.structurePanel?.select(kind, id); },
+            moveSection: (id, startTick, endTick) => { this.act(() => session.edit('Move section', c => updateSection(c, id, { startTick, endTick }))); },
+            moveMarker: (id, tick) => { this.act(() => session.edit('Move marker', c => updateMarker(c, id, { tick }))); },
+            createSection: start => { this.act(() => { const c = session.draft, m = c.data.meter, bar = c.data.ppq * 4 / m.denominator * m.numerator, next = orderedSections(c).find(x => x.startTick > start)?.startTick ?? c.data.lengthTicks, id = crypto.randomUUID(); session.edit('Add section', x => addSection(x, { label: `Section ${c.data.sections.length + 1}`, startTick: start, endTick: Math.min(start + bar * 4, next) }, id)); this.structurePanel?.select('section', id); }); },
+            createMarker: tick => { this.act(() => { const id = crypto.randomUUID(); session.edit('Add marker', x => addMarker(x, { label: `Marker ${x.data.markers.length + 1}`, tick }, id)); this.structurePanel?.select('marker', id); }); },
+        });
         this.timeline.selection(session.selectedLane, session.selectedClip);
-        element(root, 'p', 'Drag clips to move · double-click empty time to place · Ctrl/Cmd-wheel zoom · Shift-wheel scroll. Saved motifs are live references; no source notes are copied.', 'mnemobard-hint');
+        element(root, 'p', 'Drag clips to move · double-click empty time to place · Ctrl/Cmd-wheel zoom · Shift-wheel scroll. Saved motifs are live references; no source notes are copied. Section/marker ruler: drag to move, drag section edges to resize, double-click to add.', 'mnemobard-hint');
+        const structureRoot = element(root, 'div');
         this.laneRoot = element(root, 'section', undefined, 'mnemobard-canvas-lane-manager');
         this.inspector = element(root, 'section', undefined, 'mnemobard-canvas-inspector');
         const secondary=element(root,'section',undefined,'mnemobard-canvas-performance');
         this.performancePanel=new CanvasPerformancePanel(performanceToolbar,secondary,this.app,s,session,this,(fn,form)=>this.act(fn,form),()=>this.hasPending(),()=>this.active&&this.app.workspace.activeLeaf===this.leaf,tick=>this.timeline?.playhead(tick),(lane,clip)=>{if(this.select(lane,clip)&&clip)this.timeline?.reveal(clip);});
+        this.structurePanel = new CanvasStructurePanel(structureRoot, { library: s.canvas, session, act: (fn, form) => this.act(fn, form), locate: tick => { this.timeline?.revealTick(tick); this.performancePanel?.locate(tick); }, highlight: (kind, id) => this.timeline?.structureSelection(kind, id), open: path => this.openMarkdown(path), sourcePath: () => session.base?.path ?? '', cursorTick: () => this.performancePanel?.currentTick ?? 0, readOnly: () => s.settings.readOnly });
         this.clipRegister = element(root, 'details', undefined, 'mnemobard-canvas-clip-register');
         element(this.clipRegister, 'summary', 'Clip list · keyboard alternative');
         const diagnostics = element(root, 'details', undefined, 'mnemobard-canvas-diagnostics');
@@ -309,6 +324,7 @@ export class CanvasView extends ModuleView {
         this.planKey = key;
         this.plan = s.canvas.plan(session.draft);
         this.timeline?.update(session.draft, this.plan);
+        this.structurePanel?.refresh();
         this.renderSelection();
     } this.timeline?.selection(session.selectedLane, session.selectedClip); this.renderDiagnostics(); }
     private updateStatus(): void {
@@ -457,7 +473,7 @@ export class CanvasView extends ModuleView {
         if (this.selectedId)
             await this.openComposition(this.selectedId);
     } }
-    override release(): void { this.active = false; this.epoch++; this.lifetime.abort(); this.picker?.close(); this.picker = undefined; this.performancePanel?.dispose();this.performancePanel=undefined;this.timeline?.dispose(); this.timeline = undefined; this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.sessionUnsubscribe?.(); this.sessionUnsubscribe = undefined; if (this.session)
+    override release(): void { this.active = false; this.epoch++; this.lifetime.abort(); this.picker?.close(); this.picker = undefined; this.performancePanel?.dispose();this.performancePanel=undefined;this.structurePanel?.dispose();this.structurePanel=undefined;this.timeline?.dispose(); this.timeline = undefined; this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.sessionUnsubscribe?.(); this.sessionUnsubscribe = undefined; if (this.session)
         this.foundation()?.canvas.release(this.session, this); if (this.editorScope)
         this.app.keymap.popScope(this.editorScope); this.editorScope = undefined; for (const fn of this.cleanup.splice(0))
         fn(); super.release(); }

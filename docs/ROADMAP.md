@@ -147,3 +147,11 @@ Implemented under Prompt009: pure deterministic arrangement compilation, immutab
 Validation:386 baseline tests→449 tests/37files; independent10 valid MIDI fixtures/4 rejection fixtures plus native23-note/five-track comparison; actual Linux Obsidian restart/recovery/conflict/lifecycle and regression workflows;4/20/4,16/200/25,32/1000/100 lane/clip/source benchmarks; actual screenshots. See [the report](MILESTONE_4B_REPORT.md) for conditional limitations, including unverified DAW import and other platforms.
 
 **Stop gate:** human review of4B is required before any4C work. Possible later priorities, not authorized implementation: stronger source-review/diagnostic usability, sections/markers, recording references, pinned-source product policy, more DAW/platform testing, performance/seek continuity refinement. Final channel-wide state/maps/mixing/ports/branding/release and legacy adoption remain separate decisions. No4C code is included.
+
+## Milestone4C completion and review gate
+
+Implemented under Prompt010: named sections (create/rename/move/resize/exact numeric edit/describe/reorder-by-swap/delete, non-overlap policy), named point markers (duplicate positions kept distinct, deterministic order), playhead-relative section/marker navigation, a fixed section/marker ruler aligned with the arrangement viewport, and recording references to existing vault audio with notes, section/marker association, availability, open, explicit relink, rename suggestion and confirmed removal. All persisted edits are single undoable transactions; navigation creates none. No schema bump, migration, dependency or MIDI-format change.
+
+Validation:449 baseline tests→492 tests/38files; golden arrangement MIDI byte-identical; native MIDI after structure byte-identical to the pre-structure export; actual Linux Obsidian workflow, cold restart and MOTIF/MIDI/PATCHBOOK/foundation regressions pass. See [4C report](MILESTONE_4C_REPORT.md).
+
+**Stop gate:** human review of4C is required. Candidate next scopes (not authorized): structure-aware audition invalidation (fingerprint excluding organizational metadata), optional section/marker MIDI meta export, colour/category, investigation of the host stale-active-window condition observed during native runs, and broader platform validation.

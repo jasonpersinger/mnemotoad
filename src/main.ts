@@ -54,7 +54,7 @@ export default class MnemobardPlugin extends Plugin {
     const preview = new AudioPreview(undefined, () => musical.stop());
     const musical = new MusicalTransport(() => preview.stop());
     const motifs = new MotifLibrary(index, repository, vault);
-    const canvas = new CanvasLibrary(index,repository,vault,id=>motifs.isDirty(id));
+    const canvas = new CanvasLibrary(index,repository,vault,id=>motifs.isDirty(id),(target, source) => this.app.metadataCache.getFirstLinkpathDest(target, source)?.path ?? null);
     this.services = { settings, modules, index, repository, references, patchbook, assets, preview, recovery: new PatchbookRecovery(vault, index, repository), motifs, musical, canvas };
     for (const module of MODULES) {
       this.registerView(VIEW_TYPES[module], leaf => module === 'patchbook' ? new PatchbookView(leaf, () => this.active ? this.services : undefined) : module === 'motif' ? new MotifView(leaf, () => this.active ? this.services : undefined) : new CanvasView(leaf, () => this.active ? this.services : undefined));

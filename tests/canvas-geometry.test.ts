@@ -8,3 +8,18 @@ it('maps clip starts, complete periods and lane rows without changing musical co
 it('culls horizontal/vertical regions but includes long clips crossing the viewport', () => { const p: ArrangementPlan = { clips: [clip, { ...clip, id: 'before', startTick: 0, durationTicks: 240, endTick: 240 }, { ...clip, id: 'below', laneIndex: 30 }, { ...clip, id: 'long', startTick: 0, durationTicks: 10000, endTick: 10000 }], diagnostics: [], referencesReady: true, exportReady: false }; expect(visibleClips(p, viewport).map(r => r.clip.id)).toEqual(['c', 'long']); });
 it('keeps anchored zoom context and uses reviewed extent only as an unresolved visual hint', () => { const anchor = 400, start = anchoredTimelineStart(viewport, 96, anchor), old = timelinePoint(anchor, 64, viewport).tick, next = timelinePoint(anchor, 64, { ...viewport, startTick: start, pixelsPerQuarter: 96 }).tick; expect(next).toBe(old); const r = clipRectangle({ ...clip, periodTicks: undefined, durationTicks: undefined, endTick: undefined }, viewport, 480); expect(r.width).toBe(96); expect(r.clip.endTick).toBeUndefined(); });
 it('uses bounded high-DPI backing while hit geometry remains in CSS pixels', () => { expect(backingSize(800, 400, 2)).toEqual({ width: 1600, height: 800, scale: 2 }); expect(backingSize(800, 400, 12).scale).toBe(4); expect(clipRectangle(clip, viewport).x).toBe(220); });
+import { structureHit, tickX, SECTION_BAND, STRUCTURE_HEIGHT } from '../src/modules/canvas/geometry';
+it('hits sections by body/edge without ambiguity at touching boundaries and markers by proximity', () => {
+    const v = { width: 1000, height: 300, startTick: 0, scrollY: 0, pixelsPerQuarter: 48, ppq: 960 };
+    const sections = [{ id: 'a', startTick: 0, endTick: 3840 }, { id: 'b', startTick: 3840, endTick: 7680 }], markers = [{ id: 'm1', tick: 1920 }, { id: 'm2', tick: 1920 }];
+    const boundary = tickX(3840, v);
+    expect(structureHit(sections, markers, boundary - 1, 5, v)).toEqual({ kind: 'section', id: 'a', edge: 'end' });
+    expect(structureHit(sections, markers, boundary, 5, v)).toEqual({ kind: 'section', id: 'b', edge: 'start' });
+    expect(structureHit(sections, markers, tickX(1920, v), 5, v)).toEqual({ kind: 'section', id: 'a', edge: 'body' });
+    expect(structureHit(sections, markers, tickX(1920, v) + 3, SECTION_BAND + 4, v)).toEqual({ kind: 'marker', id: 'm2' });
+    expect(structureHit(sections, markers, tickX(1920, v) + 20, SECTION_BAND + 4, v)).toBeUndefined();
+    expect(structureHit(sections, markers, 10, 5, v)).toBeUndefined();
+    expect(structureHit(sections, markers, boundary, STRUCTURE_HEIGHT, v)).toBeUndefined();
+    const scrolled = { ...v, startTick: 3840 };
+    expect(structureHit(sections, markers, tickX(5760, scrolled), 5, scrolled)).toEqual({ kind: 'section', id: 'b', edge: 'body' });
+});

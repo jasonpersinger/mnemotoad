@@ -23,3 +23,24 @@ export function clipRectangle(clip: ResolvedClip, v: TimelineViewport, fallbackP
 export function visibleClips(plan: ArrangementPlan, v: TimelineViewport, fallback: (id: string) => number = () => 960): ClipRect[] { return plan.clips.map(c => clipRectangle(c, v, fallback(c.id))).filter(r => r.x + r.width > LANE_GUTTER && r.x < v.width && r.y + r.height > RULER && r.y < v.height); }
 export function clipHit(rectangles: readonly ClipRect[], x: number, y: number): ClipRect | undefined { return [...rectangles].reverse().find(r => x >= Math.max(LANE_GUTTER, r.x) && x < r.x + r.width && y >= Math.max(RULER, r.y) && y < r.y + r.height); }
 export function anchoredTimelineStart(v: TimelineViewport, nextScale: number, anchor: number): number { return Math.max(0, v.startTick + (anchor - LANE_GUTTER) * v.ppq * (1 / v.pixelsPerQuarter - 1 / nextScale)); }
+/** 4C structure ruler: a separate fixed canvas above the scroller sharing this viewport's X transform. */
+export const SECTION_BAND = 22, MARKER_BAND = 20, STRUCTURE_HEIGHT = SECTION_BAND + MARKER_BAND;
+export function tickX(tick: number, v: TimelineViewport): number { return LANE_GUTTER + (tick - v.startTick) / v.ppq * v.pixelsPerQuarter; }
+export type StructureHit = { kind: 'section'; id: string; edge: 'start' | 'end' | 'body' } | { kind: 'marker'; id: string };
+interface Span { id: string; startTick: number; endTick: number }
+interface Point { id: string; tick: number }
+/** Edge zones lie inside a section, so touching neighbours never compete for one pixel. */
+export function structureHit(sections: readonly Span[], markers: readonly Point[], x: number, y: number, v: TimelineViewport, edge = 6): StructureHit | undefined {
+    if (x < LANE_GUTTER || y < 0 || y >= STRUCTURE_HEIGHT) return undefined;
+    if (y < SECTION_BAND) {
+        for (const s of sections) {
+            const start = tickX(s.startTick, v), end = tickX(s.endTick, v), zone = Math.min(edge, (end - start) / 3);
+            if (x < start || x >= end) continue;
+            return { kind: 'section', id: s.id, edge: x - start < zone ? 'start' : end - x <= zone ? 'end' : 'body' };
+        }
+        return undefined;
+    }
+    let best: Point | undefined, distance = 6;
+    for (const m of markers) { const d = Math.abs(tickX(m.tick, v) - x); if (d <= distance) { best = m; distance = d; } }
+    return best ? { kind: 'marker', id: best.id } : undefined;
+}

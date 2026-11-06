@@ -139,3 +139,13 @@ The five original risk studies remain historical proposals where they discuss ro
 | Interoperability/compatibility | Independent Python and separate expected musical tuples, golden bytes, native restart and module regressions. No source mutation/schema migration/dependency addition. | Isolated REAPER import modal was not successfully automated; no DAW result claimed. Windows/macOS, physical output/device latency and screen-reader certification remain unverified. |
 
 See [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md) for exact workloads/results and required human review. These limitations do not authorize4C, maps, snapshot migrations, release or legacy copying.
+
+## Milestone4C residual risks
+
+| Risk | Evidence and mitigation | Remaining work / approval |
+| --- | --- | --- |
+| Rename tracking of references | Mirror frontmatter link is rewritten by Obsidian on in-app rename (native verified); a single unambiguous candidate is suggested, never applied. Renames outside Obsidian or ambiguous cases show Missing + explicit Relink. | Rename while the composition has unsaved edits modifies its frontmatter → protected Save conflict (safe, but requires discard/reload). A file renamed to a name containing `# [ ] |` would make the rewritten link invalid for schema1 (pre-existing for all asset links). |
+| Audition invalidation on structure edits | 4B fingerprint includes the whole composition; structure edits stop prepared audition. Navigation never invalidates. | Possible follow-up: fingerprint only musical inputs. Requires compiler-policy review. |
+| Large structure lists | 100/500/100 workload: select24ms, move/resize~42ms, undo+redo73ms, save107ms, draw≤0.6ms, zoom/scroll≤1.4ms (native medians). Lists paged at50 rows. | Commit-time costs scale with composition JSON size (validation/clone); no per-frame cost. |
+| Overlaps from other writers | Loaded and preserved, flagged in ruler and panel; edits that would keep/introduce overlap are rejected. | User must resolve manually; no automatic repair by design. |
+| Host stale active window | Native runs after cold restarts observed Obsidian's `activeDocument` pointing at a detached document, making all Modals inert (MOTIF and CANVAS export). Reproduced with the4B build; refocusing the main window repairs it. The4C harness asserts this precondition. | Not a4C defect; consider defensive modal mounting or a host bug report after review. |

@@ -74,3 +74,7 @@ Signed4A baseline3f5c67f verified.449 tests/37files, strict types/lint/build pas
 ##4B final varied-length validation
 
 The final benchmark varied full motif length2/4/6/8quarters, PPQ and note density:74.2/139.9/438.3ms median preparation; largest worst heartbeat54.9ms. Initial uniform-length measurements remain retained, not substituted. Final deployed UI/audio ownership checks and source-error/cancellation/suspension checks passed. Report status CONDITIONAL PASS for verified Linux scope; DAW import, other platforms and audible-latency certification remain unverified. Await human review;4C not started.
+
+##4C (Prompt010, Claude Code)
+
+Signed4B baseline a64b267 verified (449/37, check pass). Pure structure commands/tests, persistence/history integration, ruler + Structure panel, native workflow (15 checks + cold restart), MOTIF/MIDI/PATCHBOOK/foundation native regressions, benchmarks. Final492 tests/38files; golden MIDI unchanged. Report: docs/MILESTONE_4C_REPORT.md. Stopped for human review.

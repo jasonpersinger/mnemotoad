@@ -139,13 +139,17 @@ export function validateEntity(value: unknown): Entity {
         }
       }
       unique(clips, 'composition clips'); if (clips.length > 1000) invalid('clips', 'maximum is 1000');
-      for (const marker of records(d.markers, 'markers')) { text(marker.label, 'marker label'); integer(marker.tick, 'marker tick', 0, d.lengthTicks); }
+      // 4C optional fields are additive; overlap and association integrity are editor diagnostics, never load failures.
+      const optionalText = (row: Record<string, unknown>, key: string, field: string, max: number): void => { const v = row[key]; if (v !== undefined) { text(v, field); if (v.length > max) invalid(field, `maximum ${max} characters`); } };
+      for (const marker of records(d.markers, 'markers')) { text(marker.label, 'marker label'); integer(marker.tick, 'marker tick', 0, d.lengthTicks); optionalText(marker, 'description', 'marker description', 10000); }
       for (const section of records(d.sections, 'sections')) {
         text(section.label, 'section label'); integer(section.startTick, 'section start', 0, d.lengthTicks - 1);
         integer(section.endTick, 'section end', section.startTick + 1, d.lengthTicks);
+        optionalText(section, 'description', 'section description', 10000);
       }
       for (const ref of records(d.audioRefs, 'audioRefs')) {
         text(ref.label, 'audio label'); text(ref.path, 'audio path'); vaultPath(ref.path); integer(ref.atTick, 'audio position', 0, d.lengthTicks);
+        optionalText(ref, 'description', 'audio description', 10000); optionalText(ref, 'sectionId', 'audio section', 200); optionalText(ref, 'markerId', 'audio marker', 200);
       }
     }
   }

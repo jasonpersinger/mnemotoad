@@ -397,3 +397,20 @@ Exact conversion is `sourceTick ×960 / sourcePPQ`. Every start/end/period must 
 Bounds:32 lanes/1000 clips/1000 repeats remain planner limits, **not** expansion promises. Compilation additionally permits128 distinct sources,8MiB UTF8 per source/16MiB total capture,24000 expanded notes/48000 note events,64MiB estimated working budget,128 export polyphony, and the existing4096-quarter editor endpoint. The pure tick ceiling1e9 is subordinate to this tighter editor length. The memory estimate is a rejection heuristic (`1536 × notes +2 × textBytes +4 × compositionJSON.length`), not a measured heap cap. Worker timeout10s and2MiB MIDI derivative limit remain enforced. Audition additionally permits64 simultaneous voices and at most128 note starts in any150ms window. Bounds reject complete operations; no partial MIDI or dropped notes.
 
 Automatic routing reserves explicit channels, then assigns stable UUID order to unused melodic channels, then safely reusable channels. Sharing requires identical lane/source PATCHBOOK context (or all unassigned), no unknown channel state, and no same-channel/pitch overlap. Mixed-context lanes receive exclusive context keys. Distinct pitches can overlap; same-lane adjacent notes use off-before-on. Cross-lane same-pitch shared-channel boundaries require a gap because SMF track merge order is external. Collision diagnostics retain both source lifetimes/provenance. No source note is changed to accommodate routing. See [R01–R10](DECISIONS.md#prompt009--milestone4b) and [4B report](MILESTONE_4B_REPORT.md).
+
+## Milestone4C — sections, markers and recording references contract
+
+No schema bump or migration. The schema1 arrays are activated with additive optional fields; 4A/4B readers preserve them as unknown data.
+
+```json
+"sections":  [{ "id": "uuid", "label": "Theme A", "startTick": 11520, "endTick": 34560, "description": "optional" }],
+"markers":   [{ "id": "uuid", "label": "Choir entrance", "tick": 23040, "description": "optional" }],
+"audioRefs": [{ "id": "uuid", "label": "Platform ambience", "path": "MNEMOBARD/Recordings/station.wav", "atTick": 11520,
+               "description": "optional", "sectionId": "optional section id", "markerId": "optional marker id" }]
+```
+
+- Ticks are exact integers at composition PPQ960; UI shows one-based `bar:beat:tick` via `music/positions.ts` (beat = meter denominator; 4/4, 3/4, 6/8 tested). Section ranges are half-open; markers may sit on the composition end. Existing local IDs (`section1`) remain valid; new records use UUIDs.
+- Validation (load): labels nonempty; existing bounds; optional text ≤10000 characters (association IDs ≤200). Overlaps and dangling associations are **editor diagnostics**, not load failures. Editor-only bounds: 256 sections, 1024 markers, 256 references, 200-character labels.
+- Recording paths are vault-relative, pass `vaultPath()`, and must have an audio extension. `atTick` remains required (timeline anchor). Each referenced path is mirrored as `[[path]]` in the existing `mnemobard_audio` frontmatter list; the JSON path is authoritative, the mirror is a navigation/rename hint.
+- Writer: `description` (sections/markers) and `description`/`sectionId`/`markerId` (references) are owned optional fields in `retainExtensions`, so clearing deletes them; all other unknown fields survive round trips.
+- Sections, markers and references are excluded from compilation and MIDI export (unchanged4B contract).
