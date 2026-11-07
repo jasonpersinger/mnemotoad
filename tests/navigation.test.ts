@@ -150,3 +150,56 @@ describe('plugin navigation readiness', () => {
     expect(phases(h.s.navigation.trace).slice(-5)).toEqual(['leaf-ready', 'view-loaded', 'view-ready', 'state-applied', 'selected']); h.plugin.onunload();
   });
 });
+
+describe('4F cross-module chain', () => {
+  const clickIn = (root: HTMLElement, text: string) => { const b = [...root.querySelectorAll('button')].find(x => x.textContent === text && !x.disabled); if (!b) throw Error('Missing button ' + text); b.click(); };
+  it('Patch → Motif → Composition → Clip → Motif → Patch keeps every draft, selects each target and writes no source note', async () => {
+    const h = await started(), s = h.s, { addLane } = await import('../src/modules/canvas/commands'), { addMarker } = await import('../src/modules/canvas/structure');
+    const comp = s.canvas.create(); comp.edit('lane', c => addLane(c, 'Lead')); const lane = comp.draft.data.lanes[0]; if (!lane) throw Error('lane');
+    s.canvas.place(comp, lane.id, h.motif.entity.id, 0, 2); comp.edit('title', c => ({ ...c, title: 'Chain test' })); await comp.save(); await s.index.settled();
+    const clipId = comp.draft.data.lanes[0]?.clips[0]?.id, sources = () => [h.patchA.path, h.motif.path].map(p => h.memory.files.get(p)), before = sources(), notes = h.memory.markdownPaths().length;
+    await s.modules.open('patchbook'); const pb = h.leaf('mnemobard-patchbook')?.view as PatchbookView; await pb.setState({ selectedId: h.patchA.entity.id });
+    await vi.waitFor(() => expect(pb.contentEl.textContent).toContain('Motifs using this patch · 1'));
+    clickIn(pb.contentEl, 'Open in MOTIF'); await vi.waitFor(() => expect(shown(h.leaf('mnemobard-motif')?.view as MotifView)).toBe(h.motif.entity.id));
+    const mv = h.leaf('mnemobard-motif')?.view as MotifView, ms = (mv as unknown as { session: { edit: (l: string, f: (m: unknown) => unknown) => void } }).session;
+    ms.edit('Rename', m => ({ ...(m as object), title: 'Ascent (unsaved)' }));
+    await vi.waitFor(() => expect(mv.contentEl.textContent).toContain('Used in saved compositions · 1'));
+    expect(mv.contentEl.querySelector('.mnemobard-motif-links')?.textContent).toContain('1 placement');
+    clickIn(mv.contentEl, 'Open in CANVAS'); const cv = () => h.leaf('mnemobard-canvas')?.view as unknown as { session?: { draft: { id: string }; selectedClip?: string; edit: (l: string, f: (c: never) => never) => void }; contentEl: HTMLElement };
+    await vi.waitFor(() => expect(cv().session?.selectedClip).toBe(clipId)); expect(cv().session?.draft.id).toBe(comp.draft.id);
+    cv().session?.edit('Add marker', (c: never) => addMarker(c, { label: 'Draft cue', tick: 960 }) as never);
+    const inspector = () => cv().contentEl.querySelector<HTMLElement>('.mnemobard-canvas-inspector'); await vi.waitFor(() => expect(inspector()?.textContent).toContain('Source and sound'));
+    expect(inspector()?.querySelector('[data-ref-status="ready"] .mnemobard-ref-name')?.textContent).toBe('Theme');
+    const source = inspector(); if (!source) throw Error('inspector'); clickIn(source, 'Open in MOTIF');
+    await vi.waitFor(() => expect(h.s.navigation.trace?.filter(e => e.phase === 'selected').at(-1)?.to).toBe('motif'));
+    await vi.waitFor(() => expect(mv.contentEl.textContent).toContain('Sound')); clickIn(mv.contentEl.querySelector('.mnemobard-motif-links') as HTMLElement, 'Open in PATCHBOOK');
+    await vi.waitFor(() => expect(h.s.navigation.trace?.filter(e => e.phase === 'selected').at(-1)?.target).toBe(h.patchA.entity.id));
+    expect(shown(pb)).toBe(h.patchA.entity.id);
+    expect(s.motifs.drafts().map(d => d.draft.title)).toContain('Ascent (unsaved)');
+    expect(s.canvas.drafts().find(d => d.draft.id === comp.draft.id)?.draft.data.markers.map(m => m.label)).toEqual(['Draft cue']);
+    expect(sources()).toEqual(before); expect(h.memory.markdownPaths()).toHaveLength(notes);
+    expect(h.leaves.filter(l => !l.detached && l.type.startsWith('mnemobard-'))).toHaveLength(3);
+    h.plugin.onunload();
+  });
+  it('CANVAS refuses a navigation that would abandon pending (unapplied) properties, with no loss', async () => {
+    const h = await started(), s = h.s; await s.modules.open('canvas'); const cv = h.leaf('mnemobard-canvas')?.view as unknown as { contentEl: HTMLElement; session?: { draft: { id: string } } };
+    (cv.contentEl.querySelector('button.mod-cta') as HTMLButtonElement).click(); await vi.waitFor(() => expect(cv.session).toBeTruthy());
+    [...cv.contentEl.querySelectorAll('button')].find(b => b.textContent === 'Add lane')?.click();
+    const form = cv.contentEl.querySelector<HTMLFormElement>('.mnemobard-canvas-settings form'); if (!form) throw Error('form'); form.dataset.pending = 'true';
+    const other = s.canvas.create(); await other.save();
+    await expect(s.navigation.navigate('motif', 'canvas', other.draft.id, { enabled: () => true, open: () => s.modules.open('canvas'), view: async () => h.leaf('mnemobard-canvas')?.view })).rejects.toThrow(/pending properties/);
+    expect(cv.session?.draft.id).not.toBe(other.draft.id); expect(form.dataset.pending).toBe('true');
+    h.plugin.onunload();
+  });
+});
+describe('4F CANVAS reveal robustness', () => {
+  it('reopens a composition whose session was disposed underneath the view instead of reusing the dead session', async () => {
+    const h = await started(), s = h.s; await s.modules.open('canvas'); const comp = s.canvas.create(); await comp.save(); await s.index.settled();
+    const cv = h.leaf('mnemobard-canvas')?.view as unknown as { session?: { disposed: boolean; draft: { id: string } }; reveal: (id: string, signal: AbortSignal) => Promise<void> };
+    await cv.reveal(comp.draft.id, new AbortController().signal); const first = cv.session; if (!first) throw Error('session');
+    s.canvas.discard(first as never); expect(first.disposed).toBe(true);
+    await cv.reveal(comp.draft.id, new AbortController().signal);
+    expect(cv.session).not.toBe(first); expect(cv.session?.disposed).toBe(false); expect(cv.session?.draft.id).toBe(comp.draft.id);
+    h.plugin.onunload();
+  });
+});

@@ -1,5 +1,10 @@
 import { Notice, Scope, type WorkspaceLeaf } from 'obsidian';
 import { openModal } from '../../ui/modal-host';
+import { ReadyGate, type NavigationNote } from '../../application/navigation';
+import { FoundationError } from '../../domain/errors';
+import { navigateTo } from '../../ui/navigate';
+import { referenceRow } from '../../ui/reference-row';
+import { ReferenceLookup } from '../../storage/reference-status';
 import { ModuleView } from '../../ui/module-view';
 import { element, button } from '../../ui/dom';
 import type { FoundationServices } from '../../application/services';
@@ -79,7 +84,26 @@ export class CanvasView extends ModuleView {
     private editorScope?: Scope;
     constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) { super(leaf, 'canvas', foundation); this.scope = new Scope(this.app.scope); }
     private get available(): FoundationServices | undefined { const s = this.foundation(); return s?.modules.enabled('canvas') ? s : undefined; }
-    override async onOpen(): Promise<void> {
+    /** 4F navigation target: opened once onOpen (including a restored composition) has finished. */
+    private readonly ready = new ReadyGate();
+    private revealing = 0;
+    override async onOpen(): Promise<void> { this.ready.reset(); try { await this.openView(); } finally { this.ready.open(); } }
+    /** Opens (or keeps) composition `id`, then selects `focus` (a clip ID, or the first clip using that motif ID). Never discards a draft: leaving checkpoints, pending forms refuse. */
+    async reveal(id: string, signal: AbortSignal, note?: NavigationNote, focus?: string): Promise<void> {
+        await this.ready.promise; note?.('view-ready');
+        if (!this.active) throw new FoundationError('disposed', 'CANVAS closed before the composition could be shown. Nothing was selected.');
+        if (signal.aborted) return;
+        // A session disposed underneath the view (e.g. discarded elsewhere) is never reused: reopen it from the vault.
+        this.revealing++; try { if (!this.session || this.session.disposed || this.session.draft.id.toLowerCase() !== id.toLowerCase()) await this.openComposition(id); } finally { this.revealing--; }
+        note?.('state-applied'); if (signal.aborted) return;
+        const session = this.session;
+        if (!this.active || !session || session.disposed || session.draft.id.toLowerCase() !== id.toLowerCase()) throw new FoundationError('io', this.feedback?.textContent || 'CANVAS did not open the requested composition. Nothing else was selected.');
+        if (!focus) return;
+        const target = focus.toLowerCase(), lanes = session.draft.data.lanes, clip = lanes.flatMap(l => l.clips).find(c => c.id.toLowerCase() === target) ?? lanes.flatMap(l => l.clips).find(c => c.motifId.toLowerCase() === target);
+        const lane = clip && lanes.find(l => l.clips.some(c => c.id === clip.id));
+        if (clip && lane && this.select(lane.id, clip.id)) this.timeline?.reveal(clip.id);
+    }
+    private async openView(): Promise<void> {
         this.release();
         this.active = true;
         this.lifetime = new AbortController();
@@ -199,7 +223,7 @@ export class CanvasView extends ModuleView {
         const row = element(root, 'div', undefined, 'mnemobard-canvas-entry');
         const open = button(row, `${item.title}${item.ambiguous ? ' · duplicate UUID' : ''}`, () => { if (item.id)
             void this.openComposition(item.id).catch(e => this.fail(e)); });
-        open.disabled = item.ambiguous;
+        open.disabled = item.ambiguous; open.title = item.title ?? '';
         button(row, 'Markdown', () => this.openMarkdown(item.path));
     } if (this.browserPage)
         button(root, 'Previous compositions', () => { this.browserPage--; this.renderBrowser(); }); if ((this.browserPage + 1) * 100 < items.length)
@@ -243,7 +267,10 @@ export class CanvasView extends ModuleView {
             }
             return;
         }
-        const title = element(root, 'label', undefined, 'mnemobard-canvas-title');
+        // 4F hierarchy: A composition header · B transport · C arrangement (workspace toolbar + sticky timeline, kept a direct child so it
+        // stays pinned) · D contextual inspector · then secondary tools. Same controls and labels as 4E, regrouped.
+        const compositionHeader = element(root, 'section', undefined, 'mnemobard-canvas-header'); compositionHeader.setAttribute('aria-label', 'Composition');
+        const title = element(compositionHeader, 'label', undefined, 'mnemobard-canvas-title');
         element(title, 'span', 'Composition name');
         const input = element(title, 'input');
         input.value = session.draft.title;
@@ -254,16 +281,17 @@ export class CanvasView extends ModuleView {
         catch (e) {
             this.fail(e);
         } });
-        const bar = element(root, 'div', undefined, 'mnemobard-canvas-toolbar');
+        const bar = element(compositionHeader, 'div', undefined, 'mnemobard-canvas-toolbar');
+        const editBar = root.ownerDocument.createElement('div'); editBar.className = 'mnemobard-canvas-edit-bar'; editBar.setAttribute('aria-label', 'Arrangement editing');
         button(bar, 'Save composition', () => { void this.save(); }, 'mod-cta');
         this.saveStatus = element(bar, 'span', session.status, 'mnemobard-save-status');
         this.saveStatus.setAttribute('role', 'status');
         this.freshnessStatus = element(bar, 'span', '', 'mnemobard-freshness');
         this.freshnessStatus.setAttribute('role', 'status');
-        button(bar, 'Add lane', () => this.act(() => { const count = session.draft.data.lanes.length; session.edit('Add lane', c => addLane(c, `Lane ${count + 1}`)); session.selectedLane = session.draft.data.lanes.at(-1)?.id; session.selectedClip = undefined; }));
-        button(bar, 'Place motif', () => this.chooseMotif());
-        this.undoButton = button(bar, 'Undo', () => this.act(() => session.undo()));
-        this.redoButton = button(bar, 'Redo', () => this.act(() => session.redo()));
+        button(editBar, 'Add lane', () => this.act(() => { const count = session.draft.data.lanes.length; session.edit('Add lane', c => addLane(c, `Lane ${count + 1}`)); session.selectedLane = session.draft.data.lanes.at(-1)?.id; session.selectedClip = undefined; }));
+        button(editBar, 'Place motif', () => this.chooseMotif());
+        this.undoButton = button(editBar, 'Undo', () => this.act(() => session.undo()));
+        this.redoButton = button(editBar, 'Redo', () => this.act(() => session.redo()));
         const more = element(bar, 'details', undefined, 'mnemobard-canvas-more');
         element(more, 'summary', 'Record actions');
         if (session.base)
@@ -277,9 +305,11 @@ export class CanvasView extends ModuleView {
             void this.openComposition(session.draft.id).catch(e => this.fail(e)); }); });
         this.freshnessBanner = element(root, 'div', undefined, 'mnemobard-freshness-banner');
         this.freshnessBanner.hidden = true; this.freshnessKey = '';
-        const performanceToolbar=element(root,'div');
-        this.musicalSettings(root, session);
-        const tools = element(root, 'div', undefined, 'mnemobard-canvas-navigation');
+        const transport = element(root, 'section', undefined, 'mnemobard-canvas-transport'); transport.setAttribute('aria-label', 'Transport');
+        const performanceToolbar=element(transport,'div');
+        this.musicalSettings(transport, session);
+        const workspaceBar = element(root, 'div', undefined, 'mnemobard-canvas-workspace-bar'); workspaceBar.setAttribute('aria-label', 'Arrangement tools'); workspaceBar.append(editBar);
+        const tools = element(workspaceBar, 'div', undefined, 'mnemobard-canvas-navigation');
         const gridLabel = element(tools, 'label');
         element(gridLabel, 'span', 'Placement grid');
         const grid = element(gridLabel, 'select');
@@ -327,6 +357,7 @@ export class CanvasView extends ModuleView {
         this.context = { header, empty, lane: element(context, 'div', undefined, 'mnemobard-context-lane'), structure: structureEditor };
         this.contextKind = 'none'; this.laneFocus = false;
         const secondaryTools = element(root, 'div', undefined, 'mnemobard-canvas-tools');
+        element(secondaryTools, 'p', 'More tools', 'mnemobard-region-label');
         const structureRoot = element(secondaryTools, 'div');
         this.laneRoot = element(secondaryTools, 'section', undefined, 'mnemobard-canvas-lane-manager');
         this.laneHome = root.ownerDocument.createComment('lane manager home'); this.laneRoot.after(this.laneHome);
@@ -465,7 +496,7 @@ export class CanvasView extends ModuleView {
         return; if (!force && this.hasPending())
         return; const focused = this.contentEl.ownerDocument.activeElement, restore = focused instanceof HTMLElement && (this.inspector.contains(focused) || this.laneRoot.contains(focused) || this.clipRegister?.contains(focused)), focusLabel = focused?.getAttribute('aria-label'), focusClip = focused?.getAttribute('data-clip-id'), focusText = focused?.tagName === 'BUTTON' ? focused.textContent : undefined; const c = session.draft; if (!c.data.lanes.some(l => l.id === session.selectedLane))
         session.selectedLane = c.data.lanes[0]?.id; if (!c.data.lanes.some(l => l.clips.some(clip => clip.id === session.selectedClip)))
-        session.selectedClip = undefined; this.renderLanes(); clipInspector(this.inspector, session, s.canvas, this.plan, (fn, form) => this.act(fn, form), () => this.renderSelection(true), id => { void this.openMotif(id).catch(e => this.fail(e)); }); this.placeContext(); this.renderRegister(); this.timeline?.selection(session.selectedLane, session.selectedClip); if (restore && !focused?.isConnected) {
+        session.selectedClip = undefined; this.renderLanes(); clipInspector(this.inspector, session, s.canvas, this.plan, (fn, form) => this.act(fn, form), () => this.renderSelection(true), id => { void this.openMotif(id).catch(e => this.fail(e)); }); this.renderClipSources(c); this.placeContext(); this.renderRegister(); this.timeline?.selection(session.selectedLane, session.selectedClip); if (restore && !focused?.isConnected) {
         const target = [...this.editor?.querySelectorAll<HTMLElement>('input,select,button') ?? []].find(e => focusClip ? e.dataset.clipId === focusClip : focusLabel ? e.getAttribute('aria-label') === focusLabel : focusText ? e.textContent === focusText : false);
         (target ?? this.timeline?.canvas)?.focus();
     } }
@@ -486,7 +517,7 @@ export class CanvasView extends ModuleView {
     private renderRegister(): void { const root = this.clipRegister, session = this.session; if (!root || !session || !this.plan)
         return; const open = (root as HTMLDetailsElement).open; root.replaceChildren(); element(root, 'summary', 'Clip list · keyboard alternative'); (root as HTMLDetailsElement).open = open; const clips = this.plan.clips; this.clipPage = Math.min(this.clipPage, Math.max(0, Math.ceil(clips.length / 50) - 1)); for (const clip of clips.slice(this.clipPage * 50, this.clipPage * 50 + 50)) {
         const buttonNode = button(root, `${clip.title} · lane ${clip.laneIndex + 1} · tick ${clip.startTick} · ×${clip.repeatCount}${clip.diagnostics.length ? ' · diagnostics' : ''}`, () => { this.select(clip.laneId, clip.id); this.timeline?.reveal(clip.id); });
-        buttonNode.dataset.clipId = clip.id;
+        buttonNode.dataset.clipId = clip.id; buttonNode.title = `${clip.title} · lane ${clip.laneIndex + 1}`;
         buttonNode.setAttribute('aria-pressed', String(clip.id === session.selectedClip));
     } if (this.clipPage)
         button(root, 'Previous clip page', () => { this.clipPage--; this.renderRegister(); }); if ((this.clipPage + 1) * 50 < clips.length)
@@ -590,6 +621,35 @@ export class CanvasView extends ModuleView {
         this.fail(e);
     } }
     private openMarkdown(path: string): void { void this.app.workspace.openLinkText(path, '', true).catch(e => this.fail(e)); }
+    /** 4F: the selected clip's source motif and sound associations (read-only lookups; navigating away checkpoints the draft). */
+    private renderClipSources(c: Composition): void {
+        const s = this.available, session = this.session, root = this.inspector, id = session?.selectedClip; if (!s || !session || !root || !id)
+            return;
+        const lane = c.data.lanes.find(l => l.clips.some(x => x.id === id)), clip = lane?.clips.find(x => x.id === id); if (!lane || !clip)
+            return;
+        const lookup = new ReferenceLookup(s.index), box = element(root, 'section', undefined, 'mnemobard-ref-group'); box.setAttribute('aria-label', 'Source and sound'); element(box, 'h4', 'Source and sound');
+        const source = s.canvas.sources.get(clip.motifId), notes = this.plan?.diagnostics.filter(d => d.clipId === id && ['changed', 'unreviewed', 'unsaved-source', 'moved'].includes(d.code)).map(d => diagnosticText(d)) ?? [];
+        const motif = lookup.describe(clip.motifId, 'motif'), library = (target: string) => ({ label: 'Open in PATCHBOOK', run: () => { void this.openPatchbook(target).catch(e => this.fail(e)); } });
+        referenceRow(box, 'Motif', motif, { label: 'Open in MOTIF', run: () => { void this.openMotif(clip.motifId).catch(e => this.fail(e)); } }, notes.length ? notes.join(' ') : source.status === 'ready' ? `${source.source.noteCount} notes` : undefined);
+        const sound = (patchId: string, role: string): void => {
+            const patch = lookup.describe(patchId, 'patch'); referenceRow(box, role, patch, library(patchId));
+            if (patch.status !== 'ready' && patch.status !== 'archived')
+                return;
+            const state = s.index.resolve(patchId); if (state.status !== 'ready' || state.entity.kind !== 'patch')
+                return;
+            if (state.entity.instrumentId) referenceRow(box, 'Instrument', lookup.describe(state.entity.instrumentId, 'instrument'), library(state.entity.instrumentId));
+            else if (state.entity.instrument) element(box, 'p', `Instrument (text only): ${state.entity.instrument}`, 'mnemobard-hint');
+            for (const chain of state.entity.effectsChainIds ?? []) referenceRow(box, 'Effects chain', lookup.describe(chain, 'effects-chain'), library(chain));
+        };
+        const motifPatch = motif.status === 'ready' || motif.status === 'archived' ? s.index.outgoing(clip.motifId)[0] : undefined;
+        if (motifPatch) sound(motifPatch, 'Motif patch');
+        else if (motif.status === 'ready') element(box, 'p', 'This motif has no PATCHBOOK sound association. Associate one in MOTIF.', 'mnemobard-hint');
+        if (lane.patchId) sound(lane.patchId, 'Lane patch');
+        element(box, 'p', 'Sound associations are context only: sine audition and MIDI export do not reproduce PATCHBOOK sounds.', 'mnemobard-hint');
+    }
+    private async openPatchbook(id: string): Promise<void> { await this.leave(); const s = this.available; if (!s)
+        return; if (!s.modules.enabled('patchbook')) { const state = s.index.resolve(id); if (state.status === 'ready') this.openMarkdown(state.path); return; }
+        await navigateTo(this.app, s, 'canvas', 'patchbook', id); }
     private async openMotif(id: string): Promise<void> { await this.leave(); const s = this.available; if (!s)
         return; const source = s.index.resolve(id); if (source.status !== 'ready' || source.entity.kind !== 'motif')
         throw Error(`Source is ${source.status}; clip remains. Inspect/restore the original note.`); if (!s.modules.enabled('motif')) {
@@ -630,7 +690,9 @@ export class CanvasView extends ModuleView {
                 return; const current = findClip(s.draft, s.selectedClip); this.available?.canvas.move(s, s.selectedClip, current.lane.id, current.clip.startTick + direction * gridTicks(960, this.timeline?.grid ?? 'quarter'), current.clip.repeatCount, current.clip.label); }), () => musical() && this.contentEl.ownerDocument.activeElement === this.timeline?.canvas);
     }
     override getState(): Record<string, unknown> { return { selectedId: this.selectedId, search: this.search }; }
-    override async setState(value: unknown): Promise<void> { if (!value || typeof value !== 'object')
+    override async setState(value: unknown): Promise<void> { const target = value && typeof value === 'object' ? String((value as Record<string, unknown>).selectedId ?? '') : ''; this.foundation()?.navigation.note({ request: 0, phase: this.revealing ? 'host-state-deferred' : 'host-state', from: 'canvas', to: 'canvas', target }); if (this.revealing)
+        return; await this.applyState(value); }
+    private async applyState(value: unknown): Promise<void> { if (!value || typeof value !== 'object')
         return; const state = value as Record<string, unknown>; if (typeof state.search === 'string')
         this.search = state.search.slice(0, 1000); if (typeof state.selectedId === 'string')
         this.selectedId = state.selectedId; if (this.active) {

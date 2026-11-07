@@ -262,3 +262,46 @@
 .mnemobard-freshness-banner > details > summary { cursor: pointer; }
 .mnemobard-freshness-banner .mnemobard-confirm { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
 .mnemobard-freshness-banner .mnemobard-confirm > p { flex: 1 1 100%; margin: 0; }
+/* ── Milestone 4F: shared tokens and components across PATCHBOOK, MOTIF and CANVAS (host theme variables only) ── */
+.mnemobard-module {
+  --mnemobard-gap: var(--size-4-2, 8px); --mnemobard-gap-l: var(--size-4-3, 12px); --mnemobard-rule: 1px solid var(--background-modifier-border);
+  --mnemobard-radius: var(--radius-s, 4px); --mnemobard-accent: var(--interactive-accent); --mnemobard-quiet: var(--text-muted); --mnemobard-panel: var(--background-secondary);
+}
+/* One visible focus ring for every control in every module (CANVAS previously only on its canvases). */
+.mnemobard-module :is(button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--mnemobard-accent); outline-offset: 2px; }
+/* Small uppercase region labels share the eyebrow voice. */
+.mnemobard-region-label, .mnemobard-ref-role { font-family: var(--font-monospace); font-size: var(--font-smallest); letter-spacing: .1em; text-transform: uppercase; color: var(--mnemobard-quiet); margin: 0; }
+/* Destructive actions use Obsidian's own mod-warning treatment (red fill, contrasting text); no override. */
+/* CANVAS regions: A composition header, B transport, C arrangement tools above the (unwrapped, sticky) timeline. */
+.mnemobard-canvas-header { display: flex; flex-wrap: wrap; align-items: end; gap: var(--mnemobard-gap) var(--mnemobard-gap-l); padding-bottom: var(--mnemobard-gap); border-bottom: var(--mnemobard-rule); }
+.mnemobard-canvas-header .mnemobard-canvas-title { flex: 1 1 260px; min-width: 0; margin: 0; }
+.mnemobard-canvas-header .mnemobard-canvas-title input { width: 100%; text-overflow: ellipsis; }
+.mnemobard-canvas-header .mnemobard-canvas-toolbar { margin: 0; }
+.mnemobard-canvas-transport { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mnemobard-gap); margin-block: var(--mnemobard-gap); padding: var(--mnemobard-gap) var(--mnemobard-gap-l); border: var(--mnemobard-rule); border-radius: var(--mnemobard-radius); background: var(--mnemobard-panel); }
+.mnemobard-canvas-transport .mnemobard-arrangement-transport { margin: 0; }
+.mnemobard-canvas-transport .mnemobard-canvas-settings { margin: 0; color: var(--mnemobard-quiet); }
+.mnemobard-arrangement-state[data-state="invalidated"], .mnemobard-arrangement-state[data-state="error"] { color: var(--text-warning); }
+.mnemobard-arrangement-state[data-state="ready"], .mnemobard-arrangement-state[data-state="playing"] { color: var(--text-accent); }
+.mnemobard-canvas-workspace-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mnemobard-gap) var(--mnemobard-gap-l); margin-block: var(--mnemobard-gap) 0; }
+.mnemobard-canvas-workspace-bar .mnemobard-canvas-navigation { margin: 0; }
+.mnemobard-canvas-edit-bar { display: flex; flex-wrap: wrap; gap: 6px; padding-inline-end: var(--mnemobard-gap-l); border-inline-end: var(--mnemobard-rule); }
+.mnemobard-canvas-tools > .mnemobard-region-label { margin-block: var(--mnemobard-gap) 2px; }
+/* Long generated names: truncate in lists, full name on hover (title) and in the inspector. */
+.mnemobard-canvas-entry > button:first-child, .mnemobard-canvas-clip-register > button, .mnemobard-motif-entry > button:first-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Shared reference rows (PATCHBOOK motifs, MOTIF sound/usage, CANVAS source and sound). */
+.mnemobard-ref-group { margin-block: var(--mnemobard-gap); }
+.mnemobard-ref-group > h3, .mnemobard-ref-group > h4 { margin-block: 4px; font-size: var(--font-ui-small); color: var(--mnemobard-quiet); font-weight: 600; }
+.mnemobard-ref-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--mnemobard-gap); padding: 4px 0 4px var(--mnemobard-gap); border-inline-start: 2px solid var(--background-modifier-border); margin-block: 4px; }
+.mnemobard-ref-row[data-ref-status="missing"], .mnemobard-ref-row[data-ref-status="ambiguous"], .mnemobard-ref-row[data-ref-status="malformed"], .mnemobard-ref-row[data-ref-status="unsupported"], .mnemobard-ref-row[data-ref-status="wrong-kind"] { border-inline-start-color: var(--text-warning); }
+.mnemobard-ref-row[data-ref-status="archived"] { border-inline-start-color: var(--text-faint); }
+.mnemobard-ref-role { flex: 0 0 auto; min-width: 7.5em; }
+.mnemobard-ref-name { flex: 1 1 10em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mnemobard-ref-extra { color: var(--mnemobard-quiet); font-size: var(--font-smallest); }
+.mnemobard-ref-badge { font-size: var(--font-smallest); color: var(--text-warning); border: 1px solid currentColor; border-radius: var(--mnemobard-radius); padding: 0 4px; }
+.mnemobard-ref-row[data-ref-status="archived"] .mnemobard-ref-badge { color: var(--mnemobard-quiet); }
+.mnemobard-ref-message { flex: 1 1 100%; margin: 0; color: var(--text-warning); font-size: var(--font-small); }
+.mnemobard-ref-advanced { flex: 1 1 100%; color: var(--text-faint); font-size: var(--font-smallest); }
+.mnemobard-ref-advanced > summary { cursor: pointer; width: max-content; }
+.mnemobard-ref-advanced code { display: block; overflow-wrap: anywhere; }
+@container (max-width: 640px) { .mnemobard-canvas-edit-bar { border-inline-end: 0; padding-inline-end: 0; } }
+@media (max-width: 700px) { .mnemobard-canvas-edit-bar { border-inline-end: 0; padding-inline-end: 0; } .mnemobard-ref-role { min-width: 0; } }

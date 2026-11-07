@@ -267,3 +267,26 @@ it('4E perf: the add-reference form (vault scan, section/marker options) is buil
     const add = disclosure(); if (!add) throw Error('add'); add.open = true; add.dispatchEvent(new Event('toggle')); expect(scans).toHaveBeenCalledTimes(1); expect(add.querySelectorAll('select[aria-label="Associated section"] option').length).toBeGreaterThanOrEqual(2);
     click(view.contentEl, 'Previous section'); expect(disclosure()?.open).toBe(true); expect(disclosure()?.querySelector('select[aria-label="Recording file"]')).not.toBeNull();
 });
+it('4F: compile status says what the compilation matches (saved / unsaved draft / stale) and never looks current when stale', async () => {
+    const f = await freshView(), status = () => f.view.contentEl.querySelector<HTMLElement>('.mnemobard-arrangement-state');
+    (f.view as unknown as { refreshScene: () => void }).refreshScene(); expect(status()?.textContent).toBe('Compiled · matches the saved composition'); expect(status()?.dataset.state).toBe('ready');
+    f.session.edit('Mine', c => addMarker4d(c, { label: 'Cue', tick: 960 })); await settle(); expect(status()?.textContent).toBe('Compiled · matches this unsaved draft');
+    const clip = f.session.draft.data.lanes[0]?.clips[0]; if (!clip) throw Error('clip'); f.services.canvas.move(f.session, clip.id, f.lane.id, 960, 1); await settle();
+    expect(status()?.textContent).toBe('Stale · compile again'); expect(status()?.dataset.state).toBe('invalidated'); expect(status()?.title).toContain('MIDI export use exactly this compilation');
+});
+it('4F: the clip inspector shows source and sound by name; a missing source stays visible, explained and recoverable', async () => {
+    const { view, services, motif, vault } = await start(); (view as unknown as { picker?: { close: () => void } }).picker?.close(); await services.index.settled();
+    const session = services.canvas.drafts()[0]; if (!session) throw Error('session'); const lane = session.draft.data.lanes[0]; if (!lane) throw Error('lane');
+    services.canvas.place(session, lane.id, motif.entity.id, 0, 1); const clip = session.draft.data.lanes[0]?.clips[0]; if (!clip) throw Error('clip');
+    click(view.contentEl, 'Next clip'); const inspector = () => view.contentEl.querySelector<HTMLElement>('.mnemobard-canvas-inspector');
+    expect(inspector()?.querySelector('[aria-label="Source and sound"]')?.textContent).toContain('Saved source'); expect(inspector()?.textContent).toContain('no PATCHBOOK sound association');
+    vault.files.delete(motif.path); vault.emit({ type: 'delete', path: motif.path }); await services.index.settled(); await settle();
+    click(view.contentEl, 'Next clip');
+    const row = inspector()?.querySelector<HTMLElement>('.mnemobard-ref-row'); expect(row?.dataset.refStatus).toBe('missing'); expect(row?.textContent).toContain('restore the note');
+    expect(row?.querySelector('code')?.textContent).toBe(motif.entity.id); expect(session.draft.data.lanes[0]?.clips[0]?.motifId).toBe(motif.entity.id);
+});
+it('4F §8.2: an external change to PATCHBOOK patch metadata (sound context only) keeps the compilation and refreshes nothing in the composition', async () => {
+    const f = await freshView(), patch = await f.services.repository.create(createEntity('patch', 'Context pad')); await f.services.index.settled(); await settle();
+    const before = f.session.base?.source; f.vault.modify(patch.path, (f.vault.files.get(patch.path) ?? '').replace('Context pad', 'Context pad (edited elsewhere)')); await f.services.index.settled(); await settle();
+    expect(f.prep.state).toBe('ready'); expect(f.stop).not.toHaveBeenCalled(); expect(f.session.base?.source).toBe(before); expect(f.session.freshness.state).toBe('current');
+});

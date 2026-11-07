@@ -422,3 +422,7 @@ Schema 1 unchanged; no migration. For compilation identity, composition fields a
 ## Milestone 4E — no schema change
 
 Schema 1 unchanged; no migration; no new persisted field. Freshness state, navigation requests/traces and the add-form open state are ephemeral. The only persisted change 4E can make is the explicit, user-confirmed removal of duplicate `mnemobard_audio` frontmatter mirror links that resolve to the same referenced file (X10); `data.audioRefs` (UUIDs, labels, notes, anchors, associations) is never touched by it. External changes are classified with the 4D field classification: organizational (`sections`, `markers`, `audioRefs`, `description`, `notes`, `tags`, `assets`) vs musical (everything else, unknown fields included).
+
+## Milestone 4F — no schema change
+
+Schema 1 unchanged; no migration; no new persisted field; no writes during browsing or navigation. Reverse references are derived from saved notes at index time and never stored. Associations are only created or removed by explicit existing actions (MOTIF "Associate chosen patch", PATCHBOOK record editing); 4F adds none.

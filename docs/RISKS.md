@@ -164,3 +164,9 @@ See [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md) for exact workloads/results
 | Index publish fan-out with large vaults (4E) | Fixed a whole-vault clone per publish (127 ms long task with large compositions) that stopped playback via the 4B stall guard. Remaining publish cost ~29 ms in the dev vault; still O(vault) per publish (MOTIF `items` resolves each motif). | Monitor; candidate follow-up. |
 | 4D selection cost (4E update) | Resolved: section select 15.3 → 5.5 ms (large, same process vs the 4D build). | Resolved. |
 | Isolated harness launch (4E) | electron43 43.8.7 needed `--ozone-platform=x11` in the isolated launcher (X12). Future Electron updates may change platform selection again. | Monitor. |
+
+| Host stale active window (4F update) | Reproduced natively (activeDocument = closed popout without defaultView). The guard refused correctly; pane click, leaf activation, tab switch did not repair it, only a window focus event did. Message now advises an application switch (inferred from the evidence; the OS-level switch itself was not driven). Trigger not isolated. | Open (host); mitigated. |
+| Source-revision acknowledgement friction (4F) | After saving a motif, every placing clip must be acknowledged separately before compiling (4B rule, intentional). | Candidate: explicit "acknowledge all clips of this motif". |
+| Reverse references and unsaved drafts (4F) | Reverse lists show saved records only (stated in UI). | By design. |
+| fileManager.renameFile wedge (4F) | Recurred once in a long-lived dev process during the final regression run; passed in a fresh process. Host behaviour. | Monitor. |
+| MOTIF 5,000-note open (4F) | 261 ms median open (pre-existing piano-roll cost). | Candidate follow-up. |

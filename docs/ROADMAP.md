@@ -171,3 +171,9 @@ Implemented under Prompt012 on the signed 4D baseline `1e11155`: conflict-safe f
 Validation: 538 → 573 tests (43 files); golden MIDI unchanged; native 4E workflow (18 checks + 2 cold-restart checks on the final build), MOTIF/MOTIF-MIDI/PATCHBOOK/foundation regressions incl. restart phases; same-process performance A/B against the signed 4D build. Report: docs/MILESTONE_4E_REPORT.md.
 
 **Stop gate:** human review of 4E is required. Candidate next scope (not authorized): see the report's §P.
+
+## Milestone 4F — cross-module integration, workflow refinement and reliability
+
+Implemented on the signed 4E baseline `295005f`: PATCHBOOK ↔ MOTIF ↔ CANVAS navigation with reverse references (no new database), shared reference classification and presentation, CANVAS region hierarchy and readable compilation status, shared tokens/focus ring, corrected modal-guard advice from native evidence, CANVAS reveal robustness. Validation: 573 → 589 tests; native 4F workflow (24 steps) + restart; 4E CANVAS, MOTIF, MOTIF-MIDI, PATCHBOOK and foundation regressions incl. restart phases; §11 benchmark. Report: docs/MILESTONE_4F_REPORT.md.
+
+**Stop gate:** human review of 4F is required.

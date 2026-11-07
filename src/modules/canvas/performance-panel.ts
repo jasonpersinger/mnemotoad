@@ -128,10 +128,24 @@ export class CanvasPerformancePanel {
     const busy = ['resolving', 'compiling', 'exporting'].includes(this.preparation.state), ready = this.preparation.state === 'ready';
     this.compileButton.disabled = busy || this.services.settings.readOnly; this.playButton.disabled = !ready || !!this.auditionIssue; this.pauseButton.disabled = !owned || player.state !== 'playing'; this.resumeButton.disabled = !owned || player.state !== 'paused' || !ready; this.exportButton.disabled = !ready;
     this.position.textContent = `${musicalPosition(this.tick, 960, this.model.data.meter)} · ${(60000000 / this.model.data.tempoMicrosecondsPerQuarter).toFixed(1)} BPM`;
-    const diagnostic=player.diagnosticFor(this.owner),state = `${owned ? player.state : this.preparation.state}${diagnostic ? ' · ' + diagnostic : ''}`; if (this.status.textContent !== state) this.status.textContent = state;
+    const diagnostic=player.diagnosticFor(this.owner),raw=owned ? player.state : this.preparation.state,state = `${this.describe(raw, owned)}${diagnostic ? ' · ' + diagnostic : ''}`; if (this.status.textContent !== state) this.status.textContent = state;
+    this.status.dataset.state = raw; this.status.title = 'Playback and MIDI export use exactly this compilation. Musical edits make it stale; sections, markers, notes and recordings do not.';
     this.playhead(this.tick);
     if (owned && player.state === 'playing' && this.animation === undefined) this.animation = requestAnimationFrame(() => { this.animation = undefined; this.statusUpdate(); });
     else if ((!owned || player.state !== 'playing') && this.animation !== undefined) { cancelAnimationFrame(this.animation); this.animation = undefined; }
+  }
+  /** 4F: what the last compilation corresponds to, so a stale compilation is never mistaken for a current one. */
+  private describe(raw: string, owned: boolean): string {
+    if (owned) return raw === 'playing' ? 'Playing compiled arrangement' : raw === 'paused' ? 'Paused' : raw === 'starting' ? 'Starting…' : raw;
+    switch (raw) {
+      case 'idle': return 'Not compiled';
+      case 'resolving': case 'compiling': return 'Compiling…';
+      case 'ready': return this.session.dirty ? 'Compiled · matches this unsaved draft' : 'Compiled · matches the saved composition';
+      case 'exporting': return 'Exporting MIDI…';
+      case 'invalidated': return 'Stale · compile again';
+      case 'error': return 'Compile failed · see diagnostics';
+      default: return raw;
+    }
   }
   private async play(resume = false): Promise<void> {
     if (!this.allowed() || !this.preparation.prepared || this.auditionIssue) return; const epoch = ++this.playEpoch;

@@ -12,7 +12,8 @@ import type { ModuleId } from './settings';
 export type NavigationPhase = 'request' | 'superseded' | 'leaf-ready' | 'view-loaded' | 'view-ready' | 'state-applied' | 'host-state' | 'host-state-deferred' | 'selected' | 'failed';
 export interface NavigationEvent { seq: number; at: number; request: number; phase: NavigationPhase; from: ModuleId; to: ModuleId; target: string; detail?: string }
 export type NavigationNote = (phase: NavigationPhase, detail?: string) => void;
-export interface NavigationTarget { reveal(id: string, signal: AbortSignal, note?: NavigationNote): Promise<void> }
+/** `focus` (4F) optionally names an item inside the record, e.g. a CANVAS clip to select; targets may ignore it. */
+export interface NavigationTarget { reveal(id: string, signal: AbortSignal, note?: NavigationNote, focus?: string): Promise<void> }
 export interface NavigationSteps { enabled(): boolean; open(): Promise<void>; view(): Promise<unknown> }
 export type NavigationOutcome = 'selected' | 'superseded';
 const LABEL: Record<ModuleId, string> = { patchbook: 'PATCHBOOK', motif: 'MOTIF', canvas: 'CANVAS' };
@@ -43,7 +44,7 @@ export class NavigationCoordinator {
     this.trace.push({ ...event, seq: ++this.seq, at: Math.round(performance.now() * 1000) / 1000 });
     if (this.trace.length > 500) this.trace.splice(0, this.trace.length - 500);
   }
-  async navigate(from: ModuleId, to: ModuleId, id: string, steps: NavigationSteps): Promise<NavigationOutcome> {
+  async navigate(from: ModuleId, to: ModuleId, id: string, steps: NavigationSteps, focus?: string): Promise<NavigationOutcome> {
     if (this.closed) throw new FoundationError('disposed', 'MNEMOBARD is unloading; navigation was not started.');
     const request = ++this.requests, controller = new AbortController(), previous = this.latest.get(to);
     if (previous) { previous.controller.abort(); this.note({ request: previous.request, phase: 'superseded', from: previous.from, to, target: previous.target, detail: `by request ${request}` }); }
@@ -62,7 +63,7 @@ export class NavigationCoordinator {
         if (!steps.enabled()) throw disabled();
         if (!isNavigationTarget(view)) throw new FoundationError('io', `${LABEL[to]} view is not ready. Reopen it or inspect the linked Markdown.`);
         log('view-loaded');
-        await view.reveal(id, controller.signal, log); if (!current()) return;
+        await view.reveal(id, controller.signal, log, focus); if (!current()) return;
         if (!steps.enabled()) throw disabled();
       })()]);
       if (!current()) return 'superseded';

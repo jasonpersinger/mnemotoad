@@ -9,7 +9,9 @@
  * signal Obsidian uses to track the active window. It never writes host/private state or patches the DOM.
  * If the condition persists, the modal is not opened and the caller reports an actionable message.
  */
-export const MODAL_HOST_MESSAGE = 'Obsidian is tracking a closed window as active, so the dialog would open invisibly. Click inside this pane (or the main window) and try again. Nothing was changed.';
+// 4F native evidence (output/mnemobard/milestone-4f/stale-window-evidence.json): clicking inside the pane, activating the leaf or
+// switching tabs did NOT repair the stale state; only a real window focus event did. Advise an application switch.
+export const MODAL_HOST_MESSAGE = 'Obsidian is still tracking a closed window as active, so the dialog would open invisibly. Switch to another application and back to Obsidian (clicking inside the pane may not be enough), then try again. Nothing was changed.';
 
 interface HostGlobals { activeDocument?: Document; activeWindow?: Window }
 

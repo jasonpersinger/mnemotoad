@@ -117,3 +117,7 @@ Primary: identity, essential transport, the timeline with section/marker ruler (
 ## Milestone 4E freshness presentation
 
 A quiet one-line indicator beside the save status (muted when current, accent when refreshed/checking, warning colour for conflicts or unavailable notes). A bounded banner appears only when something needs attention, with the explanation first, the safe choices before the destructive one, and the destructive one behind an explicit confirmation that states what is kept. Titles and musical areas (sections, clips and lanes, routing…) are used instead of UUIDs; the note path is reachable via *Open composition Markdown*. Host theme tokens only; verified in dark, light, narrow and high-DPI.
+
+## Milestone 4F shared presentation
+
+One voice across modules: monospace uppercase region labels (eyebrow), reference rows with a quiet left rule (warning colour when unresolved, faint when archived), readable names first with IDs behind a collapsed "ID" detail, one accent focus ring, Obsidian's own primary (`mod-cta`) and destructive (`mod-warning`) treatments. CANVAS reads top-down as composition → transport → arrangement → inspector → more tools.

@@ -17,6 +17,8 @@ import { PatchAssociation } from './patch-association';
 import { transformPanel } from './transform-panel';
 import { PatchbookView } from '../patchbook/view';
 import { ReadyGate, type NavigationNote } from '../../application/navigation';
+import { navigateTo } from '../../ui/navigate';
+import { MotifLinks } from './sound-panel';
 
 export class MotifView extends ModuleView {
   private active = false; private epoch = 0; private lifetime = new AbortController(); private cleanups: (() => void)[] = [];
@@ -25,7 +27,7 @@ export class MotifView extends ModuleView {
   private browser?: HTMLElement; private editor?: HTMLElement; private feedback?: HTMLElement; private drafts?: HTMLElement; private browserDetails?: HTMLDetailsElement;
   private saveStatus?: HTMLElement; private position?: HTMLElement; private undoButton?: HTMLButtonElement; private redoButton?: HTMLButtonElement;
   private editorScope?: Scope;
-  private midiDialog?: MidiImportDialog | MidiExportDialog; private patchAssociation?: PatchAssociation;
+  private midiDialog?: MidiImportDialog | MidiExportDialog; private patchAssociation?: PatchAssociation; private links?: MotifLinks;
   private recoveryPanel?: RecoveryInspector<Motif, MotifSession>; private recoveryRoot?: HTMLElement;
   private tickMap?: TempoMap; private animation?: number;
   constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) { super(leaf, 'motif', foundation); this.scope = new Scope(this.app.scope); }
@@ -54,7 +56,7 @@ export class MotifView extends ModuleView {
     root.ownerDocument.defaultView?.addEventListener('blur', () => services.musical.stop(this), { signal: this.lifetime.signal });
     root.ownerDocument.defaultView?.addEventListener('pagehide', () => services.musical.stop(this), { signal: this.lifetime.signal });
     root.ownerDocument.addEventListener('visibilitychange', () => { if (root.ownerDocument.hidden) services.musical.stop(this); }, { signal: this.lifetime.signal });
-    this.cleanups.push(services.index.subscribe(() => { if (this.active) { this.renderBrowser(); this.updateStatus(); this.patchAssociation?.refresh(); } }), services.musical.subscribe(() => { if (this.active) { this.updateTransport(); this.roll?.request(); } }));
+    this.cleanups.push(services.index.subscribe(() => { if (this.active) { this.renderBrowser(); this.updateStatus(); this.patchAssociation?.refresh(); const s = this.session; if (s && !s.disposed) this.links?.refresh(s.draft); } }), services.musical.subscribe(() => { if (this.active) { this.updateTransport(); this.roll?.request(); } }));
     const scope = new Scope(this.scope ?? this.app.scope); this.editorScope = scope;
     const focusScope = (): void => {
       queueMicrotask(() => {
@@ -92,7 +94,7 @@ export class MotifView extends ModuleView {
     const items = services.motifs.items(this.search); element(root, 'p', `${items.length} motifs · stable identities, ordinary notes`, 'mnemobard-hint');
     for (const item of items.slice(this.page * 100, this.page * 100 + 100)) {
       const row = element(root, 'div', undefined, 'mnemobard-motif-entry');
-      const open = button(row, `${item.entity.title}${item.ambiguous ? ' · duplicate identity' : ''}`, () => { void this.select(item.entity.id).catch(error => this.fail(error)); }); open.disabled = item.ambiguous; open.dataset.motifId = item.entity.id;
+      const open = button(row, `${item.entity.title}${item.ambiguous ? ' · duplicate identity' : ''}`, () => { void this.select(item.entity.id).catch(error => this.fail(error)); }); open.disabled = item.ambiguous; open.dataset.motifId = item.entity.id; open.title = item.entity.title;
       button(row, 'Markdown', () => this.openNote(item.path));
     }
     if (!items.length) element(root, 'p', 'No matching motifs. Create a phrase to begin.');
@@ -118,14 +120,14 @@ export class MotifView extends ModuleView {
   private attach(session: MotifSession): void {
     this.available?.musical.stop(this); this.epoch++; this.unsubscribeSession?.(); if(this.session)this.foundation()?.motifs.release(this.session,this);this.session = session;this.available?.motifs.retain(session,this); this.selectedId = session.draft.id;
     let lastDraft = JSON.stringify(session.draft);
-    this.unsubscribeSession = session.subscribe(() => { if (this.active) { const draft=session.draft,signature = JSON.stringify(draft); if (signature !== lastDraft) { this.available?.musical.stop(this); lastDraft = signature; } this.updateStatus(); this.renderDrafts(); this.inspector?.refresh(); this.patchAssociation?.refresh(draft); this.tickMap = new TempoMap(draft.data.ppq, [{ tick: 0, microsecondsPerQuarter: draft.data.tempoMicrosecondsPerQuarter }]); } });
+    this.unsubscribeSession = session.subscribe(() => { if (this.active) { const draft=session.draft,signature = JSON.stringify(draft); if (signature !== lastDraft) { this.available?.musical.stop(this); lastDraft = signature; } this.updateStatus(); this.renderDrafts(); this.inspector?.refresh(); this.patchAssociation?.refresh(draft); this.links?.refresh(draft); this.tickMap = new TempoMap(draft.data.ppq, [{ tick: 0, microsecondsPerQuarter: draft.data.tempoMicrosecondsPerQuarter }]); } });
     if (this.browserDetails) this.browserDetails.open = false; this.renderEditor(); this.renderDrafts(); this.say(''); this.remember();
   }
   private act(action: () => void): boolean { try { this.available?.musical.stop(this); action(); this.selectionChanged(); this.say(''); return true; } catch (error) { this.fail(error); return false; } }
   private selectionChanged(): void { this.inspector?.refresh(); this.roll?.refreshSelection(); this.updateStatus(); }
   private openNote(path: string): void { void this.app.workspace.openLinkText(path, '', true).catch(error => this.fail(error)); }
   private renderEditor(): void {
-    this.roll?.dispose(); this.roll = undefined; this.inspector = undefined; this.patchAssociation = undefined;
+    this.roll?.dispose(); this.roll = undefined; this.inspector = undefined; this.patchAssociation = undefined; this.links = undefined;
     const root = this.editor, services = this.available; if (!root || !services || !this.active) return; root.replaceChildren();
     const session = this.session;
     if (!session) { element(root, 'h3', 'Remember a phrase.'); element(root, 'p', this.selectedId ? 'This motif is unavailable or read-only. Inspect its source in the library.' : 'Create or open a motif. Notes, timing and context stay in your vault.', 'mnemobard-hint'); if (this.selectedId) { const state = services.index.resolve(this.selectedId); if (state.status === 'invalid') button(root, 'Open original motif source', () => this.openNote(state.entry.path)); if (state.status === 'duplicate') for (const path of state.paths) button(root, `Inspect duplicate: ${path}`, () => this.openNote(path)); if (state.status === 'ready') button(root, 'Open original motif source', () => this.openNote(state.path)); } return; }
@@ -173,6 +175,7 @@ export class MotifView extends ModuleView {
       const selected = new Set(additive ? session.selected : []); if (additive && selected.has(id)) selected.delete(id); else selected.add(id); session.select(selected); this.selectionChanged(); const note = session.draft.data.notes.find(note => note.id === id); if (note) this.roll?.reveal(note);
     }, error => this.fail(error)); this.inspector.refresh();
     const patchRoot=element(root,'section');this.patchAssociation=new PatchAssociation(patchRoot,services,session,action=>this.act(action),id=>{void this.navigatePatch(id).catch(error=>this.fail(error));});
+    this.links=new MotifLinks(patchRoot,services,id=>{void this.openLibrary(id).catch(error=>this.fail(error));},(id,motifId)=>{void this.openCanvas(id,motifId).catch(error=>this.fail(error));});this.links.refresh(session.draft);
     const metadata = element(root, 'details'); element(metadata, 'summary', 'Description, tags and notes');
     this.text(metadata, 'Description', motif.description ?? '', value => session.edit('Edit description', next => ({ ...next, description: value.trim() ? value : undefined }), 'description'), true);
     this.text(metadata, 'Motif tags', motif.tags?.join(', ') ?? '', value => session.edit('Edit tags', next => ({ ...next, tags: value.split(',').map(tag => tag.trim()).filter(Boolean) }), 'tags'));
@@ -229,6 +232,10 @@ export class MotifView extends ModuleView {
   /** 4E: verified navigation through the shared coordinator (latest request wins, bounded, selection checked by UUID). */
   private async navigatePatch(id:string):Promise<void>{const services=this.available;if(!services)return;const state=services.index.resolve(id);if(state.status!=='ready'||state.entity.kind!=='patch')throw Error(`Associated patch is ${state.status}; reference retained.`);await this.leave();if(!services.modules.enabled('patchbook')){this.openNote(state.path);return;}
     await services.navigation.navigate('motif','patchbook',id,{enabled:()=>services.modules.enabled('patchbook'),open:()=>services.modules.open('patchbook'),view:async()=>{const leaf=this.app.workspace.getLeavesOfType('mnemobard-patchbook')[0];await leaf?.loadIfDeferred();const view=leaf?.view;return view instanceof PatchbookView?view:undefined;}});}
+  /** 4F: any PATCHBOOK record (patch, instrument, effects chain); leaving checkpoints this draft first. */
+  private async openLibrary(id: string): Promise<void> { const services = this.available; if (!services) return; await this.leave(); if (!services.modules.enabled('patchbook')) { const s = services.index.resolve(id); if (s.status === 'ready') this.openNote(s.path); return; } await navigateTo(this.app, services, 'motif', 'patchbook', id); }
+  /** 4F: open a composition in CANVAS and select the first clip placing this motif. */
+  private async openCanvas(id: string, motifId: string): Promise<void> { const services = this.available; if (!services) return; await this.leave(); if (!services.modules.enabled('canvas')) { const s = services.index.resolve(id); if (s.status === 'ready') this.openNote(s.path); return; } await navigateTo(this.app, services, 'motif', 'canvas', id, motifId); }
   /** 4E NavigationTarget: completes only when this view displays `id`; otherwise rejects with the view's own message. */
   async reveal(id: string, signal: AbortSignal, note?: NavigationNote): Promise<void> {
     await this.ready.promise; note?.('view-ready');

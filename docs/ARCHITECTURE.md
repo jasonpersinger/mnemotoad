@@ -275,3 +275,11 @@ Limits, conservative channel sharing, remaining post-write race, benchmark metho
 - **Navigation.** `FoundationServices.navigation: NavigationCoordinator`. Sources pass `{enabled, open, view}` closures built on their own `app.workspace`; targets (`MotifView`, `PatchbookView`) implement `reveal()` behind a `ReadyGate` opened at the end of `onOpen`. Host `setState` is recorded for the dev trace (`navigation.trace`, null unless a harness sets an array) and deferred during a reveal.
 - **Index.** `EntityIndex.ofKind(...kinds)` clones only matching entries; `heads()` (scalar) serves issue lists and ID counts.
 - **Structure panel.** The add-recording form is built on disclosure open and keeps its open state across renders; `duplicateMirrors()` (memoised per file event/draft version) drives the explicit legacy-link repair.
+
+## Milestone 4F — cross-module integration
+
+- **Index links.** `EntityIndex` keeps `links: Map<path, Map<uuid, count>>` beside its entries, rebuilt per parsed note and dropped on delete/rename. `referencing(id, kind?)` → `ReferencingRecord[]` (title, path, count, archived); `outgoing(id)` → referenced UUIDs. `heads()` gains `archived`.
+- **Reference status.** `ReferenceLookup(index).describe(id, expectedKind)` → `ReferenceView`; rendered by `ui/reference-row.ts#referenceRow`.
+- **Navigation graph.** PATCHBOOK patch → MOTIF (`PatchbookView.openMotif`); MOTIF → PATCHBOOK patch/instrument/effects chain (`MotifView.openLibrary`) and → CANVAS composition + clip (`MotifView.openCanvas`); CANVAS clip → MOTIF (`openMotif`) and → PATCHBOOK (`openPatchbook`). All through `services.navigation` (latest wins, verified, bounded); all sources checkpoint drafts before leaving. Targets: MOTIF, PATCHBOOK, CANVAS `reveal()`.
+- **MOTIF.** `modules/motif/sound-panel.ts#MotifLinks` ("Sound and usage"), keyed on index revision + motif ID + patch ID.
+- **CANVAS.** `CanvasView.renderClipSources()` adds "Source and sound" to the clip inspector; `CanvasPerformancePanel.describe()` maps states to readable compilation status.

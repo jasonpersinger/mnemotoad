@@ -5,11 +5,24 @@ import { entityIdentityHint, parseEntityDocument } from './document';
 import type { VaultChange, VaultPort } from './vault-port';
 
 export interface IndexEntry { path: string; id?: string; entity?: Entity; error?: FoundationError; revision?: string }
+/** 4F: lowercased UUIDs this saved record references (lanes/clips/patch/instrument/chains) → occurrence count. Derived at parse time; never persisted. */
+export type ReferenceLinks = ReadonlyMap<string, number>;
+export interface ReferencingRecord { path: string; id: string; kind: Entity['kind']; title: string; count: number; archived: boolean }
+/** Library records carry `archived`; motifs may carry the extension flag the CANVAS source catalog honours. */
+function archivedEntity(entity: Entity | undefined): boolean | undefined { if (!entity) return undefined; return ('archived' in entity && entity.archived === true) || entity.extra?.mnemobard_archived === true; }
+function linksOf(entity: Entity): ReferenceLinks {
+  const links = new Map<string, number>(), add = (id: string | undefined) => { if (id) links.set(id.toLowerCase(), (links.get(id.toLowerCase()) ?? 0) + 1); };
+  if (entity.kind === 'motif') add(entity.patchId);
+  else if (entity.kind === 'patch') { add(entity.instrumentId); entity.effectsChainIds?.forEach(add); }
+  else if (entity.kind === 'composition') for (const lane of entity.data.lanes) { add(lane.patchId); for (const clip of lane.clips) add(clip.motifId); }
+  return links;
+}
 export type Resolution = { status: 'missing'; id: string } | { status: 'duplicate'; id: string; paths: string[] } |
   { status: 'invalid'; entry: IndexEntry } | { status: 'ready'; path: string; entity: Entity };
 
 export class EntityIndex {
   private entries = new Map<string, IndexEntry>();
+  private links = new Map<string, ReferenceLinks>();
   private versions = new Map<string, number>();
   private tail: Promise<void> = Promise.resolve();
   private unsubscribe?: () => void;
@@ -35,7 +48,7 @@ export class EntityIndex {
       const old = change.oldPath ?? change.path;
       for (const path of new Set([...this.entries.keys(), ...this.versions.keys()])) {
         if (path === old || (change.folder && path.startsWith(old + '/'))) {
-          this.versions.set(path, (this.versions.get(path) ?? 0) + 1); this.entries.delete(path);
+          this.versions.set(path, (this.versions.get(path) ?? 0) + 1); this.entries.delete(path); this.links.delete(path);
         }
       }
       this.publish();
@@ -68,6 +81,7 @@ export class EntityIndex {
           }
           if (this.closed || this.versions.get(path) !== version) continue;
           if (entry) this.entries.set(path, entry); else this.entries.delete(path);
+          if (entry?.entity) this.links.set(path, linksOf(entry.entity)); else this.links.delete(path);
         }
       };
       await Promise.all(Array.from({ length: Math.min(4, requests.length) }, worker));
@@ -89,15 +103,30 @@ export class EntityIndex {
     return { status: 'ready', path: entry.path, entity: structuredClone(entry.entity) };
   }
   /** Scalar metadata only: consumers can invalidate caches without cloning musical arrays. */
-  heads(): {path:string;id?:string;kind?:Entity['kind'];title?:string;revision?:string;errorCode?:FoundationError['code'];message?:string}[]{
-    return [...this.entries.values()].map(e=>({path:e.path,id:e.id,kind:e.entity?.kind,title:e.entity?.title,revision:e.revision,errorCode:e.error?.code,message:e.error?.message}));
+  heads(): {path:string;id?:string;kind?:Entity['kind'];title?:string;revision?:string;errorCode?:FoundationError['code'];message?:string;archived?:boolean}[]{
+    return [...this.entries.values()].map(e=>({path:e.path,id:e.id,kind:e.entity?.kind,title:e.entity?.title,revision:e.revision,errorCode:e.error?.code,message:e.error?.message,archived:archivedEntity(e.entity)}));
   }
+  /**
+   * 4F reverse references: saved records whose parsed data references `id`, with occurrence counts (e.g. clip placements).
+   * Reads the parse-time link summaries only — no entity cloning, no I/O, no writes.
+   */
+  referencing(id: string, kind?: Entity['kind']): ReferencingRecord[] {
+    const target = id.toLowerCase(), out: ReferencingRecord[] = [];
+    for (const [path, links] of this.links) {
+      const count = links.get(target), entry = this.entries.get(path), entity = entry?.entity;
+      if (!count || !entity || !entry.id || (kind && entity.kind !== kind)) continue;
+      out.push({ path, id: entity.id, kind: entity.kind, title: entity.title, count, archived: archivedEntity(entity) === true });
+    }
+    return out.sort((a, b) => a.title.localeCompare(b.title) || a.path.localeCompare(b.path));
+  }
+  /** 4F forward references of a saved record (e.g. a motif's patch) from the same parse-time summary; no cloning. */
+  outgoing(id: string): string[] { const target = id.toLowerCase(); for (const [path, links] of this.links) if (this.entries.get(path)?.id === target) return [...links.keys()]; return []; }
   all(): IndexEntry[] { return [...this.entries.values()].map(cloneEntry); }
   /** 4E: clone only entries of these kinds (all() clones every entity, e.g. large compositions, on each index publish). */
   ofKind(...kinds: Entity['kind'][]): IndexEntry[] { return [...this.entries.values()].filter(e => !!e.entity && kinds.includes(e.entity.kind)).map(cloneEntry); }
   subscribe(listener: () => void): () => void { if (this.closed) return () => {}; this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
   private publish(): void { if (!this.closed) { this.revision++; for (const listener of this.listeners) listener(); } }
-  dispose(): void { this.closed = true; this.unsubscribe?.(); this.listeners.clear(); this.entries.clear(); this.versions.clear(); }
+  dispose(): void { this.closed = true; this.unsubscribe?.(); this.listeners.clear(); this.entries.clear(); this.versions.clear(); this.links.clear(); }
 }
 
 function cloneEntry(entry: IndexEntry): IndexEntry {

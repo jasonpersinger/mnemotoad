@@ -132,3 +132,17 @@ describe('invalid, deleted and moved notes', () => {
     expect(session.disposed).toBe(true); expect(session.freshness.state).not.toBe('refreshed');
   });
 });
+
+describe('4F §8.2 external-change classification table', () => {
+  it.each([
+    ['description', (c: Composition) => ({ ...c, description: 'Elsewhere' }), ['description, tags and notes'], false],
+    ['tags', (c: Composition) => ({ ...c, tags: ['night'] }), ['description, tags and notes'], false],
+    ['sections', (c: Composition) => updateSection(c, section, { label: 'Moved' }), ['sections'], false],
+    ['markers', (c: Composition) => addMarker(c, { label: 'Cue', tick: 960 }), ['markers'], false],
+    ['tempo', (c: Composition) => ({ ...c, data: { ...c.data, tempoMicrosecondsPerQuarter: 400000 } }), ['tempo, meter and length'], true],
+    ['meter', (c: Composition) => ({ ...c, data: { ...c.data, meter: { numerator: 3, denominator: 4 } } }), ['tempo, meter and length'], true],
+    ['clip placement', (c: Composition) => ({ ...c, data: { ...c.data, lanes: c.data.lanes.map(l => ({ ...l, clips: l.clips.map(x => ({ ...x, startTick: x.startTick + 960 })) })) } }), ['clips and lanes'], true],
+  ] as const)('%s', async (_n, change, areas, musical) => {
+    const f = await fixture(); expect(externalChanges(f.session.draft, change(f.session.draft))).toEqual({ areas: [...areas], musical });
+  });
+});

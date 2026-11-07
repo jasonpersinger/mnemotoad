@@ -21,7 +21,7 @@ Native validation scripts live in `scripts/*-native.mjs` and drive only the isol
 | Path | Role |
 | --- | --- |
 | `src/domain/` | Entity types (`entities.ts`), schema-1 validation (`validation.ts`), vault-path rules (`paths.ts`). Pure. |
-| `src/storage/` | Markdown/YAML/JSON codec with extension preservation (`document.ts`), repository, index, reference diagnostics, recovery. |
+| `src/storage/` | Markdown/YAML/JSON codec with extension preservation (`document.ts`), repository, index (incl. 4F parse-time reverse links: `referencing`/`outgoing`), reference diagnostics and `reference-status.ts` (shared classification), recovery. |
 | `src/application/` | `DocumentSession` (protected save, checkpoints, `relocate`) and `HistorySession` (bounded undo: 100 entries / 16 MiB); `navigation.ts` (4E readiness coordinator). |
 | `src/music/` | Exact timing (`timing.ts`), bar:beat:tick (`positions.ts`), transport, audio. |
 | `src/arrangement/` | Pure arrangement preflight/compiler/routing/collisions/capture/preparation (4B). |
@@ -38,7 +38,7 @@ Native validation scripts live in `scripts/*-native.mjs` and drive only the isol
 - Sections/markers/audio references must never affect compilation, routing or MIDI bytes. Section overlap is an edit-time rule, never a load failure.
 - `session.draft` deep-clones on every read: snapshot it once per render/loop. `index.all()` clones every entity in the vault: use `heads()` / `ofKind()` in anything that runs on index publish.
 - Clean CANVAS sessions are refreshed by `CanvasFreshness`; never auto-modify a dirty draft, never treat a musical fingerprint as save safety.
-- Cross-module navigation goes through `services.navigation.navigate()`; a target must implement `reveal()` behind its `ReadyGate`.
+- Cross-module navigation goes through `services.navigation.navigate()` (use `ui/navigate.ts#navigateTo`); a target must implement `reveal()` behind its `ReadyGate`; sources checkpoint drafts before leaving. Show references with `ui/reference-row.ts` (names first, IDs in advanced detail).
 - Dispose timers, frames, observers, listeners, audio and workers; guard async completions after view/module/plugin disposal.
 
 ## Process
@@ -48,6 +48,6 @@ Native validation scripts live in `scripts/*-native.mjs` and drive only the isol
 - Milestone evidence: `docs/MILESTONE_*_REPORT.md` (historical, do not rewrite), `docs/validation/*.json`, screenshots in ignored `output/<module>/milestone-*/`. Decisions: [docs/DECISIONS.md](docs/DECISIONS.md); risks: [docs/RISKS.md](docs/RISKS.md).
 - Source is the authority over reports; record discrepancies in the milestone report.
 
-## Known limitations (as of 4E)
+## Known limitations (as of 4F)
 
-Note-only fixed tempo/meter model; sine-tone audition; no DAW import verified; no screen-reader certification; Linux desktop only verified. Only musical edits invalidate compilation/playback (`musicalInput` denylist; keep new organizational fields out of the compiler or add them to the denylist deliberately). A freshness refresh resets the clean session's undo history. A host `setState` after a completed navigation is honoured. Recording references are audio-only, vault-relative, never played; `# [ ] |` filenames unsupported. Open modals only via `openModal()` (src/ui/modal-host.ts). Native runs: launch with `env -u WAYLAND_DISPLAY DISPLAY=:1 XAUTHORITY=…` (launcher pins X11); assert `activeDocument === document`; never let Escape bubble out of CANVAS; the composition's notes play ~2.6 s, so press *Return to start* before playback checks.
+Note-only fixed tempo/meter model; sine-tone audition; no DAW import verified; no screen-reader certification; Linux desktop only verified. Only musical edits invalidate compilation/playback (`musicalInput` denylist; keep new organizational fields out of the compiler or add them to the denylist deliberately). A freshness refresh resets the clean session's undo history. A host `setState` after a completed navigation is honoured. Reverse references list saved records only. A stale host `activeDocument` needs an application switch to clear. Recording references are audio-only, vault-relative, never played; `# [ ] |` filenames unsupported. Open modals only via `openModal()` (src/ui/modal-host.ts). Native runs: launch with `env -u WAYLAND_DISPLAY DISPLAY=:1 XAUTHORITY=…` (launcher pins X11); assert `activeDocument === document`; never let Escape bubble out of CANVAS; the composition's notes play ~2.6 s, so press *Return to start* before playback checks.

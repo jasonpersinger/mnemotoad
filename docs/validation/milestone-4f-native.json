@@ -1,0 +1,379 @@
+{
+  "milestone": "4F",
+  "baseline": {
+    "commit": "295005f",
+    "signed": true,
+    "tests": "573/43"
+  },
+  "verification": {
+    "tests": "589/44",
+    "typecheck": true,
+    "lint": true,
+    "build": true,
+    "audit": "0 vulnerabilities",
+    "goldenMidi": "85c8ecf39936d1de7612f65d17d3df2f4599472cda8027096bced1c93bb3ab77",
+    "independentFixtures": "10 valid / 4 rejections"
+  },
+  "native": {
+    "finalBuild": true,
+    "workflow": [
+      "1–3",
+      "4–6",
+      "7–11",
+      "12–13",
+      "14–16",
+      "17–18",
+      "19–20",
+      "21–22",
+      "extras",
+      "8.4"
+    ],
+    "restart": [
+      "23–24"
+    ],
+    "rendererExceptions": 0,
+    "midi": {
+      "status": 0,
+      "format": 1,
+      "ppq": 960,
+      "tracks": [
+        "MNEMOBARD conductor",
+        "Choir",
+        "Pulse"
+      ],
+      "endTicks": [
+        122880
+      ],
+      "noteOns": 46,
+      "channels": [
+        0,
+        1
+      ],
+      "firstOn": [
+        0,
+        "on",
+        0,
+        48,
+        60
+      ],
+      "ordered": true,
+      "expectedNoteOns": 46
+    },
+    "deterministic": true,
+    "responsive": {
+      "600": {
+        "content": 625,
+        "overflow": 0,
+        "regionHeights": [
+          118,
+          111,
+          126
+        ],
+        "timeline": 601
+      },
+      "900": {
+        "content": 925,
+        "overflow": 0,
+        "regionHeights": [
+          93,
+          100,
+          126
+        ],
+        "timeline": 901
+      },
+      "wide": {
+        "content": 1865,
+        "overflow": 0,
+        "regionHeights": [
+          55,
+          48,
+          52
+        ],
+        "timeline": 1841
+      },
+      "standard": {
+        "content": 1311,
+        "overflow": 0,
+        "regionHeights": [
+          55,
+          48,
+          52
+        ],
+        "timeline": 1287
+      }
+    },
+    "keyboard": {
+      "tag": "SUMMARY",
+      "label": "ID",
+      "focusVisible": true,
+      "outline": "solid"
+    },
+    "regressions": {
+      "canvas4e": "18+2",
+      "motif": 19,
+      "motifMidi": 16,
+      "patchbookAssets": 12,
+      "foundation": 11,
+      "note": "ran on the build immediately before a CSS/text-only change; 4F workflow+restart rerun on the final build"
+    },
+    "retries": 11,
+    "staleWindow": {
+      "setActiveLeafCanvasFocus": false,
+      "switchTabAndBack": false,
+      "cdpBringToFront": false,
+      "mainWindowBlurFocus": false,
+      "syntheticWindowFocusEvent": true
+    },
+    "reaper": "installed (7.84), not run"
+  },
+  "performance": {
+    "stamp": "1794062725392",
+    "samples": 7,
+    "environment": {
+      "cpu": "AMD Ryzen 7 5700G with Radeon Graphics",
+      "logicalCpus": 16,
+      "memoryBytes": 29300408320,
+      "kernel": "7.3.1-1-cachyos",
+      "host": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.15.0 Chrome/150.0.7871.250 Electron/43.8.7 Safari/537.36",
+        "dpr": 1.0000000037252903,
+        "vaultNotes": 579
+      }
+    },
+    "patchbook": {
+      "search": {
+        "median": 0.3,
+        "p95": 0.5,
+        "max": 0.5
+      },
+      "filterByInstrument": {
+        "median": 0.1,
+        "p95": 0.1,
+        "max": 0.1
+      },
+      "selectPatchWithReverseRefs": {
+        "median": 30.1,
+        "p95": 36.7,
+        "max": 36.7
+      },
+      "reverseReferences": {
+        "median": 1.2,
+        "p95": 1.5,
+        "max": 1.5
+      },
+      "referenceResolutionAll": {
+        "median": 0.2,
+        "p95": 0.5,
+        "max": 0.5
+      },
+      "counts": {
+        "instruments": 30,
+        "patches": 50,
+        "chains": 15,
+        "motifsUsingPatches": 20,
+        "vaultNotes": 694
+      }
+    },
+    "motif": {
+      "500": {
+        "notes": 500,
+        "open": {
+          "median": 66.7,
+          "p95": 66.9,
+          "max": 66.9
+        },
+        "noteNavigation": {
+          "median": 6.4,
+          "p95": 7.8,
+          "max": 7.8
+        },
+        "soundPanelRefresh": {
+          "median": 0.6,
+          "p95": 0.9,
+          "max": 0.9
+        }
+      },
+      "5000": {
+        "notes": 5000,
+        "open": {
+          "median": 261,
+          "p95": 264.8,
+          "max": 264.8
+        },
+        "noteNavigation": {
+          "median": 30.1,
+          "p95": 38.2,
+          "max": 38.2
+        },
+        "soundPanelRefresh": {
+          "median": 3.4,
+          "p95": 3.8,
+          "max": 3.8
+        }
+      },
+      "small": {
+        "notes": 16,
+        "open": {
+          "median": 42.7,
+          "p95": 44.6,
+          "max": 44.6
+        },
+        "noteNavigation": {
+          "median": 2.9,
+          "p95": 10.9,
+          "max": 10.9
+        },
+        "soundPanelRefresh": {
+          "median": 0.3,
+          "p95": 0.5,
+          "max": 0.5
+        }
+      }
+    },
+    "canvas": {
+      "4x20": {
+        "lanes": 4,
+        "clips": 20,
+        "open": {
+          "median": 22.3,
+          "p95": 26.7,
+          "max": 26.7
+        },
+        "clipSelectWithSources": {
+          "median": 1,
+          "p95": 1.4,
+          "max": 1.4
+        },
+        "scroll": {
+          "median": 0.2,
+          "p95": 5.6,
+          "max": 5.6
+        },
+        "zoom": {
+          "median": 0.4,
+          "p95": 1.6,
+          "max": 1.6
+        },
+        "crossModuleNavigation": {
+          "median": 64.7,
+          "p95": 70.8,
+          "max": 70.8
+        },
+        "reverseReferencesForMotif": {
+          "median": 0,
+          "p95": 0.2,
+          "max": 0.2
+        }
+      },
+      "16x200": {
+        "lanes": 16,
+        "clips": 200,
+        "open": {
+          "median": 23.2,
+          "p95": 27.1,
+          "max": 27.1
+        },
+        "clipSelectWithSources": {
+          "median": 1.7,
+          "p95": 1.8,
+          "max": 1.8
+        },
+        "scroll": {
+          "median": 0.3,
+          "p95": 0.9,
+          "max": 0.9
+        },
+        "zoom": {
+          "median": 0.3,
+          "p95": 0.4,
+          "max": 0.4
+        },
+        "crossModuleNavigation": {
+          "median": 70.8,
+          "p95": 71.8,
+          "max": 71.8
+        },
+        "reverseReferencesForMotif": {
+          "median": 0,
+          "p95": 0.1,
+          "max": 0.1
+        }
+      },
+      "32x1000": {
+        "lanes": 32,
+        "clips": 1000,
+        "open": {
+          "median": 66.9,
+          "p95": 77,
+          "max": 77
+        },
+        "clipSelectWithSources": {
+          "median": 3.3,
+          "p95": 3.4,
+          "max": 3.4
+        },
+        "scroll": {
+          "median": 0.4,
+          "p95": 1.2,
+          "max": 1.2
+        },
+        "zoom": {
+          "median": 0.4,
+          "p95": 0.4,
+          "max": 0.4
+        },
+        "crossModuleNavigation": {
+          "median": 76.9,
+          "p95": 81.7,
+          "max": 81.7
+        },
+        "reverseReferencesForMotif": {
+          "median": 0,
+          "p95": 0.1,
+          "max": 0.1
+        }
+      }
+    },
+    "rendererExceptions": []
+  },
+  "repository": {
+    "branch": "main",
+    "baseline": "295005f",
+    "pendingPaths": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs/ARCHITECTURE.md",
+      "docs/DATA_MODEL.md",
+      "docs/DECISIONS.md",
+      "docs/DESIGN_DIRECTION.md",
+      "docs/MILESTONE_4F_REPORT.md",
+      "docs/RISKS.md",
+      "docs/ROADMAP.md",
+      "docs/validation/milestone-4f-native.json",
+      "progress.md",
+      "scripts/canvas-4e-native.mjs",
+      "scripts/mnemobard-4f-benchmark.mjs",
+      "scripts/mnemobard-4f-native.mjs",
+      "src/application/navigation.ts",
+      "src/modules/canvas/inspector.ts",
+      "src/modules/canvas/performance-panel.ts",
+      "src/modules/canvas/view.ts",
+      "src/modules/motif/sound-panel.ts",
+      "src/modules/motif/view.ts",
+      "src/modules/patchbook/view.ts",
+      "src/storage/index.ts",
+      "src/storage/reference-status.ts",
+      "src/ui/modal-host.ts",
+      "src/ui/navigate.ts",
+      "src/ui/reference-row.ts",
+      "styles.css",
+      "tests/canvas-freshness.test.ts",
+      "tests/canvas-view.test.ts",
+      "tests/cross-module.test.ts",
+      "tests/navigation.test.ts"
+    ],
+    "pushed": false
+  },
+  "evidenceDirectory": "output/mnemobard/milestone-4f",
+  "report": "docs/MILESTONE_4F_REPORT.md"
+}

@@ -10,7 +10,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { connect } from './obsidian-cdp.mjs';
 
-const directory = 'output/canvas/milestone-4e', vaultRoot = 'dev-vault', recordings = 'MNEMOBARD/Recordings 4E';
+const directory = process.env.MNEMOBARD_4E_DIR ?? 'output/canvas/milestone-4e', vaultRoot = 'dev-vault', recordings = 'MNEMOBARD/Recordings 4E';
 await mkdir(directory, { recursive: true });
 const c = await connect(), stamp = String(Date.now()), pause = ms => new Promise(r => setTimeout(r, ms));
 const restart = process.argv.includes('--verify-restart');

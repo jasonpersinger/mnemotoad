@@ -4,6 +4,8 @@ import type { FoundationServices } from '../../application/services';
 import type { AssetReference, LibraryKind } from '../../domain/entities';
 import { FoundationError, messageOf } from '../../domain/errors';
 import { ReadyGate, type NavigationNote } from '../../application/navigation';
+import { navigateTo } from '../../ui/navigate';
+import { referenceRow } from '../../ui/reference-row';
 import { validateEntity } from '../../domain/validation';
 import type { LibraryQuery } from './query';
 import type { LibrarySession } from './session';
@@ -219,6 +221,8 @@ export class PatchbookView extends ModuleView {
     if (role !== 'preset' && ['wav', 'mp3', 'ogg', 'flac', 'm4a', 'webm', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'].includes(extension)) this.openNote(path);
     else { this.assetInspector?.close(); this.assetInspector = new AssetInspector(this.app, path); openModal(this.contentEl, this.assetInspector, t => this.say(t)); }
   }
+  /** 4F: verified navigation to MOTIF; a PATCHBOOK draft is checkpointed first and stays in the pending-drafts list. */
+  private async openMotif(id: string): Promise<void> { const services = this.available; if (!services) return; await this.leaveDraft(); if (!services.modules.enabled('motif')) { const s = services.index.resolve(id); if (s.status === 'ready') this.openNote(s.path); return; } await navigateTo(this.app, services, 'patchbook', 'motif', id); }
   private related(id: string): void { void this.select(id).catch(error => this.fail(error)); }
   private renderDetail(): void {
     const services = this.available, root = this.detail; if (!services || !root || this.inactive) return;
@@ -271,6 +275,12 @@ export class PatchbookView extends ModuleView {
         const table = element(root, 'table'); for (const p of e.parameters) { const row = element(table, 'tr'); element(row, 'th', p.name).scope = 'row'; element(row, 'td', `${p.value}${p.unit ? ' ' + p.unit : ''}`); }
       }
       if (e.effectsChainIds?.length) { element(root, 'h3', 'Effects chains'); for (const id of e.effectsChainIds) { const chain = services.index.resolve(id); button(root, chain.status === 'ready' ? chain.entity.title : `Unavailable chain · ${id}`, () => this.related(id)); } }
+      // 4F: saved motifs that associate this patch (parse-time index summary; never creates or edits associations).
+      const motifs = services.index.referencing(e.id, 'motif'), usage = element(root, 'section', undefined, 'mnemobard-ref-group'); usage.setAttribute('aria-label', 'Motifs using this patch');
+      element(usage, 'h3', `Motifs using this patch · ${motifs.length}`);
+      if (!motifs.length) element(usage, 'p', 'No saved motif is associated with this patch. Associate it from MOTIF; nothing is linked automatically.', 'mnemobard-hint');
+      for (const m of motifs.slice(0, 50)) referenceRow(usage, 'Motif', { id: m.id, expected: 'motif', status: m.archived ? 'archived' : 'ready', title: m.title, path: m.path, message: m.archived ? 'Archived motif: still associated.' : '' }, { label: 'Open in MOTIF', run: () => { void this.openMotif(m.id).catch(error => this.fail(error)); } });
+      if (motifs.length > 50) element(usage, 'p', `${motifs.length - 50} more motifs; search MOTIF.`, 'mnemobard-hint');
       if (e.effects?.length) { element(root, 'h3', 'Effect descriptions'); const list = element(root, 'ol'); for (const effect of e.effects) element(list, 'li', effect); }
     } else if (e.kind === 'instrument') { description('Manufacturer / developer', e.manufacturer); description('Type', e.instrumentType); description('Platform / format', e.platform); }
     else {

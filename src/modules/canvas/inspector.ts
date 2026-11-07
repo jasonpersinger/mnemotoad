@@ -14,7 +14,8 @@ export function clipInspector(root: HTMLElement, session: CanvasSession, library
     }
     const { lane, clip } = findClip(composition, id), resolved = plan.clips.find(c => c.id === id);
     element(root, 'h3', resolved?.title ?? clip.sourceTitle ?? 'Selected clip');
-    element(root, 'p', `Lane: ${lane.name} · source UUID ${clip.motifId}`, 'mnemobard-hint');
+    // 4F: the source UUID lives in the Source and sound row's ID detail, not the headline.
+    element(root, 'p', `Lane: ${lane.name}`, 'mnemobard-hint');
     const form = element(root, 'form', undefined, 'mnemobard-canvas-clip-form');
     form.setAttribute('aria-label', 'Clip placement');
     const field = (label: string, value: string): HTMLInputElement => { const wrapper = element(form, 'label'); element(wrapper, 'span', label); const input = element(wrapper, 'input'); input.value = value; input.setAttribute('aria-label', label); return input; };
@@ -57,7 +58,8 @@ export function clipInspector(root: HTMLElement, session: CanvasSession, library
     form.addEventListener('submit', e => { e.preventDefault(); apply(() => { const tick = positionEdited ? positionTick(position.value, 960, session.draft.data.meter) : Number(start.value); library.move(session, id, target.value, tick, Number(repeats.value), label.value); delete form.dataset.pending; }, form); });
     const actions = element(root, 'div', undefined, 'mnemobard-actions');
     button(actions, 'Duplicate clip', () => apply(() => library.duplicate(session, id)));
-    button(actions, 'Delete clip', () => apply(() => session.edit('Delete clip', c => deleteClip(c, id))));
+    // 4F: destructive styling; deleting a clip is one undoable step (Undo restores it), so no extra confirmation.
+    button(actions, 'Delete clip', () => apply(() => session.edit('Delete clip', c => deleteClip(c, id))), 'mod-warning');
     button(actions, 'Open source MOTIF', () => open(clip.motifId));
     const source = resolved?.source;
     const review = element(root, 'details', undefined, 'mnemobard-canvas-source-review');
