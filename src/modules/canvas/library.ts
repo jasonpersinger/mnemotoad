@@ -9,7 +9,9 @@ import { CheckpointRecovery, type RecoveredDraft } from '../../storage/recovery'
 import { SourceCatalog } from '../../arrangement/catalog';
 import { resolveArrangement } from '../../arrangement/preflight';
 import type { SourceSummary } from '../../arrangement/sources';
-import { editableComposition, placeClip, editClip, duplicateClip, acknowledgeSource } from './commands';
+import { editableComposition, placeClip, editClip, duplicateClip, acknowledgeSource, acknowledgeSourceClips } from './commands';
+import { sourceReview, reviewToken, type ReviewToken, type SourceReviewItem } from '../../arrangement/source-review';
+import { contentRevision } from '../../storage/content-revision';
 import { CanvasSession } from './session';
 import { SourceCapture } from '../../arrangement/capture';
 import { ArrangementPreparation } from '../../arrangement/preparation';
@@ -71,6 +73,32 @@ export class CanvasLibrary {
     review(s: CanvasSession, id: string, revision: string): void { const clip = s.draft.data.lanes.flatMap(l => l.clips).find(c => c.id === id); if (!clip)
         throw Error('Clip missing.'); const source = this.source(clip.motifId); if (source.revision !== revision)
         throw Error('Saved source changed during review. Inspect the new revision before acknowledging.'); s.edit('Review saved motif revision', c => acknowledgeSource(c, id, source)); }
+    /** 4G: changed sources of this draft (see arrangement/source-review.ts); `keep` also lists that motif when nothing is pending. */
+    reviewItems(s: CanvasSession, keep?: string): SourceReviewItem[] { return sourceReview(s.draft, id => this.sources.get(id), this.unsavedSource, keep); }
+    reviewToken(s: CanvasSession, item: SourceReviewItem): ReviewToken { return reviewToken(item, s.base?.source); }
+    /**
+     * 4G: acknowledge one saved motif revision for every reviewed placement as ONE undoable edit (never saves).
+     * Revalidated immediately before committing: the motif note is re-read and re-fingerprinted, the composition must be the
+     * reviewed one (same save base, no external-change conflict, same affected placements) and MOTIF must hold no unsaved
+     * edits to it. Any difference stops with an explanation and nothing changes.
+     */
+    async reviewAll(s: CanvasSession, token: ReviewToken, signal?: AbortSignal): Promise<number> {
+        const unchanged = (): void => {
+            checkActive(signal, this.closed);
+            if (s.disposed) throw new FoundationError('disposed', 'The composition editor closed. Nothing was acknowledged.');
+            if (this.unsavedSource(token.motifId)) throw new FoundationError('conflict', 'MOTIF now has unsaved edits to this motif. Save or discard them, then review again. Nothing was acknowledged.');
+            const f = s.freshness.state; if (f === 'checking' || f === 'conflict' || f === 'unavailable') throw new FoundationError('conflict', 'The composition note changed elsewhere or is unavailable. Resolve that first; nothing was acknowledged.');
+            if (s.base?.source !== token.baseSource) throw new FoundationError('conflict', 'The composition was saved or reloaded during the review. Review again; nothing was acknowledged.');
+        };
+        unchanged();
+        const record = await this.repository.read(token.motifId, signal), revision = await contentRevision(record.source);
+        unchanged();
+        if (revision !== token.revision) throw new FoundationError('conflict', 'The saved motif changed during the review. Inspect its new revision; nothing was acknowledged.');
+        const source = this.source(token.motifId);
+        if (source.revision !== token.revision) throw new FoundationError('conflict', 'The motif index has not caught up with the saved note yet. Review again in a moment; nothing was acknowledged.');
+        s.edit(`Acknowledge saved motif revision · ${token.clips.length} clip${token.clips.length === 1 ? '' : 's'}`, c => acknowledgeSourceClips(c, token, source));
+        return token.clips.length;
+    }
     recover(value: RecoveredDraft<Composition>): CanvasSession { checkActive(undefined, this.closed); const old = this.sessions.get(value.draft.id.toLowerCase()); if (old?.dirty || old?.busy)
         throw Error('Save/discard the existing arrangement before recovery.'); if (old) {
         old.dispose();

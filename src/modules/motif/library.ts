@@ -30,6 +30,13 @@ export class MotifLibrary {
       if (title === '') entity.title = ''; return editableMotif(entity);
     });
   }
+  /** 4G: library rows from index scalars only (items() clones every motif's notes; the browser needs titles). */
+  listing(search = ''): { path: string; id: string; title: string; ambiguous: boolean }[] {
+    const heads = this.index.heads(), counts = new Map<string, number>(), query = search.toLocaleLowerCase();
+    for (const head of heads) if (head.id) counts.set(head.id, (counts.get(head.id) ?? 0) + 1);
+    return heads.flatMap(head => head.kind === 'motif' && head.id && head.title !== undefined && !head.errorCode && head.title.toLocaleLowerCase().includes(query) ? [{ path: head.path, id: head.id, title: head.title, ambiguous: (counts.get(head.id) ?? 0) > 1 }] : [])
+      .sort((a, b) => a.title.localeCompare(b.title) || a.id.localeCompare(b.id));
+  }
   items(search = ''): { path: string; entity: Motif; ambiguous: boolean }[] {
     const entries = this.index.ofKind('motif');
     return entries.flatMap(entry => entry.entity?.kind === 'motif' && entry.entity.title.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ? [{ path: entry.path, entity: entry.entity, ambiguous: this.index.resolve(entry.entity.id).status !== 'ready' }] : [])

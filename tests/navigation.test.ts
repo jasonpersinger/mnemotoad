@@ -203,3 +203,17 @@ describe('4F CANVAS reveal robustness', () => {
     h.plugin.onunload();
   });
 });
+
+describe('4G PATCHBOOK edit-mode associations', () => {
+  it('keeps the saved "Motifs using this patch" summary visible and read-only while the patch is edited, with the draft intact', async () => {
+    const h = await started(), s = h.s;
+    await s.modules.open('patchbook'); const pb = h.leaf('mnemobard-patchbook')?.view as PatchbookView; await pb.setState({ selectedId: h.patchA.entity.id });
+    await vi.waitFor(() => expect(pb.contentEl.textContent).toContain('Motifs using this patch · 1'));
+    const edit = [...pb.contentEl.querySelectorAll('button')].find(b => b.textContent === 'Edit record'); if (!edit) throw Error('Edit record'); edit.click();
+    const summary = pb.contentEl.querySelector<HTMLElement>('details[aria-label="Motifs using this patch"]');
+    expect(summary?.textContent).toContain('Motifs using this patch · 1'); expect(summary?.textContent).toContain('read-only while you edit');
+    expect([...(summary?.querySelectorAll('button') ?? [])].map(b => b.textContent)).toEqual([]); // no navigation from inside the form
+    expect(pb.contentEl.querySelector('form')).not.toBeNull(); // the editing form is still the primary content
+    h.plugin.onunload();
+  });
+});

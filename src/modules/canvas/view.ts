@@ -23,12 +23,13 @@ import { ArrangementMotifPicker } from './motif-picker';
 import { clipInspector } from './inspector';
 import { CanvasPerformancePanel } from './performance-panel';
 import { CanvasStructurePanel } from './structure-panel';
+import { SourceReviewModal } from './source-review-modal';
 import { addMarker, addSection, orderedSections, updateMarker, updateSection } from './structure';
 const SEVERITY = { error: 'Blocks compile/export', warning: 'Can continue · review', info: 'Note' } as const;
 /** What resolves each preflight diagnostic (4D diagnostic usability). */
 const DIAGNOSTIC_ACTION: Partial<Record<string, string>> = {
     missing: 'Restore the motif note (UUID unchanged) or delete the clip.', duplicate: 'Open both notes and give one a new identity outside CANVAS.', malformed: 'Open the source Markdown and repair it.',
-    unreviewed: 'Select the clip → Review saved source → Acknowledge.', changed: 'Select the clip → Review saved source → Acknowledge the new revision.', moved: 'Optional: acknowledge to refresh the path hint.',
+    unreviewed: 'Use Review changed sources to acknowledge every placement of this motif at once, or select the clip to review it alone.', changed: 'Use Review changed sources to compare and acknowledge every placement of this motif at once, or select the clip to review it alone.', moved: 'Optional: acknowledge to refresh the path hint.',
     'unsaved-source': 'Save the MOTIF to include its edits.', 'inexact-timing': 'Use a source with compatible PPQ/length or remove the clip.', 'beyond-end': 'Extend the composition length or move the clip.', 'clip-overlap': 'Move a clip or compile to check exact collisions.',
 };
 /** Documented keyboard interactions (also shown in the "Timeline gestures and keys" disclosure). */
@@ -59,6 +60,9 @@ export class CanvasView extends ModuleView {
     private freshnessStatus?: HTMLElement;
     private freshnessBanner?: HTMLElement;
     private freshnessKey = '';
+    /** 4G: compact pointer to the source review, shown only while placements await review. */
+    private reviewNotice?: HTMLElement;
+    private reviewModal?: SourceReviewModal;
     private pending?: HTMLElement;
     private inspector?: HTMLElement;
     /** 4D contextual inspector: exactly one of empty/clip/lane/structure is visible. Selection is ephemeral (no history). */
@@ -234,7 +238,7 @@ export class CanvasView extends ModuleView {
     private renderDrafts(): void { const root = this.pending, s = this.available; if (!root || !s)
         return; root.replaceChildren(); const drafts = s.canvas.drafts(); if (drafts.length)
         element(root, 'span', 'Pending arrangements: '); for (const draft of drafts)
-        button(root, draft.draft.title || 'Untitled draft', () => { void this.leave().then(() => { if (this.active)
+        button(root, draft.draftTitle || 'Untitled draft', () => { void this.leave().then(() => { if (this.active)
             this.attach(draft); }).catch(e => this.fail(e)); }); }
     private renderEditor(): void {
         this.performancePanel?.dispose();this.performancePanel=undefined;this.structurePanel?.dispose();this.structurePanel=undefined;
@@ -247,6 +251,7 @@ export class CanvasView extends ModuleView {
         this.saveStatus = undefined;
         this.freshnessStatus = undefined;
         this.freshnessBanner = undefined;
+        this.reviewNotice = undefined;
         this.inspector = undefined;
         this.laneRoot = undefined;
         this.clipRegister = undefined;
@@ -305,6 +310,7 @@ export class CanvasView extends ModuleView {
             void this.openComposition(session.draft.id).catch(e => this.fail(e)); }); });
         this.freshnessBanner = element(root, 'div', undefined, 'mnemobard-freshness-banner');
         this.freshnessBanner.hidden = true; this.freshnessKey = '';
+        this.reviewNotice = element(root, 'div', undefined, 'mnemobard-review-banner'); this.reviewNotice.hidden = true; this.reviewNotice.setAttribute('role', 'status');
         const transport = element(root, 'section', undefined, 'mnemobard-canvas-transport'); transport.setAttribute('aria-label', 'Transport');
         const performanceToolbar=element(transport,'div');
         this.musicalSettings(transport, session);
@@ -363,6 +369,7 @@ export class CanvasView extends ModuleView {
         this.laneHome = root.ownerDocument.createComment('lane manager home'); this.laneRoot.after(this.laneHome);
         const secondary=element(secondaryTools,'section',undefined,'mnemobard-canvas-performance');
         this.performancePanel=new CanvasPerformancePanel(performanceToolbar,secondary,this.app,s,session,this,(fn,form)=>this.act(fn,form),()=>this.hasPending(),()=>this.active&&this.app.workspace.activeLeaf===this.leaf,tick=>this.timeline?.playhead(tick),(lane,clip)=>{if(this.select(lane,clip)&&clip)this.timeline?.reveal(clip);});
+        this.performancePanel.reviewSources = id => this.openReview(id);
         this.routeHome = root.ownerDocument.createComment('routing home'); this.performancePanel.routing.before(this.routeHome);
         this.structurePanel = new CanvasStructurePanel(structureRoot, { library: s.canvas, session, act: (fn, form) => this.act(fn, form), locate: tick => { this.timeline?.revealTick(tick); this.performancePanel?.locate(tick); }, highlight: (kind, id) => this.timeline?.structureSelection(kind, id), open: path => this.openMarkdown(path), sourcePath: () => session.base?.path ?? '', cursorTick: () => this.performancePanel?.currentTick ?? 0, readOnly: () => s.settings.readOnly, blocked: () => this.hasPending(), selected: kind => this.structureSelected(kind) }, structureEditor);
         this.clipRegister = element(secondaryTools, 'details', undefined, 'mnemobard-canvas-clip-register');
@@ -412,14 +419,31 @@ export class CanvasView extends ModuleView {
         this.timeline?.update(draft, this.plan);
         this.structurePanel?.refresh();
         this.renderSelection();
-    } this.timeline?.selection(session.selectedLane, session.selectedClip); this.renderDiagnostics(); }
+    } this.timeline?.selection(session.selectedLane, session.selectedClip); this.renderDiagnostics(); this.renderReviewNotice(session); }
+    /** Motifs (by stable UUID) with placements whose acknowledged revision is not the current saved one (from the cached plan). */
+    private pendingReview(): string[] { return [...new Set(this.plan?.diagnostics.filter(d => (d.code === 'changed' || d.code === 'unreviewed') && d.motifId).map(d => (d.motifId ?? '').toLowerCase()) ?? [])]; }
+    private renderReviewNotice(session: CanvasSession): void {
+        const notice = this.reviewNotice, pending = this.pendingReview(), invalid = this.plan?.diagnostics.some(d => d.severity === 'error') ?? false, f = session.freshness.state;
+        this.performancePanel?.setReadiness({ review: pending.length, invalid, conflict: f === 'conflict' || f === 'unavailable' });
+        if (!notice) return; const key = String(pending.length); if (notice.dataset.key === key) return; notice.dataset.key = key; notice.replaceChildren(); notice.hidden = !pending.length; if (!pending.length) return;
+        element(notice, 'span', `${pending.length} saved source${pending.length === 1 ? ' has' : 's have'} changed or ${pending.length === 1 ? 'is' : 'are'} unreviewed · acknowledge before compiling`);
+        button(notice, 'Review changed sources', () => this.openReview());
+    }
+    /** 4G: the batch source review (one motif at a time; explicit, confirmed, one undo step). */
+    private openReview(motifId?: string): void {
+        const s = this.available, session = this.session; if (!s || !session) return;
+        if (this.hasPending()) { this.say('Apply or discard pending properties before reviewing sources. Arrangement unchanged.'); return; }
+        this.reviewModal?.close();
+        this.reviewModal = new SourceReviewModal(this.app, s.canvas, session, motifId, () => this.hasPending() ? 'Apply or discard pending CANVAS properties first. Nothing was acknowledged.' : undefined, id => { void this.openMotif(id).catch(e => this.fail(e)); }, message => { if (this.active) { this.refreshScene(); this.renderSelection(true); this.say(message); } });
+        openModal(this.contentEl, this.reviewModal, t => this.say(t));
+    }
     private updateStatus(): void {
         const session = this.session;
         if (!session)
             return;
         const c = session.draft;
         if (this.saveStatus) {
-            const state = session.base ? this.available?.index.resolve(c.id) : undefined;
+            const state = session.base ? this.available?.index.locate(c.id) : undefined;
             this.saveStatus.textContent = state && state.status !== 'ready' ? `${session.status} · composition source ${state.status}; Save protected` : session.status;
         }
         this.renderFreshness(session);
@@ -496,7 +520,7 @@ export class CanvasView extends ModuleView {
         return; if (!force && this.hasPending())
         return; const focused = this.contentEl.ownerDocument.activeElement, restore = focused instanceof HTMLElement && (this.inspector.contains(focused) || this.laneRoot.contains(focused) || this.clipRegister?.contains(focused)), focusLabel = focused?.getAttribute('aria-label'), focusClip = focused?.getAttribute('data-clip-id'), focusText = focused?.tagName === 'BUTTON' ? focused.textContent : undefined; const c = session.draft; if (!c.data.lanes.some(l => l.id === session.selectedLane))
         session.selectedLane = c.data.lanes[0]?.id; if (!c.data.lanes.some(l => l.clips.some(clip => clip.id === session.selectedClip)))
-        session.selectedClip = undefined; this.renderLanes(); clipInspector(this.inspector, session, s.canvas, this.plan, (fn, form) => this.act(fn, form), () => this.renderSelection(true), id => { void this.openMotif(id).catch(e => this.fail(e)); }); this.renderClipSources(c); this.placeContext(); this.renderRegister(); this.timeline?.selection(session.selectedLane, session.selectedClip); if (restore && !focused?.isConnected) {
+        session.selectedClip = undefined; this.renderLanes(); clipInspector(this.inspector, session, s.canvas, this.plan, (fn, form) => this.act(fn, form), () => this.renderSelection(true), id => { void this.openMotif(id).catch(e => this.fail(e)); }, id => this.openReview(id)); this.renderClipSources(c); this.placeContext(); this.renderRegister(); this.timeline?.selection(session.selectedLane, session.selectedClip); if (restore && !focused?.isConnected) {
         const target = [...this.editor?.querySelectorAll<HTMLElement>('input,select,button') ?? []].find(e => focusClip ? e.dataset.clipId === focusClip : focusLabel ? e.getAttribute('aria-label') === focusLabel : focusText ? e.textContent === focusText : false);
         (target ?? this.timeline?.canvas)?.focus();
     } }
@@ -530,6 +554,7 @@ export class CanvasView extends ModuleView {
         element(row, 'p', `${SEVERITY[d.severity]}${where ? ' · ' + where : ''}: ${diagnosticText(d)}${DIAGNOSTIC_ACTION[d.code] ? ' ' + DIAGNOSTIC_ACTION[d.code] : ''}`);
         if (d.clipId || d.motifId) row.title = [d.clipId && `Clip ${d.clipId}`, d.motifId && `Motif ${d.motifId}`].filter(Boolean).join(' · ');
         if (clip) button(row, 'Select clip', () => { if (this.select(clip.laneId, clip.id)) { this.timeline?.reveal(clip.id); this.inspector?.querySelector<HTMLElement>('input,button')?.focus(); } });
+        if ((d.code === 'changed' || d.code === 'unreviewed') && d.motifId) { const motif = d.motifId; button(row, 'Review changed sources', () => this.openReview(motif)); }
     } if (this.plan.diagnostics.length > 100)
         element(this.diagnostics, 'p', `${this.plan.diagnostics.length - 100} further diagnostics; select a clip for its full detail.`); const summary = this.diagnostics.parentElement?.querySelector('summary'); if (summary)
         summary.textContent = `Arrangement diagnostics · ${this.plan.diagnostics.filter(d => d.severity === 'error').length} errors / ${this.plan.diagnostics.filter(d => d.severity === 'warning').length} warnings`; }
@@ -700,7 +725,7 @@ export class CanvasView extends ModuleView {
         if (this.selectedId)
             await this.openComposition(this.selectedId);
     } }
-    override release(): void { this.active = false; this.epoch++; this.lifetime.abort(); this.picker?.close(); this.picker = undefined; this.performancePanel?.dispose();this.performancePanel=undefined;this.structurePanel?.dispose();this.structurePanel=undefined;this.timeline?.dispose(); this.timeline = undefined; this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.sessionUnsubscribe?.(); this.sessionUnsubscribe = undefined; if (this.session)
+    override release(): void { this.active = false; this.epoch++; this.lifetime.abort(); this.picker?.close(); this.picker = undefined; this.reviewModal?.close(); this.reviewModal = undefined; this.performancePanel?.dispose();this.performancePanel=undefined;this.structurePanel?.dispose();this.structurePanel=undefined;this.timeline?.dispose(); this.timeline = undefined; this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.sessionUnsubscribe?.(); this.sessionUnsubscribe = undefined; if (this.session)
         this.foundation()?.canvas.release(this.session, this); if (this.editorScope)
         this.app.keymap.popScope(this.editorScope); this.editorScope = undefined; for (const fn of this.cleanup.splice(0))
         fn(); super.release(); }

@@ -29,7 +29,7 @@ export class MotifView extends ModuleView {
   private editorScope?: Scope;
   private midiDialog?: MidiImportDialog | MidiExportDialog; private patchAssociation?: PatchAssociation; private links?: MotifLinks;
   private recoveryPanel?: RecoveryInspector<Motif, MotifSession>; private recoveryRoot?: HTMLElement;
-  private tickMap?: TempoMap; private animation?: number;
+  private tickMap?: TempoMap; private animation?: number; private noteOrder?: { session: MotifSession; version: number; notes: Motif['data']['notes'] }; private statusKey = ''; private statusSession?: MotifSession;
   constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) { super(leaf, 'motif', foundation); this.scope = new Scope(this.app.scope); }
   private get available(): FoundationServices | undefined { const services = this.foundation(); return services?.modules.enabled('motif') ? services : undefined; }
   /** 4E navigation readiness: open once onOpen (including any restored selection) has finished. */
@@ -91,10 +91,10 @@ export class MotifView extends ModuleView {
   private remember(): void { if (this.active) this.app.workspace.requestSaveLayout(); }
   private renderBrowser(): void {
     const root = this.browser, services = this.available; if (!root || !services || !this.active) return; root.replaceChildren();
-    const items = services.motifs.items(this.search); element(root, 'p', `${items.length} motifs · stable identities, ordinary notes`, 'mnemobard-hint');
+    const items = services.motifs.listing(this.search); element(root, 'p', `${items.length} motifs · stable identities, ordinary notes`, 'mnemobard-hint');
     for (const item of items.slice(this.page * 100, this.page * 100 + 100)) {
       const row = element(root, 'div', undefined, 'mnemobard-motif-entry');
-      const open = button(row, `${item.entity.title}${item.ambiguous ? ' · duplicate identity' : ''}`, () => { void this.select(item.entity.id).catch(error => this.fail(error)); }); open.disabled = item.ambiguous; open.dataset.motifId = item.entity.id; open.title = item.entity.title;
+      const open = button(row, `${item.title}${item.ambiguous ? ' · duplicate identity' : ''}`, () => { void this.select(item.id).catch(error => this.fail(error)); }); open.disabled = item.ambiguous; open.dataset.motifId = item.id; open.title = item.title;
       button(row, 'Markdown', () => this.openNote(item.path));
     }
     if (!items.length) element(root, 'p', 'No matching motifs. Create a phrase to begin.');
@@ -106,9 +106,9 @@ export class MotifView extends ModuleView {
   private renderDrafts(): void {
     const root = this.drafts, services = this.available; if (!root || !services) return; root.replaceChildren(); const drafts = services.motifs.drafts();
     if (drafts.length) element(root, 'span', 'Pending phrases: ');
-    for (const draft of drafts) button(root, draft.draft.title || 'Untitled motif draft', () => { void this.leave().then(() => { if (this.active) this.attach(draft); }).catch(error => this.fail(error)); });
+    for (const draft of drafts) button(root, draft.draftTitle || 'Untitled motif draft', () => { void this.leave().then(() => { if (this.active) this.attach(draft); }).catch(error => this.fail(error)); });
   }
-  private async leave(): Promise<void> { this.available?.musical.stop(this); this.roll?.cancelGesture(); if (this.session?.dirty && !this.session.disposed) await this.session.checkpoint(); }
+  private async leave(): Promise<void> { this.available?.musical.stop(this); this.roll?.cancelGesture(); if (this.session && !this.session.disposed && this.session.dirty) await this.session.checkpoint(); }
   private async newMotif(): Promise<void> { await this.leave(); if (!this.active || this.available?.settings.readOnly) return; const session = this.available?.motifs.create(); if (session) this.attach(session); }
   private async select(id: string): Promise<void> {
     await this.leave(); const services = this.available; if (!services || !this.active) return;
@@ -119,8 +119,10 @@ export class MotifView extends ModuleView {
   }
   private attach(session: MotifSession): void {
     this.available?.musical.stop(this); this.epoch++; this.unsubscribeSession?.(); if(this.session)this.foundation()?.motifs.release(this.session,this);this.session = session;this.available?.motifs.retain(session,this); this.selectedId = session.draft.id;
-    let lastDraft = JSON.stringify(session.draft);
-    this.unsubscribeSession = session.subscribe(() => { if (this.active) { const draft=session.draft,signature = JSON.stringify(draft); if (signature !== lastDraft) { this.available?.musical.stop(this); lastDraft = signature; } this.updateStatus(); this.renderDrafts(); this.inspector?.refresh(); this.patchAssociation?.refresh(draft); this.links?.refresh(draft); this.tickMap = new TempoMap(draft.data.ppq, [{ tick: 0, microsecondsPerQuarter: draft.data.tempoMicrosecondsPerQuarter }]); } });
+    // 4G: one draft snapshot per publish, shared by every panel; musical change is detected by the session's change version
+    // (incremented on every edit, undo, redo and reload) instead of serialising the whole draft on each publish.
+    let lastVersion = session.changeVersion;
+    this.unsubscribeSession = session.subscribe(() => { if (this.active) { const draft=session.draft; if (session.changeVersion !== lastVersion) { this.available?.musical.stop(this); lastVersion = session.changeVersion; } this.updateStatus(draft); this.renderDrafts(); this.inspector?.refresh(draft); this.patchAssociation?.refresh(draft); this.links?.refresh(draft); this.tickMap = new TempoMap(draft.data.ppq, [{ tick: 0, microsecondsPerQuarter: draft.data.tempoMicrosecondsPerQuarter }]); } });
     if (this.browserDetails) this.browserDetails.open = false; this.renderEditor(); this.renderDrafts(); this.say(''); this.remember();
   }
   private act(action: () => void): boolean { try { this.available?.musical.stop(this); action(); this.selectionChanged(); this.say(''); return true; } catch (error) { this.fail(error); return false; } }
@@ -131,7 +133,7 @@ export class MotifView extends ModuleView {
     const root = this.editor, services = this.available; if (!root || !services || !this.active) return; root.replaceChildren();
     const session = this.session;
     if (!session) { element(root, 'h3', 'Remember a phrase.'); element(root, 'p', this.selectedId ? 'This motif is unavailable or read-only. Inspect its source in the library.' : 'Create or open a motif. Notes, timing and context stay in your vault.', 'mnemobard-hint'); if (this.selectedId) { const state = services.index.resolve(this.selectedId); if (state.status === 'invalid') button(root, 'Open original motif source', () => this.openNote(state.entry.path)); if (state.status === 'duplicate') for (const path of state.paths) button(root, `Inspect duplicate: ${path}`, () => this.openNote(path)); if (state.status === 'ready') button(root, 'Open original motif source', () => this.openNote(state.path)); } return; }
-    const motif = session.draft;
+    const motif = session.draft; // 4G: the one draft snapshot every panel of this render reads (no per-panel clones)
     const header = element(root, 'div', undefined, 'mnemobard-score-heading');
     const name = this.text(header, 'Motif name', motif.title, value => session.edit('Rename motif', next => ({ ...next, title: value }), 'title')); name.classList.add('mnemobard-motif-name');
     this.saveStatus = element(header, 'p', session.status, 'mnemobard-save-status'); this.saveStatus.setAttribute('role', 'status');
@@ -147,7 +149,7 @@ export class MotifView extends ModuleView {
     button(transport, 'Play motif', () => { void this.play(); }, 'mod-cta'); button(transport, 'Stop motif', () => services.musical.stop(this));
     this.position = element(transport, 'span', 'Stopped · 0:00'); this.position.setAttribute('aria-label', 'Musical playback position');
     element(transport, 'small', 'SINE / audition only · no patch hosting');
-    this.musicalSettings(root, session);
+    this.musicalSettings(root, session, motif);
     const toolbar = element(root, 'div', undefined, 'mnemobard-motif-toolbar'); toolbar.setAttribute('aria-label', 'Note editing toolbar');
     const grid = this.selectControl(toolbar, 'Editing grid', [['quarter', '1/4'], ['eighth', '1/8'], ['sixteenth', '1/16'], ['triplet', '1/8 triplet'], ['off', 'Snap off']], 'sixteenth', value => { if (this.roll) this.roll.grid = value as Grid; this.roll?.request(); });
     const mode = this.selectControl(toolbar, 'Editing mode', [['draw', 'Draw'], ['select', 'Select']], 'draw', value => { if (this.roll) this.roll.mode = value === 'draw' ? 'draw' : 'select'; });
@@ -168,20 +170,20 @@ export class MotifView extends ModuleView {
     element(root, 'p', 'Click empty grid to draw. Drag notes; pull the right edge to resize. Shift-click selects a group. Shift-wheel scrolls time; Ctrl-wheel zooms. Exact ticks stay unchanged when the grid changes.', 'mnemobard-roll-instructions');
     const surface = element(root, 'div', undefined, 'mnemobard-roll-surface');
     this.tickMap = new TempoMap(motif.data.ppq, [{ tick: 0, microsecondsPerQuarter: motif.data.tempoMicrosecondsPerQuarter }]);
-    this.roll = new PianoRoll(surface, session, () => this.selectionChanged(), message => this.say(message), () => services.musical.ownedBy(this) && services.musical.state === 'playing' ? this.tickMap?.secondsToTicks(services.musical.position, this.roll?.viewport.ppq ?? motif.data.ppq) : undefined);
+    this.roll = new PianoRoll(surface, session, motif, () => this.selectionChanged(), message => this.say(message), () => services.musical.ownedBy(this) && services.musical.state === 'playing' ? this.tickMap?.secondsToTicks(services.musical.position, this.roll?.viewport.ppq ?? motif.data.ppq) : undefined);
     this.roll.grid = grid.value as Grid; this.roll.mode = mode.value === 'draw' ? 'draw' : 'select';
     const inspector = element(root, 'section', undefined, 'mnemobard-note-inspector');
     this.inspector = new NoteInspector(inspector, session, () => { services.musical.stop(this); this.selectionChanged(); }, (id, additive) => {
-      const selected = new Set(additive ? session.selected : []); if (additive && selected.has(id)) selected.delete(id); else selected.add(id); session.select(selected); this.selectionChanged(); const note = session.draft.data.notes.find(note => note.id === id); if (note) this.roll?.reveal(note);
-    }, error => this.fail(error)); this.inspector.refresh();
-    const patchRoot=element(root,'section');this.patchAssociation=new PatchAssociation(patchRoot,services,session,action=>this.act(action),id=>{void this.navigatePatch(id).catch(error=>this.fail(error));});
-    this.links=new MotifLinks(patchRoot,services,id=>{void this.openLibrary(id).catch(error=>this.fail(error));},(id,motifId)=>{void this.openCanvas(id,motifId).catch(error=>this.fail(error));});this.links.refresh(session.draft);
+      const selected = new Set(additive ? session.selected : []); if (additive && selected.has(id)) selected.delete(id); else selected.add(id); session.select(selected); this.selectionChanged(); const note = this.orderedNotes(session).find(note => note.id === id); if (note) this.roll?.reveal(note);
+    }, error => this.fail(error)); this.inspector.refresh(motif);
+    const patchRoot=element(root,'section');this.patchAssociation=new PatchAssociation(patchRoot,services,session,action=>this.act(action),id=>{void this.navigatePatch(id).catch(error=>this.fail(error));},motif);
+    this.links=new MotifLinks(patchRoot,services,id=>{void this.openLibrary(id).catch(error=>this.fail(error));},(id,motifId)=>{void this.openCanvas(id,motifId).catch(error=>this.fail(error));});this.links.refresh(motif);
     const metadata = element(root, 'details'); element(metadata, 'summary', 'Description, tags and notes');
     this.text(metadata, 'Description', motif.description ?? '', value => session.edit('Edit description', next => ({ ...next, description: value.trim() ? value : undefined }), 'description'), true);
     this.text(metadata, 'Motif tags', motif.tags?.join(', ') ?? '', value => session.edit('Edit tags', next => ({ ...next, tags: value.split(',').map(tag => tag.trim()).filter(Boolean) }), 'tags'));
     this.text(metadata, 'User notes', motif.notes ?? '', value => session.edit('Edit user notes', next => ({ ...next, notes: value.trim() ? value : undefined }), 'notes'), true);
     if (session.recoveryPath) button(root, 'Inspect motif recovery', () => this.recovery());
-    this.updateStatus(); this.updateTransport();
+    this.updateStatus(motif); this.updateTransport();
   }
   private text(parent: HTMLElement, label: string, value: string, change: (value: string) => void, multiline = false): HTMLInputElement | HTMLTextAreaElement {
     const wrapper = element(parent, 'label'); element(wrapper, 'span', label); const input = multiline ? element(wrapper, 'textarea') : element(wrapper, 'input'); input.value = value; input.setAttribute('aria-label', label);
@@ -191,8 +193,8 @@ export class MotifView extends ModuleView {
     const wrapper = element(parent, 'label'); element(wrapper, 'span', label); const select = element(wrapper, 'select'); select.setAttribute('aria-label', label);
     for (const [value, text] of options) { const option = element(select, 'option', text); option.value = value ?? ''; } select.value = initial; select.addEventListener('change', () => change(select.value)); return select;
   }
-  private musicalSettings(root: HTMLElement, session: MotifSession): void {
-    const motif = session.draft, details = element(root, 'details', undefined, 'mnemobard-score-settings');
+  private musicalSettings(root: HTMLElement, session: MotifSession, motif: Motif): void {
+    const details = element(root, 'details', undefined, 'mnemobard-score-settings');
     element(details, 'summary', `Musical settings · ${(60000000 / motif.data.tempoMicrosecondsPerQuarter).toFixed(1)} BPM · ${motif.data.meter.numerator}/${motif.data.meter.denominator} · PPQ ${motif.data.ppq}`);
     const form = element(details, 'form', undefined, 'mnemobard-musical-settings'); const fields = new Map<string, HTMLInputElement>();
     for (const [label, value, min, max] of [['Tempo BPM', 60000000 / motif.data.tempoMicrosecondsPerQuarter, 20, 300], ['Meter numerator', motif.data.meter.numerator, 1, 32], ['Meter denominator', motif.data.meter.denominator, 1, 32], ['PPQ', motif.data.ppq, 1, 32767], ['Length ticks', motif.data.lengthTicks, 1, 1e9]] as const) {
@@ -201,26 +203,35 @@ export class MotifView extends ModuleView {
     const apply = element(form, 'button', 'Apply musical settings'); apply.type = 'submit';
     const pending = element(form, 'span'); pending.setAttribute('role', 'status');
     form.addEventListener('input', () => { form.dataset.pending = 'true'; pending.textContent = 'Unapplied musical settings'; });
-    button(form, 'Discard settings changes', () => { delete form.dataset.pending; pending.textContent = ''; this.updateStatus(); });
+    button(form, 'Discard settings changes', () => { delete form.dataset.pending; pending.textContent = ''; this.updateStatus(undefined, true); });
     form.addEventListener('submit', event => { event.preventDefault(); const applied = this.act(() => session.edit('Change musical settings', value => {
       const bpm = Number(fields.get('Tempo BPM')?.value), ppq = Number(fields.get('PPQ')?.value);
       if (!Number.isFinite(bpm) || bpm < 20 || bpm > 300) throw Error('Tempo must be20..300 BPM.');
       if (ppq !== value.data.ppq && value.data.notes.length) throw Error('PPQ can change only on an empty motif; existing source ticks remain exact.');
       return { ...value, data: { ...value.data, ppq, tempoMicrosecondsPerQuarter: Math.round(60000000 / bpm), meter: { ...value.data.meter, numerator: Number(fields.get('Meter numerator')?.value), denominator: Number(fields.get('Meter denominator')?.value) }, lengthTicks: Number(fields.get('Length ticks')?.value) } };
-    })); if (applied) { delete form.dataset.pending; pending.textContent = ''; this.updateStatus(); } });
+    })); if (applied) { delete form.dataset.pending; pending.textContent = ''; this.updateStatus(undefined, true); } });
     element(details, 'p', 'Apply settings explicitly. Tempo changes elapsed playback time; meter changes labels only. Existing note ticks never move. Shortening past a note is rejected. PPQ is editable only while empty.', 'mnemobard-hint');
   }
   private removeNotes(): void { const session = this.session; if (!session) return; this.act(() => session.edit('Delete notes', motif => deleteNotes(motif, session.selected))); this.roll?.canvas.focus(); }
+  /** 4G: notes in musical order, cached per draft change (sorting 5,000+ notes on every step dominated navigation). */
+  private orderedNotes(session: MotifSession): Motif['data']['notes'] {
+    if (this.noteOrder?.session !== session || this.noteOrder.version !== session.changeVersion) this.noteOrder = { session, version: session.changeVersion, notes: session.draft.data.notes.slice().sort((a, b) => a.startTick - b.startTick || a.pitch - b.pitch) };
+    return this.noteOrder.notes;
+  }
   private navigateNote(delta: number): void {
     const session = this.session; if (!session) return;
-    const notes = session.draft.data.notes.slice().sort((a, b) => a.startTick - b.startTick || a.pitch - b.pitch), current = notes.findIndex(note => session.selected.has(note.id));
+    const notes = this.orderedNotes(session), selected = session.selected, current = notes.findIndex(note => selected.has(note.id));
     const next = notes[(current + delta + notes.length) % notes.length]; if (!next) return; session.select([next.id]); this.selectionChanged(); this.roll?.reveal(next);
     this.inspector?.focusNote(next.id);
   }
-  private updateStatus(): void {
-    const session = this.session; if (!session) return; const motif=session.draft;
+  /** `force` re-synchronises fields after a discarded form; otherwise nothing is re-read while draft, status and index are unchanged. */
+  private updateStatus(snapshot?: Motif, force = false): void {
+    const session = this.session; if (!session) return;
+    const key = `${session.changeVersion}:${session.status}:${this.available?.index.currentRevision ?? ''}`;
+    if (!force && !snapshot && key === this.statusKey && session === this.statusSession) return; this.statusKey = key; this.statusSession = session;
+    const motif=snapshot??session.draft;
     if (this.saveStatus) {
-      const state = this.available?.index.resolve(motif.id);
+      const state = this.available?.index.locate(motif.id);
       this.saveStatus.textContent = state?.status === 'duplicate' || state?.status === 'invalid' || (state?.status === 'missing' && session.base) ? `${session.status} · source ${state.status}; saving blocked` : session.status;
     }
     const settingsSummary = this.editor?.querySelector('.mnemobard-score-settings > summary'); if (settingsSummary) settingsSummary.textContent = `Musical settings · ${(60000000 / motif.data.tempoMicrosecondsPerQuarter).toFixed(1)} BPM · ${motif.data.meter.numerator}/${motif.data.meter.denominator} · PPQ ${motif.data.ppq}`;

@@ -284,3 +284,18 @@ Run native commands sequentially: they share the same guarded renderer and must 
 MOTIF/PATCHBOOK/foundation regressions use the existing scripts with `MNEMOBARD_MOTIF_REVIEW_DIR`, `MNEMOBARD_MIDI_REVIEW_DIR`, `MNEMOBARD_ASSET_REVIEW_DIR`, `MNEMOBARD_FOUNDATION_REVIEW_DIR` pointing to new4B subfolders. Never overwrite earlier milestone evidence or run an unqualified Obsidian CLI against a personal instance.
 
 In CANVAS: Save arrangement, review changed source clips, then **Compile arrangement**. Inspect **MIDI routing** and **Compilation / export diagnostics** below the timeline. Explicit routing edits are undoable and require Save; Auto assignments are derived and are shown after compilation. Use **Seek / export** for bar:beat:tick and a new `.mid` vault path. Compilation can use the explicitly displayed working arrangement; only saved acknowledged MOTIF sources are captured. Playing/exporting does not save or dirty it. A failed destination or stale snapshot requires another compile. Stop/close/disabling cancels owned audio and worker work; submitted binary I/O may still finish and must be inspected, never blindly retried at the same path.
+
+## Milestone 4G validation, budgets and DAW checks
+
+```sh
+node scripts/mnemobard-4g-native.mjs                     # 40-step workflow (part 1), then stop/relaunch Obsidian and:
+node scripts/mnemobard-4g-native.mjs --verify-restart    # cold-restart recovery + personal REAPER config digest check
+node scripts/mnemobard-4g-benchmark.mjs <label>          # output/mnemobard/milestone-4g/performance-<label>.json
+node scripts/mnemobard-perf-compare.mjs <baseline.json> <candidate.json> [--ratio 1.25] [--floor 5] [--markdown out.md]
+node scripts/mnemobard-4g-profile.mjs <label> [notes]    # deploy a non-minified build first (node esbuild.config.mjs)
+node scripts/reaper-isolated-check.mjs MNEMOBARD/Exports/<file>.mid --expand --label <name>
+```
+
+- Benchmarks compare only runs from the same machine and method (build the older commit in a scratch `git worktree`, copy its `main.js`/`styles.css` into the dev vault, disable/enable the plugin, run; then the current build). Never part of `pnpm check`.
+- The REAPER check launches REAPER only with `-newinst -cfgfile <repo>/output/…/isolated-config/reaper.ini`, refuses when any REAPER process runs, and compares a metadata-only digest of `~/.config/REAPER` before/after. `--expand` ticks REAPER's "Expand MIDI tracks" and "Import MIDI tempo map" import options (defaults merge tracks). Window capture/keys use `scripts/x11-window-tool.py` (ctypes, system libX11/libXtst) on the isolated `:1` display.
+- Regression suites accept output overrides: `MNEMOBARD_4E_DIR` (seed `partial.json` from `output/canvas/milestone-4e`), `MNEMOBARD_MOTIF_REVIEW_DIR`, `MNEMOBARD_MIDI_REVIEW_DIR`, `MNEMOBARD_ASSET_REVIEW_DIR`, `MNEMOBARD_FOUNDATION_REVIEW_DIR`.

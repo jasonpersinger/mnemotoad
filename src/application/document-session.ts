@@ -26,6 +26,10 @@ export class DocumentSession<T extends Entity> {
   }
   protected get revisionNumber(): number { return this.revision; }
   get draft(): T { return structuredClone(this.value); }
+  /** 4G: the live draft for subclasses' read-only derived state (e.g. selection validity). Never mutate or expose it. */
+  protected peek(): Readonly<T> { return this.value; }
+  /** 4G: scalar title for draft lists (reading `draft` clones every note of a large motif). */
+  get draftTitle(): string { return this.value.title; }
   get dirty(): boolean { return !this.base || this.revision !== this.savedRevision; }
   get disposed(): boolean { return this.closed; }
   get status(): string {

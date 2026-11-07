@@ -176,4 +176,10 @@ Validation: 538 → 573 tests (43 files); golden MIDI unchanged; native 4E workf
 
 Implemented on the signed 4E baseline `295005f`: PATCHBOOK ↔ MOTIF ↔ CANVAS navigation with reverse references (no new database), shared reference classification and presentation, CANVAS region hierarchy and readable compilation status, shared tokens/focus ring, corrected modal-guard advice from native evidence, CANVAS reveal robustness. Validation: 573 → 589 tests; native 4F workflow (24 steps) + restart; 4E CANVAS, MOTIF, MOTIF-MIDI, PATCHBOOK and foundation regressions incl. restart phases; §11 benchmark. Report: docs/MILESTONE_4F_REPORT.md.
 
-**Stop gate:** human review of 4F is required.
+**Stop gate:** human review of 4F is required. *(Reviewed: 4F passed; 4G authorized.)*
+
+## Milestone 4G — source-revision review, large-MOTIF responsiveness, budgets and DAW interoperability
+
+Implemented on the signed 4F baseline `3fb5113`: batch "Review changed sources" (one motif at a time, all eligible placements, one undo step, revalidated against the motif note on disk), musical duration labels and a readiness-aware compilation status, PATCHBOOK edit-mode association summary, large-MOTIF profiling and optimizations (5,000-note open 279.8 → 70 ms, save 1,335 → 280 ms), machine-local performance budgets with a regression comparison, and REAPER 7.84 interoperability verified in an isolated configuration (notes identical to an independent parser; tempo/meter incl. a 96 BPM 6/8 probe). See `docs/MILESTONE_4G_REPORT.md`.
+
+**Stop gate:** human review of 4G is required. Proposed next (not started): large-document editing (edit-commit cost at 5,000–10,000 notes without weakening atomic validation), a product decision on carrying the arrangement end into DAWs, and whether multi-motif batch review is wanted.

@@ -27,7 +27,7 @@ export class EntityRepository {
   }
   async read(id: string, signal?: AbortSignal): Promise<EntityRecord> {
     this.active(signal); await this.index.start(); this.active(signal);
-    const state = this.index.resolve(id);
+    const state = this.index.locate(id);
     if (state.status === 'missing') throw new FoundationError('missing', 'Entity not found. Relink the reference or restore its note.');
     if (state.status === 'duplicate') throw new FoundationError('duplicate', `Multiple notes have this ID: ${state.paths.join(', ')}. Resolve the duplicate first.`);
     if (state.status === 'invalid') throw state.entry.error ?? new FoundationError('invalid', `Repair ${state.entry.path} in the note editor.`);
@@ -43,14 +43,14 @@ export class EntityRepository {
     const entity = validateEntity(value); this.canWrite(signal);
     return this.serial(entity.id.toLowerCase(), async () => {
       this.canWrite(signal); await this.index.start(); this.canWrite(signal);
-      if (this.index.resolve(entity.id).status !== 'missing') throw new FoundationError('duplicate', 'This entity ID already exists. Create a new identity for a deliberate copy.');
+      if (this.index.locate(entity.id).status !== 'missing') throw new FoundationError('duplicate', 'This entity ID already exists. Create a new identity for a deliberate copy.');
       const directory = `${this.root}/${{ patch: 'Patches', motif: 'Motifs', composition: 'Compositions', instrument: 'Instruments', 'effects-chain': 'Effects Chains' }[entity.kind]}`;
       await this.vault.ensureFolder(directory, () => this.active(signal)); this.active(signal);
       const title = entity.title.normalize('NFC').replace(/[^\p{L}\p{N} _-]/gu, '-').trim().slice(0, 60) || 'Untitled';
       const source = createEntityDocument(entity);
       const path = await this.createUnique(directory, `${title}-${entity.id.slice(0, 8)}`, 'md', source, signal);
       await this.index.refresh(path); this.active(signal);
-      if (this.index.resolve(entity.id).status === 'duplicate') throw new FoundationError('duplicate', `Created ${path}, but another note now has this ID. Both files were retained. Resolve the duplicate.`, { path });
+      if (this.index.locate(entity.id).status === 'duplicate') throw new FoundationError('duplicate', `Created ${path}, but another note now has this ID. Both files were retained. Resolve the duplicate.`, { path });
       return { path, source, entity };
     });
   }

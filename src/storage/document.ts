@@ -1,4 +1,5 @@
 import { isMap, isScalar, isNode, parseDocument as parseYaml, stringify } from 'yaml';
+import { duplicateJsonKey } from './json-keys';
 import { isLibraryEntity, type Entity, type EntityKind, type AssetReference } from '../domain/entities';
 import { FoundationError, messageOf } from '../domain/errors';
 import { UUID, object, validateEntity } from '../domain/validation';
@@ -79,9 +80,9 @@ export function parseEntityDocument(source: string): ParsedDocument | null {
     try {
       const content = blocks[0]?.content ?? '';
       data = JSON.parse(content);
-      // Native JSON.parse accepts duplicate keys. Strict YAML's JSON schema
-      // supplies a duplicate-key check without introducing another parser.
-      if (parseYaml(content, { schema: 'json', uniqueKeys: true }).errors.length) throw new Error('Duplicate or invalid JSON keys');
+      // Native JSON.parse accepts duplicate keys (last wins). 4G: a linear scan of the already-valid text replaces the
+      // former second, full YAML JSON-schema parse that only served this check (the dominant cost for large motifs).
+      if (duplicateJsonKey(content) !== undefined) throw new Error('Duplicate or invalid JSON keys');
     }
     catch (cause) { throw new FoundationError('invalid', 'Invalid owned JSON. Repair the original note or recover a saved copy.', { cause }); }
   }
@@ -153,11 +154,15 @@ export function createEntityDocument(value: Entity): string {
 
 /** Preserve extensions on retained objects; optional known fields may be removed. */
 function retainExtensions(previous: unknown, next: unknown, context = 'data'): unknown {
-  if (Array.isArray(previous) && Array.isArray(next)) return next.map(item => {
-    if (!item || typeof item !== 'object' || !('id' in item)) return item;
-    const prior = previous.find(p => p && typeof p === 'object' && 'id' in p && p.id === item.id);
-    return retainExtensions(prior, item, context);
-  });
+  if (Array.isArray(previous) && Array.isArray(next)) {
+    // 4G: one id lookup table per array (first occurrence wins, as Array.find did) instead of a scan per item (O(n²) for notes).
+    const byId = new Map<unknown, unknown>();
+    for (const p of previous) if (p && typeof p === 'object' && 'id' in p && !byId.has(p.id)) byId.set(p.id, p);
+    return next.map(item => {
+      if (!item || typeof item !== 'object' || !('id' in item)) return item;
+      return retainExtensions(byId.get(item.id), item, context);
+    });
+  }
   if (!previous || !next || typeof previous !== 'object' || typeof next !== 'object' || Array.isArray(previous) || Array.isArray(next)) return next;
   const old = previous as Record<string, unknown>, result = { ...old, ...next };
   const optionalFields = context === 'data' ? ['importSourceChannel'] : context === 'lanes' ? ['patchId', 'percussion', 'midiChannel'] : context === 'clips' ? ['laneId', 'label', 'sourceRevision', 'sourcePath', 'sourceTitle', 'reviewedLengthTicks'] : context === 'steps' ? ['parameterNotes', 'presetLink'] : context === 'sections' || context === 'markers' ? ['description'] : context === 'audioRefs' ? ['description', 'sectionId', 'markerId'] : [];

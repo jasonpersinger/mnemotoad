@@ -1,10 +1,11 @@
 import { element, button } from '../../ui/dom';
 import { musicalPosition, positionTick } from '../../music/positions';
+import { musicalDuration } from '../../music/durations';
 import { diagnosticText, type ArrangementPlan } from '../../arrangement/preflight';
 import { findClip, deleteClip } from './commands';
 import type { CanvasSession } from './session';
 import type { CanvasLibrary } from './library';
-export function clipInspector(root: HTMLElement, session: CanvasSession, library: CanvasLibrary, plan: ArrangementPlan, apply: (fn: () => void, form?: HTMLFormElement) => boolean, refresh: () => void, open: (id: string) => void): void {
+export function clipInspector(root: HTMLElement, session: CanvasSession, library: CanvasLibrary, plan: ArrangementPlan, apply: (fn: () => void, form?: HTMLFormElement) => boolean, refresh: () => void, open: (id: string) => void, reviewAll?: (motifId: string) => void): void {
     const expanded = root.querySelector('details')?.open ?? false;
     const composition = session.draft, id = session.selectedClip;
     root.replaceChildren();
@@ -66,10 +67,15 @@ export function clipInspector(root: HTMLElement, session: CanvasSession, library
     review.open = expanded;
     element(review, 'summary', 'Review saved source');
     element(review, 'p', `Reviewed title/path: ${clip.sourceTitle ?? 'unrecorded'} · ${clip.sourcePath ?? 'unrecorded'}. Current: ${source?.title ?? 'unresolved'} · ${source?.path ?? 'unresolved'}.`);
-    element(review, 'p', `Reviewed: ${clip.sourceRevision ?? 'not recorded'} · period ${clip.reviewedLengthTicks ?? 'unknown'} arrangement ticks`);
-    element(review, 'p', `Current: ${source?.revision ?? 'unresolved'} · period ${resolved?.periodTicks ?? 'incompatible/unknown'} ticks · ${source?.noteCount ?? '?'} notes`);
+    // 4G: musical lengths first; exact arrangement ticks stay in the title for technical inspection.
+    const length = (ticks?: number) => ticks === undefined ? undefined : musicalDuration(ticks, 960, composition.data.meter);
+    element(review, 'p', `Reviewed: ${clip.sourceRevision ?? 'not recorded'} · ${length(clip.reviewedLengthTicks) ?? 'unknown length'} per repetition`).title = `${clip.reviewedLengthTicks ?? 'unknown'} arrangement ticks per repetition`;
+    element(review, 'p', `Current: ${source?.revision ?? 'unresolved'} · ${length(resolved?.periodTicks) ?? 'incompatible/unknown length'} per repetition · ${source?.noteCount ?? '?'} notes`).title = `${resolved?.periodTicks ?? 'incompatible/unknown'} arrangement ticks per repetition`;
     if (source)
         button(review, 'Acknowledge displayed source revision', () => apply(() => library.review(session, id, source.revision)));
+    const others = composition.data.lanes.reduce((n, l) => n + l.clips.filter(x => x.motifId.toLowerCase() === clip.motifId.toLowerCase() && x.sourceRevision !== source?.revision).length, 0);
+    if (reviewAll && source && clip.sourceRevision !== source.revision)
+        button(review, `Review all placements of this motif (${others})`, () => reviewAll(clip.motifId));
     for (const diagnostic of plan.diagnostics.filter(d => d.clipId === id)) {
         const p = element(root, 'p', `${diagnostic.severity.toUpperCase()}: ${diagnosticText(diagnostic)}`);
         p.dataset.diagnostic = diagnostic.code;

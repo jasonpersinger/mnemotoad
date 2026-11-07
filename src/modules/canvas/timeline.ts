@@ -1,3 +1,4 @@
+import { musicalDuration } from '../../music/durations';
 import type { Composition } from '../../domain/entities';
 import type { ArrangementPlan } from '../../arrangement/preflight';
 import { gridTicks, snapped, type Grid } from '../../music/grid';
@@ -194,7 +195,7 @@ export class ArrangementTimeline {
             if (r.width > 32)
                 ctx.fillText(label, r.x + 8, r.y + 14, Math.max(1, r.width - 14));
             if (r.width > 80)
-                ctx.fillText(bad ? 'unresolved · last reviewed extent' : `${r.clip.periodTicks} ticks / repeat`, r.x + 8, r.y + 31, r.width - 14);
+                ctx.fillText(bad ? 'unresolved · last reviewed extent' : r.clip.periodTicks === undefined ? 'length unknown' : `${musicalDuration(r.clip.periodTicks, v.ppq, this.model.data.meter)} / repeat`, r.x + 8, r.y + 31, r.width - 14);
             if (r.clip.periodTicks) {
                 const spacing = r.clip.periodTicks / v.ppq * v.pixelsPerQuarter, first = Math.max(1, Math.ceil((LANE_GUTTER - r.x) / spacing)), last = Math.min(r.clip.repeatCount - 1, first + 255, Math.ceil((v.width - r.x) / spacing));
                 ctx.strokeStyle = onAccent;

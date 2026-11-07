@@ -8,7 +8,9 @@ export class MotifSession extends HistorySession<Motif>{
   private selection=new Set<string>();
   constructor(draft:Motif,base:EntityRecord|undefined,port:DocumentSessionPort<Motif>,checkpointDelay=500){super(draft,base,port,editableMotif,isMotif,checkpointDelay);}
   get selected():ReadonlySet<string>{return new Set(this.selection);}
-  select(ids:Iterable<string>):void{const known=new Set(this.draft.data.notes.map(note=>note.id));this.selection=new Set([...ids].filter(id=>known.has(id)));}
+  /** 4G: validity is checked against the live draft (no clone); the id set is rebuilt only when the draft changes. */
+  private known?:{version:number;ids:Set<string>};
+  select(ids:Iterable<string>):void{if(this.known?.version!==this.changeVersion)this.known={version:this.changeVersion,ids:new Set(this.peek().data.notes.map(note=>note.id))};const known=this.known.ids;this.selection=new Set([...ids].filter(id=>known.has(id)));}
   protected override changed(reset=false):void{if(reset)this.selection.clear();else this.select(this.selection);}
-  override dispose():void{this.selection.clear();super.dispose();}
+  override dispose():void{this.selection.clear();this.known=undefined;super.dispose();}
 }

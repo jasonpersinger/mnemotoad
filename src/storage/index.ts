@@ -19,6 +19,8 @@ function linksOf(entity: Entity): ReferenceLinks {
 }
 export type Resolution = { status: 'missing'; id: string } | { status: 'duplicate'; id: string; paths: string[] } |
   { status: 'invalid'; entry: IndexEntry } | { status: 'ready'; path: string; entity: Entity };
+/** 4G: a Resolution without the entity (status/path checks must not clone large musical arrays). */
+export type Location = Exclude<Resolution, { status: 'ready' }> | { status: 'ready'; path: string };
 
 export class EntityIndex {
   private entries = new Map<string, IndexEntry>();
@@ -94,13 +96,20 @@ export class EntityIndex {
   }
   async refresh(path: string): Promise<void> { this.enqueue([path]); await this.settled(); }
   resolve(id: string): Resolution {
+    const found = this.locate(id);
+    if (found.status !== 'ready') return found;
+    const entity = this.entries.get(found.path)?.entity;
+    return entity ? { status: 'ready', path: found.path, entity: structuredClone(entity) } : { status: 'missing', id };
+  }
+  /** 4G: same classification as resolve() without cloning the entity (status, path and duplicate checks). */
+  locate(id: string): Location {
     const found = [...this.entries.values()].filter(e => e.id === id.toLowerCase());
     if (found.length === 0) return { status: 'missing', id };
     if (found.length > 1) return { status: 'duplicate', id, paths: found.map(e => e.path).sort() };
     const entry = found[0];
     if (!entry) return { status: 'missing', id };
     if (!entry.entity || entry.error) return { status: 'invalid', entry: cloneEntry(entry) };
-    return { status: 'ready', path: entry.path, entity: structuredClone(entry.entity) };
+    return { status: 'ready', path: entry.path };
   }
   /** Scalar metadata only: consumers can invalidate caches without cloning musical arrays. */
   heads(): {path:string;id?:string;kind?:Entity['kind'];title?:string;revision?:string;errorCode?:FoundationError['code'];message?:string;archived?:boolean}[]{

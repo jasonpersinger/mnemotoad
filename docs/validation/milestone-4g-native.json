@@ -1,0 +1,283 @@
+{
+  "milestone": "4G \u2014 source-revision review, large-MOTIF responsiveness, performance budgets, REAPER interoperability",
+  "baseline": {
+    "commit": "3fb5113",
+    "signature": "G (good)",
+    "tests": "589/44",
+    "goldenMidiSha256": "85c8ecf39936d1de7612f65d17d3df2f4599472cda8027096bced1c93bb3ab77",
+    "audit": "no known vulnerabilities"
+  },
+  "verification": {
+    "tests": "608/47",
+    "typecheck": "pass",
+    "lint": "pass",
+    "build": "pass",
+    "audit": "no known vulnerabilities",
+    "goldenMidiUnchanged": true,
+    "pythonFixtures": "10 valid / 4 rejections"
+  },
+  "native": {
+    "host": "obsidian/1.15.0",
+    "part1": [
+      "1\u20133",
+      "4\u20137",
+      "8\u201311",
+      "12\u201314",
+      "\u00a79",
+      "15\u201316",
+      "17\u201319",
+      "20\u201323",
+      "24\u201326",
+      "27\u201329",
+      "32\u201335",
+      "36\u201338",
+      "39"
+    ],
+    "restart": [
+      "30\u201331",
+      "40",
+      "39"
+    ],
+    "rendererExceptions": 0,
+    "export": {
+      "sha256": "8871eacb6e1f73292332eda60b2e6dad2b18ee8deb54ecf55072a0f04a02d131",
+      "format": 1,
+      "ppq": 960,
+      "trackCount": 3,
+      "noteOns": 46,
+      "expectedNoteOns": 46,
+      "endTicks": [
+        122880
+      ],
+      "channels": [
+        0,
+        1
+      ],
+      "deterministic": true,
+      "compiledNotes": 46
+    },
+    "races": {
+      "whileOpen": "The review changed while it was open (the motif, its placements or the composition changed). Check it again before acknowledging.",
+      "beforeConfirm": "The saved motif changed during the review. Inspect its new revision; nothing was acknowledged."
+    },
+    "largeMotif": {
+      "open": 68.6,
+      "select": {
+        "selected": [
+          "c28b1935-63b4-4c56-9d4b-c02e6faf1b1a"
+        ],
+        "register": "5000 notes / 1 selected"
+      },
+      "scroll": {
+        "startTick": 600339,
+        "visible": 33
+      },
+      "zoom": {
+        "pixelsPerQuarter": 125,
+        "visible": 21
+      },
+      "keyboard": {
+        "selected": 1,
+        "focused": "d17f0913-8ca0-497f-aae7-216ee371e2a1"
+      },
+      "edit": {
+        "before": 5000,
+        "after": 4999,
+        "restored": 5000
+      },
+      "noLoss": true
+    },
+    "responsive": {
+      "600": {
+        "content": 625,
+        "overflow": 0,
+        "timeline": 601
+      },
+      "900": {
+        "content": 925,
+        "overflow": 0,
+        "timeline": 901
+      },
+      "standard": {
+        "content": 1311,
+        "overflow": 0,
+        "timeline": 1287
+      }
+    },
+    "reaperConfigUnchanged": true,
+    "regressions": {
+      "canvas4e": "18+2",
+      "motif": "7+12",
+      "motifMidi": "11+5",
+      "patchbookAssets": "6+6",
+      "foundation": 11
+    },
+    "firstAttempt": true
+  },
+  "performance": {
+    "method": "scripts/mnemobard-4g-benchmark.mjs v2 (same host, 4F build vs 4G build)",
+    "regressions": "none (scripts/mnemobard-perf-compare.mjs, ratio 1.25, floor 5 ms)",
+    "motif5000": {
+      "openWarm": [
+        279.8,
+        70
+      ],
+      "openCold": [
+        437.4,
+        114
+      ],
+      "firstUsefulRender": [
+        279.6,
+        72.2
+      ],
+      "noteSelection": [
+        21,
+        2.8
+      ],
+      "noteNavigation": [
+        31,
+        4.3
+      ],
+      "drag": [
+        83,
+        48.7
+      ],
+      "undo": [
+        63.5,
+        22.1
+      ],
+      "save": [
+        1335,
+        280.2
+      ]
+    },
+    "motif10000": {
+      "openWarm": [
+        550.2,
+        133.3
+      ],
+      "drag": [
+        170.7,
+        93.2
+      ],
+      "save": [
+        2844.1,
+        500.5
+      ]
+    },
+    "batchAcknowledge": {
+      "4x20": {
+        "placements": 1,
+        "median": 4.4,
+        "p95": 9.4
+      },
+      "16x200": {
+        "placements": 10,
+        "median": 9.8,
+        "p95": 15.3
+      },
+      "32x1000": {
+        "placements": 50,
+        "median": 36,
+        "p95": 41.3
+      }
+    }
+  },
+  "reaper": {
+    "status": "completed in an isolated REAPER 7.84 environment (-cfgfile in repository output/, -newinst); personal ~/.config/REAPER metadata digest unchanged",
+    "importOptions": "defaults merge tracks and skip the tempo map; verified runs ticked 'Expand MIDI tracks to new REAPER tracks' and 'Import MIDI tempo map'",
+    "results": {
+      "night-procession": {
+        "sha256": "8871eacb6e1f73292332eda60b2e6dad2b18ee8deb54ecf55072a0f04a02d131",
+        "tracks": {
+          "Choir": {
+            "expected": 30,
+            "reaper": 30,
+            "identical": true
+          },
+          "Pulse": {
+            "expected": 16,
+            "reaper": 16,
+            "identical": true
+          }
+        },
+        "tempoMarkers": [
+          {
+            "time": 0,
+            "measure": 0,
+            "beat": 0,
+            "bpm": 120,
+            "num": 4,
+            "den": 4
+          }
+        ],
+        "itemsQN": {
+          "Choir": [
+            [
+              0,
+              24
+            ]
+          ],
+          "Pulse": [
+            [
+              0,
+              16
+            ]
+          ]
+        },
+        "fileEndTick": [
+          122880
+        ]
+      },
+      "probe-96bpm-6-8": {
+        "sha256": "dea95f95a341cef55e8f6affb6d4fcd24eb8d2f790e56acf88c612919aff2f02",
+        "tracks": {
+          "Choir": {
+            "expected": 20,
+            "reaper": 20,
+            "identical": true
+          },
+          "Pulse": {
+            "expected": 12,
+            "reaper": 12,
+            "identical": true
+          }
+        },
+        "tempoMarkers": [
+          {
+            "time": 0,
+            "measure": 0,
+            "beat": 0,
+            "bpm": 96,
+            "num": 6,
+            "den": 8
+          }
+        ],
+        "itemsQN": {
+          "Choir": [
+            [
+              0,
+              20
+            ]
+          ],
+          "Pulse": [
+            [
+              0,
+              12
+            ]
+          ]
+        },
+        "fileEndTick": [
+          23040
+        ]
+      }
+    },
+    "limitation": "REAPER sizes imported items to the last note; trailing silence / final boundary not represented as item length (file end-of-track verified independently)"
+  },
+  "repository": {
+    "pushed": false,
+    "commit": "local, GPG-signed (see git log)"
+  },
+  "evidenceDirectory": "output/mnemobard/milestone-4g/",
+  "report": "docs/MILESTONE_4G_REPORT.md"
+}

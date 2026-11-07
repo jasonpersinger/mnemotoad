@@ -14,9 +14,10 @@ export class PianoRoll {
   private frame?: number; private active = true; private pixels = 80; private rowHeight = 20;
   private readonly spacer: HTMLElement; private readonly lifetime = new AbortController(); private readonly cleanups: (() => void)[] = [];
   private view: RollViewport;
-  constructor(root: HTMLElement, readonly session: MotifSession, private readonly selectionChanged: () => void, private readonly status: (message: string) => void, private readonly playhead: () => number | undefined) {
+  /** `snapshot`: the caller's current draft copy (4G: avoids another full clone while the editor renders). */
+  constructor(root: HTMLElement, readonly session: MotifSession, snapshot: Motif, private readonly selectionChanged: () => void, private readonly status: (message: string) => void, private readonly playhead: () => number | undefined) {
     const doc = root.ownerDocument;
-    this.model = session.draft; this.index = new NoteIndex(this.model.data.notes);
+    this.model = snapshot; this.index = new NoteIndex(this.model.data.notes);
     this.scroller = doc.createElement('div'); this.scroller.className = 'mnemobard-roll-scroll'; root.append(this.scroller);
     this.spacer = doc.createElement('div'); this.spacer.className = 'mnemobard-roll-space'; this.scroller.append(this.spacer);
     this.canvas = doc.createElement('canvas'); this.canvas.className = 'mnemobard-piano-roll'; this.canvas.tabIndex = 0;

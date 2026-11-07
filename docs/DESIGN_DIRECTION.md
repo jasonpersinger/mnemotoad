@@ -121,3 +121,7 @@ A quiet one-line indicator beside the save status (muted when current, accent wh
 ## Milestone 4F shared presentation
 
 One voice across modules: monospace uppercase region labels (eyebrow), reference rows with a quiet left rule (warning colour when unresolved, faint when archived), readable names first with IDs behind a collapsed "ID" detail, one accent focus ring, Obsidian's own primary (`mod-cta`) and destructive (`mod-warning`) treatments. CANVAS reads top-down as composition → transport → arrangement → inspector → more tools.
+
+## Milestone 4G source review presentation
+
+The review is a quiet notebook entry, not an alarm: one compact banner (warning rule, host theme colours) appears only while placements await review; the dialog leads with the motif's name and a two-column "last acknowledged / current saved" table where unknown history reads plainly as *not recorded*. Musical language first — bar:beat:tick positions and durations in bars and beats ("2 bars / repeat") — with raw ticks and fingerprints behind tooltips or a collapsed "Raw ticks (advanced)". Acknowledgement is a deliberate two-step action whose confirmation states what does **not** change. Status text names the blocker in a few words ("Source review required · 1 motif", "Composition changed elsewhere · resolve before compiling"); explanations stay in expandable diagnostics. Tables wrap to two columns on narrow panes; light and dark themes use host variables only.

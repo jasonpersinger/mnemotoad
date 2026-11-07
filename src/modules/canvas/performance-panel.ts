@@ -18,6 +18,9 @@ export class CanvasPerformancePanel {
   private status: HTMLElement; private position: HTMLElement; private diagnostics: HTMLElement; private routeForm: HTMLFormElement; private laneSelect: HTMLSelectElement; private channelSelect: HTMLSelectElement; private percussion: HTMLInputElement; private routeStatus: HTMLElement; private seekInput: HTMLInputElement;
   private playButton: HTMLButtonElement; private pauseButton: HTMLButtonElement; private resumeButton: HTMLButtonElement; private exportButton: HTMLButtonElement; private compileButton: HTMLButtonElement;
   private auditionIssue?: string; private checkedInput?: string;
+  /** 4G: set by the view; opens the batch source review (optionally for one motif). */
+  reviewSources?: (motifId?: string) => void;
+  private readiness = { review: 0, invalid: false, conflict: false };
   constructor(toolbar: HTMLElement, secondary: HTMLElement, app: App, private readonly services: FoundationServices, private readonly session: CanvasSession, private readonly owner: object, private readonly apply: (fn: () => void, form?: HTMLFormElement) => boolean, private readonly pending: () => boolean, private readonly isCurrent: () => boolean, private readonly playhead: (tick: number | undefined) => void, private readonly navigate: (lane: string, clip?: string) => void) {
     this.preparation = services.canvas.preparation(session); this.model = session.draft; this.version = session.changeVersion; this.base = session.base?.source; this.captureDraftVersions();
     toolbar.classList.add('mnemobard-arrangement-transport');
@@ -116,6 +119,7 @@ export class CanvasPerformancePanel {
     for (const d of this.preparation.diagnostics.slice(0, 100)) {
       const p = element(this.diagnostics, 'p', `${d.severity.toUpperCase()}: ${d.message}`); p.dataset.compileDiagnostic = d.code;
       if (d.laneId) button(p, 'Show affected clip/lane', () => this.navigate(d.laneId ?? '', d.clipId));
+      if ((d.code === 'source-changed' || d.code === 'source-unreviewed') && this.reviewSources) { const motif = d.motifId; button(p, 'Review changed sources', () => this.reviewSources?.(motif)); }
       if(d.startTick!==undefined&&d.endTick!==undefined)element(p,'small',`Position ${musicalPosition(d.startTick,960,this.model.data.meter)}–${musicalPosition(d.endTick,960,this.model.data.meter)} · repetition ${(d.conflict?.repetition??0)+1} conflict${d.conflict?' with '+d.conflict.laneName:''}`);
       if (d.noteId) element(p, 'small', `Source note ${d.noteId} · clip ${d.clipId} · motif ${d.motifId}`);
     }
@@ -134,15 +138,23 @@ export class CanvasPerformancePanel {
     if (owned && player.state === 'playing' && this.animation === undefined) this.animation = requestAnimationFrame(() => { this.animation = undefined; this.statusUpdate(); });
     else if ((!owned || player.state !== 'playing') && this.animation !== undefined) { cancelAnimationFrame(this.animation); this.animation = undefined; }
   }
+  /** 4G: arrangement readiness from the view's cached plan and freshness, so the status names what blocks compilation. */
+  setReadiness(next: { review: number; invalid: boolean; conflict: boolean }): void { if (JSON.stringify(next) === JSON.stringify(this.readiness)) return; this.readiness = next; this.statusUpdate(); }
   /** 4F: what the last compilation corresponds to, so a stale compilation is never mistaken for a current one. */
   private describe(raw: string, owned: boolean): string {
     if (owned) return raw === 'playing' ? 'Playing compiled arrangement' : raw === 'paused' ? 'Paused' : raw === 'starting' ? 'Starting…' : raw;
     switch (raw) {
-      case 'idle': return 'Not compiled';
+      case 'idle': case 'invalidated': {
+        // 4G: the most specific blocker first; the full explanation stays in the expandable diagnostics.
+        const prefix = raw === 'invalidated' ? 'Stale · ' : '', { review, invalid, conflict } = this.readiness;
+        if (conflict) return `${prefix}Composition changed elsewhere · resolve before compiling`;
+        if (review) return `${prefix}Source review required · ${review} motif${review === 1 ? '' : 's'}`;
+        if (invalid) return `${prefix}Not ready · fix arrangement errors`;
+        return raw === 'invalidated' ? 'Stale · compile again' : 'Ready to compile';
+      }
       case 'resolving': case 'compiling': return 'Compiling…';
       case 'ready': return this.session.dirty ? 'Compiled · matches this unsaved draft' : 'Compiled · matches the saved composition';
       case 'exporting': return 'Exporting MIDI…';
-      case 'invalidated': return 'Stale · compile again';
       case 'error': return 'Compile failed · see diagnostics';
       default: return raw;
     }

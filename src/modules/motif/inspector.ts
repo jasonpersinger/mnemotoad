@@ -2,13 +2,21 @@ import { button, element } from '../../ui/dom';
 import { changeNotes, noteName } from './commands';
 import { musicalPosition, positionTick } from './positions';
 import type { MotifSession } from './session';
+import type { Motif, Note } from '../../domain/entities';
 export class NoteInspector {
   private signature = ''; private page = 0;
   constructor(private readonly root: HTMLElement, private readonly session: MotifSession, private readonly changed: () => void, private readonly selected: (id: string, additive: boolean) => void, private readonly fail: (error: unknown) => void) {}
-  focusNote(id: string): void { const notes = this.session.draft.data.notes.slice().sort((a, b) => a.startTick - b.startTick || a.pitch - b.pitch || a.id.localeCompare(b.id)); const index = notes.findIndex(note => note.id === id); if (index >= 0) this.page = Math.floor(index / 50); this.refresh();const register=this.root.querySelector('details');if(register)register.open=true; [...this.root.querySelectorAll<HTMLElement>('[data-note-id]')].find(node => node.dataset.noteId === id)?.focus(); }
-  refresh(): void {
-    const motif = this.session.draft, chosen = [...this.session.selected], signature = JSON.stringify([motif.data.notes, motif.data.ppq, motif.data.meter, chosen, this.page]);
+  focusNote(id: string): void { if (this.order?.version !== this.session.changeVersion) { this.signature = ''; this.refresh(); } const index = this.order?.notes.findIndex(note => note.id === id) ?? -1; if (index >= 0) this.page = Math.floor(index / 50); this.refresh();const register=this.root.querySelector('details');if(register)register.open=true; [...this.root.querySelectorAll<HTMLElement>('[data-note-id]')].find(node => node.dataset.noteId === id)?.focus(); }
+  /** 4G: register order cached per draft change (sorting every note on each selection dominated large motifs). */
+  private order?: { version: number; notes: Note[]; motif: Pick<Motif['data'], 'ppq' | 'meter' | 'lengthTicks'> };
+  refresh(snapshot?: Motif): void {
+    // 4G: the register depends only on the draft (versioned by the session), the selection and the page, so the
+    // signature no longer serialises every note; the draft is cloned only when something visible actually changed.
+    const chosen = [...this.session.selected], signature = JSON.stringify([this.session.changeVersion, chosen, this.page]);
     if (this.signature === signature) return; this.signature = signature;
+    // The cached order already holds this version's notes and timing: a selection-only change needs no draft clone.
+    const cached = this.order?.version === this.session.changeVersion ? this.order : undefined;
+    const motif = snapshot ?? (cached ? { data: { ...cached.motif, notes: cached.notes } } : this.session.draft);
     const focused = this.root.contains(this.root.ownerDocument.activeElement) ? this.root.ownerDocument.activeElement?.getAttribute('aria-label') : null;
     this.root.replaceChildren(); const selected = motif.data.notes.find(note => note.id === chosen.at(-1));
     const header = element(this.root, 'div', undefined, 'mnemobard-note-inspector-heading'); element(header, 'h3', 'Note register'); element(header, 'span', `${motif.data.notes.length} notes / ${chosen.length} selected`);
@@ -33,7 +41,8 @@ export class NoteInspector {
         } catch (error) { this.fail(error); }
       });
     } else element(this.root, 'p', 'Select a note on the roll or in the list. Numeric controls use exact source ticks.', 'mnemobard-hint');
-    const sorted = motif.data.notes.slice().sort((a, b) => a.startTick - b.startTick || a.pitch - b.pitch || a.id.localeCompare(b.id));
+    if (this.order?.version !== this.session.changeVersion) this.order = { version: this.session.changeVersion, notes: motif.data.notes.slice().sort((a, b) => a.startTick - b.startTick || a.pitch - b.pitch || a.id.localeCompare(b.id)), motif: { ppq: motif.data.ppq, meter: { ...motif.data.meter }, lengthTicks: motif.data.lengthTicks } };
+    const sorted = this.order.notes;
     this.page = Math.min(this.page, Math.max(0, Math.ceil(sorted.length / 50) - 1));
     const register=element(this.root,'details',undefined,'mnemobard-note-register');element(register,'summary','Note list · keyboard alternative');register.open=!!focused;
     const list = element(register, 'div', undefined, 'mnemobard-note-list'); list.setAttribute('aria-label', 'Accessible note list');

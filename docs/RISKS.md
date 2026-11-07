@@ -166,7 +166,14 @@ See [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md) for exact workloads/results
 | Isolated harness launch (4E) | electron43 43.8.7 needed `--ozone-platform=x11` in the isolated launcher (X12). Future Electron updates may change platform selection again. | Monitor. |
 
 | Host stale active window (4F update) | Reproduced natively (activeDocument = closed popout without defaultView). The guard refused correctly; pane click, leaf activation, tab switch did not repair it, only a window focus event did. Message now advises an application switch (inferred from the evidence; the OS-level switch itself was not driven). Trigger not isolated. | Open (host); mitigated. |
-| Source-revision acknowledgement friction (4F) | After saving a motif, every placing clip must be acknowledged separately before compiling (4B rule, intentional). | Candidate: explicit "acknowledge all clips of this motif". |
+| Source-revision acknowledgement friction (4F; 4G update: resolved by batch review Z01–Z06) | After saving a motif, every placing clip must be acknowledged separately before compiling (4B rule, intentional). | Candidate: explicit "acknowledge all clips of this motif". |
 | Reverse references and unsaved drafts (4F) | Reverse lists show saved records only (stated in UI). | By design. |
 | fileManager.renameFile wedge (4F) | Recurred once in a long-lived dev process during the final regression run; passed in a fresh process. Host behaviour. | Monitor. |
-| MOTIF 5,000-note open (4F) | 261 ms median open (pre-existing piano-roll cost). | Candidate follow-up. |
+| MOTIF 5,000-note open (4F; 4G update: resolved, 279.8 → 70 ms warm; cause was a second YAML parse and full copies, not the piano roll) | 261 ms median open (pre-existing piano-roll cost). | Candidate follow-up. |
+
+| DAW import defaults (4G) | REAPER 7.84 merges all MIDI tracks onto one track and ignores the file's tempo map unless the user ticks "Expand MIDI tracks to new REAPER tracks" and "Import MIDI tempo map". Not a file defect (verified). | Document for users; candidate export-dialog hint. |
+| DAW item length (4G) | REAPER sizes imported items to the last note: the composition's trailing silence/final boundary is not represented in REAPER although the file's end-of-track is correct. MIDI output unchanged by design. | Product decision pending. |
+| Large-motif edit commits (4G) | Drag/resize commit ~49 ms at 5,000 notes, ~93 ms at 10,000 (whole-draft validation, history snapshot, dirty canonicalisation). | Candidate next milestone. |
+| Duplicate-key acceptance relaxation (4G) | Valid duplicate-free JSON rejected only by YAML-specific rules is now accepted (Z09). | Accepted; documented. |
+| Batch review strictness (4G) | Blocked during an external composition conflict or with an unsaved MOTIF draft of the motif (Z03, Z05). | By design; single-clip review unchanged. |
+| Benchmark residue (4G) | Benchmark runs leave recovery checkpoints of synthetic drafts in the dev vault (recovery files are never deleted). | Accepted (disposable vault). |

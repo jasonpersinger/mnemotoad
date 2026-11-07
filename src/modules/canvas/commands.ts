@@ -1,6 +1,7 @@
 import type { Clip, Composition, Lane } from '../../domain/entities';
 import { validateEntity } from '../../domain/validation';
 import type { SourceSummary } from '../../arrangement/sources';
+import type { ReviewToken } from '../../arrangement/source-review';
 import { sourcePeriod, clipExtent } from '../../arrangement/timing';
 export function editableComposition(value: Composition): Composition {
     const entity = validateEntity({ ...value, title: value.title || 'Untitled composition' });
@@ -52,6 +53,25 @@ export function editClip(c: Composition, id: string, laneId: string, startTick: 
 export function duplicateClip(c: Composition, id: string, source: SourceSummary): Composition { const { lane, clip } = findClip(c, id), period = sourcePeriod(source, c.data.ppq), startTick = clipExtent(clip.startTick, period, clip.repeatCount).endTick; checkedPlacement(c, source, startTick, clip.repeatCount); const next = { ...clip, id: crypto.randomUUID(), laneId: lane.id, startTick }; return editableComposition({ ...c, data: { ...c.data, lanes: c.data.lanes.map(l => l.id === lane.id ? { ...l, clips: [...l.clips, next] } : l) } }); }
 export function deleteClip(c: Composition, id: string): Composition { findClip(c, id); return editableComposition({ ...c, data: { ...c.data, lanes: c.data.lanes.map(l => ({ ...l, clips: l.clips.filter(clip => clip.id !== id) })) } }); }
 export function acknowledgeSource(c: Composition, id: string, source: SourceSummary): Composition { const { lane, clip } = findClip(c, id), period = checkedPlacement(c, source, clip.startTick, clip.repeatCount); return editableComposition({ ...c, data: { ...c.data, lanes: c.data.lanes.map(l => l.id === lane.id ? { ...l, clips: l.clips.map(item => item.id === id ? { ...item, ...reviewFields(source, period) } : item) } : l) } }); }
+/**
+ * 4G batch review: records `source`'s current saved revision on every clip in `token` — and only those — as ONE composition
+ * edit (one undo step). The clips that are currently out of date for this motif must be exactly the reviewed ones (same ids,
+ * lanes, positions, repetitions and previous revisions); otherwise the review is stale and nothing changes. Each placement is
+ * re-checked with the same rules as single-clip acknowledgement. Sources, notes, positions, repetitions, lanes and routing
+ * are never modified.
+ */
+export function acknowledgeSourceClips(c: Composition, token: ReviewToken, source: SourceSummary): Composition {
+    const id = token.motifId.toLowerCase();
+    if (source.id.toLowerCase() !== id || source.revision !== token.revision)
+        throw Error('The saved motif changed since this review was prepared. Nothing was acknowledged; review the new revision.');
+    const current = c.data.lanes.flatMap(lane => lane.clips.filter(clip => clip.motifId.toLowerCase() === id && clip.sourceRevision !== source.revision).map(clip => ({ lane, clip })));
+    const reviewed = new Map(token.clips.map(t => [t.id, t]));
+    const same = current.length === reviewed.size && current.every(({ lane, clip }) => { const t = reviewed.get(clip.id); return !!t && t.laneId === lane.id && t.startTick === clip.startTick && t.repeatCount === clip.repeatCount && t.previousRevision === clip.sourceRevision; });
+    if (!same)
+        throw Error('The composition changed while this review was open (a placement of this motif was added, removed, moved, retargeted or acknowledged). Nothing was acknowledged; review again.');
+    const fields = new Map(current.map(({ clip }) => [clip.id, reviewFields(source, checkedPlacement(c, source, clip.startTick, clip.repeatCount))]));
+    return editableComposition({ ...c, data: { ...c.data, lanes: c.data.lanes.map(l => ({ ...l, clips: l.clips.map(clip => { const update = fields.get(clip.id); return update ? { ...clip, ...update } : clip; }) })) } });
+}
 /** Existing schema preferences only; duplicate explicit channels remain protected. */
 export function setLaneRouting(c:Composition,id:string,channel:number|undefined,percussion:boolean):Composition{
   const lane=laneAt(c,id);

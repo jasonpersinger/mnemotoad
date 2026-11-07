@@ -14,6 +14,7 @@ interface Edit<T> {
 export class HistorySession<T extends Entity> extends DocumentSession<T> {
     private past: Edit<T>[] = [];
     private future: Edit<T>[] = [];
+    private baseCanonical?: { source: string; text: string };
     private dirtyCache?: {
         revision: number;
         source: string | undefined;
@@ -29,7 +30,9 @@ export class HistorySession<T extends Entity> extends DocumentSession<T> {
         if (this.dirtyCache?.revision === this.revisionNumber && this.dirtyCache.source === this.base?.source)
             return this.dirtyCache.dirty;
         const canonical = (value: unknown): string => JSON.stringify(value, (_key, item: unknown) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
-        const dirty = !this.base || canonical(this.draft) !== canonical(this.base.entity);
+        // 4G: the saved base's canonical text is computed once per base source (it was re-derived on every draft change).
+        if (this.base && this.baseCanonical?.source !== this.base.source) this.baseCanonical = { source: this.base.source, text: canonical(this.base.entity) };
+        const dirty = !this.base || canonical(this.peek()) !== this.baseCanonical?.text;
         this.dirtyCache = { revision: this.revisionNumber, source: this.base?.source, dirty };
         return dirty;
     }
@@ -63,7 +66,7 @@ export class HistorySession<T extends Entity> extends DocumentSession<T> {
     redo(): void { if (this.disposed)
         throw new FoundationError('disposed', 'Editing session is closed.'); const entry = this.future.pop(); if (!entry)
         return; this.past.push(entry); super.update(entry.after); this.changed(); }
-    override dispose(): void { this.past = []; this.future = []; this.dirtyCache = undefined; super.dispose(); }
+    override dispose(): void { this.past = []; this.future = []; this.dirtyCache = undefined; this.baseCanonical = undefined; super.dispose(); }
     override reload(record: EntityRecord): void {
         const changed = record.source !== this.base?.source;
         super.reload(record);

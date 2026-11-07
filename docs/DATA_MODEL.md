@@ -426,3 +426,7 @@ Schema 1 unchanged; no migration; no new persisted field. Freshness state, navig
 ## Milestone 4F — no schema change
 
 Schema 1 unchanged; no migration; no new persisted field; no writes during browsing or navigation. Reverse references are derived from saved notes at index time and never stored. Associations are only created or removed by explicit existing actions (MOTIF "Associate chosen patch", PATCHBOOK record editing); 4F adds none.
+
+## Milestone 4G — no schema change
+
+Schema 1 unchanged; no migration; no new persisted field. Batch source acknowledgement writes the existing optional clip fields `sourceRevision`, `sourceTitle`, `sourcePath`, `reviewedLengthTicks` (already listed in `retainExtensions` for `clips`) on each acknowledged placement — exactly what single-clip acknowledgement writes — as one edit. Owned JSON blocks are still checked for duplicate keys, now by a linear scan instead of a second YAML parse: every previously accepted note is still accepted; valid duplicate-free JSON that the YAML parser alone rejected (e.g. implicit keys over 1,024 characters) is now accepted (DECISIONS Z09). MIDI output unchanged (golden hash identical).

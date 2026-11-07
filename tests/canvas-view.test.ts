@@ -290,3 +290,28 @@ it('4F §8.2: an external change to PATCHBOOK patch metadata (sound context only
     const before = f.session.base?.source; f.vault.modify(patch.path, (f.vault.files.get(patch.path) ?? '').replace('Context pad', 'Context pad (edited elsewhere)')); await f.services.index.settled(); await settle();
     expect(f.prep.state).toBe('ready'); expect(f.stop).not.toHaveBeenCalled(); expect(f.session.base?.source).toBe(before); expect(f.session.freshness.state).toBe('current');
 });
+it('4G: changed sources point to one batch review (banner, diagnostics, inspector) and the status names what blocks compiling', async () => {
+    const { view, services } = await fixture(); click(view.contentEl, 'New composition'); await settle(); click(view.contentEl, 'Add lane');
+    const m = createEntity('motif', 'Alpha'); m.data = { ...m.data, ppq: 960, lengthTicks: 3840, notes: [{ id: 'n', pitch: 60, startTick: 0, durationTicks: 960, velocity: 80 }] };
+    const saved = await services.repository.create(m), internal = view as unknown as { session: import('../src/modules/canvas/session').CanvasSession; reviewModal?: { contentEl: HTMLElement } };
+    const session = internal.session, lane = session.draft.data.lanes[0]?.id ?? '';
+    services.canvas.place(session, lane, saved.entity.id, 0, 1); services.canvas.place(session, lane, saved.entity.id, 7680, 2); await settle();
+    const state = () => view.contentEl.querySelector('.mnemobard-arrangement-state')?.textContent, banner = () => view.contentEl.querySelector<HTMLElement>('.mnemobard-review-banner');
+    expect(state()).toBe('Ready to compile'); expect(banner()?.hidden).toBe(true);
+    const draft = await services.motifs.open(saved.entity.id); draft.edit('Longer', x => ({ ...x, data: { ...x.data, lengthTicks: 7680 } })); await draft.save(); services.motifs.discard(draft); await services.index.settled(); await settle();
+    expect(banner()?.hidden).toBe(false); expect(banner()?.textContent).toContain('1 saved source has changed');
+    expect(state()).toBe('Source review required · 1 motif');
+    expect([...view.contentEl.querySelectorAll('.mnemobard-diagnostic-row[data-diagnostic="changed"] button')].some(b => b.textContent === 'Review changed sources')).toBe(true);
+    click(view.contentEl, 'Review changed sources');
+    const modal = internal.reviewModal?.contentEl; if (!modal) throw Error('review modal');
+    expect(modal.textContent).toContain('Alpha · 2 placements · ready to acknowledge');
+    expect(modal.querySelector('.mnemobard-review-compare')?.textContent).toContain('1 bar'); // previous length per repetition, musical
+    expect(modal.querySelector('.mnemobard-review-compare')?.textContent).toContain('2 bars'); // current
+    [...modal.querySelectorAll('button')].find(b => b.textContent?.startsWith('Acknowledge this source'))?.click();
+    [...modal.querySelectorAll('button')].find(b => b.textContent === 'Confirm acknowledgement')?.click();
+    await vi.waitFor(() => expect(view.contentEl.querySelector('.mnemobard-feedback')?.textContent).toContain('Acknowledged revision'));
+    expect(banner()?.hidden).toBe(true); expect(state()).toBe('Ready to compile');
+    click(view.contentEl, 'Undo'); await settle(); expect(banner()?.hidden).toBe(false); expect(state()).toBe('Source review required · 1 motif');
+    click(view.contentEl, 'Redo'); await settle(); expect(banner()?.hidden).toBe(true);
+    expect(session.draft.data.lanes[0]?.clips.map(c => [c.startTick, c.repeatCount])).toEqual([[0, 1], [7680, 2]]); // positions/repeats untouched
+});
