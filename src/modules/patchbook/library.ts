@@ -14,8 +14,9 @@ export class PatchbookLibrary {
   constructor(readonly index: EntityIndex, private readonly repository: EntityRepository) {}
   private snapshot(): LibraryItem[] {
     if (this.cached?.revision === this.index.currentRevision) return this.cached.items;
-    const entries = this.index.all(), byId = new Map<string, number>(), instruments = new Map<string, string>();
-    for (const entry of entries) if (entry.id) byId.set(entry.id, (byId.get(entry.id) ?? 0) + 1);
+    // Duplicate detection counts IDs across every note (scalar heads); only library kinds are cloned (4E).
+    const entries = this.index.ofKind('instrument', 'patch', 'effects-chain'), byId = new Map<string, number>(), instruments = new Map<string, string>();
+    for (const head of this.index.heads()) if (head.id) byId.set(head.id, (byId.get(head.id) ?? 0) + 1);
     for (const entry of entries) if (entry.entity?.kind === 'instrument' && entry.id && byId.get(entry.id) === 1) instruments.set(entry.id, entry.entity.title);
     const items = entries.filter(entry => entry.entity && isLibraryEntity(entry.entity)).map(entry => {
       const entity = entry.entity;

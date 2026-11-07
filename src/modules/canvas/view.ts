@@ -50,6 +50,10 @@ export class CanvasView extends ModuleView {
     private browser?: HTMLElement;
     private feedback?: HTMLElement;
     private saveStatus?: HTMLElement;
+    /** 4E freshness indicator (toolbar) and banner (only when there is something to act on). */
+    private freshnessStatus?: HTMLElement;
+    private freshnessBanner?: HTMLElement;
+    private freshnessKey = '';
     private pending?: HTMLElement;
     private inspector?: HTMLElement;
     /** 4D contextual inspector: exactly one of empty/clip/lane/structure is visible. Selection is ephemeral (no history). */
@@ -217,6 +221,8 @@ export class CanvasView extends ModuleView {
             return;
         root.replaceChildren();
         this.saveStatus = undefined;
+        this.freshnessStatus = undefined;
+        this.freshnessBanner = undefined;
         this.inspector = undefined;
         this.laneRoot = undefined;
         this.clipRegister = undefined;
@@ -252,6 +258,8 @@ export class CanvasView extends ModuleView {
         button(bar, 'Save composition', () => { void this.save(); }, 'mod-cta');
         this.saveStatus = element(bar, 'span', session.status, 'mnemobard-save-status');
         this.saveStatus.setAttribute('role', 'status');
+        this.freshnessStatus = element(bar, 'span', '', 'mnemobard-freshness');
+        this.freshnessStatus.setAttribute('role', 'status');
         button(bar, 'Add lane', () => this.act(() => { const count = session.draft.data.lanes.length; session.edit('Add lane', c => addLane(c, `Lane ${count + 1}`)); session.selectedLane = session.draft.data.lanes.at(-1)?.id; session.selectedClip = undefined; }));
         button(bar, 'Place motif', () => this.chooseMotif());
         this.undoButton = button(bar, 'Undo', () => this.act(() => session.undo()));
@@ -267,6 +275,8 @@ export class CanvasView extends ModuleView {
             void this.openComposition(session.draft.id).catch(e => this.fail(e)); });
         button(more, 'Discard arrangement draft…', () => { const confirm = element(root, 'div', undefined, 'mnemobard-confirm'); element(confirm, 'p', 'Discard the working arrangement and its in-memory history? Saved files and checkpoints remain.'); button(confirm, 'Keep arrangement', () => confirm.remove()); button(confirm, 'Confirm discard arrangement', () => { this.sessionUnsubscribe?.(); s.canvas.discard(session); this.session = undefined; this.renderEditor(); this.renderDrafts(); if (session.base)
             void this.openComposition(session.draft.id).catch(e => this.fail(e)); }); });
+        this.freshnessBanner = element(root, 'div', undefined, 'mnemobard-freshness-banner');
+        this.freshnessBanner.hidden = true; this.freshnessKey = '';
         const performanceToolbar=element(root,'div');
         this.musicalSettings(root, session);
         const tools = element(root, 'div', undefined, 'mnemobard-canvas-navigation');
@@ -381,6 +391,7 @@ export class CanvasView extends ModuleView {
             const state = session.base ? this.available?.index.resolve(c.id) : undefined;
             this.saveStatus.textContent = state && state.status !== 'ready' ? `${session.status} · composition source ${state.status}; Save protected` : session.status;
         }
+        this.renderFreshness(session);
         if (this.undoButton)
             this.undoButton.disabled = !session.canUndo;
         if (this.redoButton)
@@ -394,6 +405,61 @@ export class CanvasView extends ModuleView {
             if (input && input !== this.contentEl.ownerDocument.activeElement && input.closest('form')?.dataset.pending !== 'true')
                 input.value = value;
         }
+    }
+    /** 4E: compact indicator always; banner only for refresh notices, conflicts and unavailable notes. Destructive choices need confirmation. */
+    private renderFreshness(session: CanvasSession): void {
+        const status = this.freshnessStatus, banner = this.freshnessBanner; if (!status || !banner)
+            return;
+        const f = session.freshness, dirty = session.dirty, list = (areas: string[]) => areas.length ? areas.join(', ') : 'formatting only';
+        const text = !session.base ? 'New composition · not yet saved' : f.state === 'checking' ? 'External update detected · checking the note…' : f.state === 'conflict' ? 'Note changed elsewhere · your edits are kept · Save blocked' : f.state === 'unavailable' ? 'Note unavailable · draft kept · Save blocked' : f.state === 'refreshed' && !dirty ? `Refreshed from the note · ${f.musical ? 'compile again' : 'compilation kept'}` : dirty ? 'Unsaved edits · note unchanged on disk' : 'Matches the saved note';
+        status.textContent = text; status.dataset.freshness = f.state;
+        const key = JSON.stringify([f, dirty, session.draft.id]); if (key === this.freshnessKey)
+            return;
+        this.freshnessKey = key; banner.replaceChildren(); banner.dataset.freshness = f.state;
+        banner.hidden = !(f.state === 'unavailable' || (f.state === 'conflict' && !f.kept) || (f.state === 'refreshed' && !dirty));
+        if (banner.hidden)
+            return;
+        const openNote = (path?: string) => { const state = this.available?.index.resolve(session.draft.id), target = path ?? (state?.status === 'ready' ? state.path : session.base?.path); if (target) button(banner, 'Open composition Markdown', () => this.openMarkdown(target)); };
+        const recovery = () => button(banner, 'Store recovery copy and open recovery', () => { void session.checkpoint().then(() => { if (this.active) { this.recovery(); this.say(session.recoveryPath ? `Recovery copy stored: ${session.recoveryPath}` : 'Draft matches the last recovery copy.'); } }).catch(e => this.fail(e)); });
+        if (f.state === 'refreshed') {
+            element(banner, 'p', `“${session.draft.title}” was updated from its note, changed elsewhere (${list(f.areas)}). ${f.musical ? 'The musical arrangement changed: compile again before playback or export.' : 'Only organizational details changed: the compiled arrangement and playback were kept.'} No undo step was added; earlier undo history described the previous note.`);
+            return;
+        }
+        if (f.state === 'unavailable') {
+            element(banner, 'p', f.message); banner.setAttribute('role', 'alert'); openNote(f.path); recovery();
+            return;
+        }
+        if (f.state !== 'conflict')
+            return;
+        banner.setAttribute('role', 'alert');
+        element(banner, 'p', `“${session.draft.title}” changed in its note while you have unsaved edits. Your arrangement draft, undo history and recovery copies are kept; Save is blocked so neither version is overwritten.${f.rename ? ' This change is only a recording rename: use “Adopt rename and keep my edits” under Recording references.' : ''}`);
+        const details = element(banner, 'details'); element(details, 'summary', 'Review external changes');
+        element(details, 'p', `Changed elsewhere: ${list(f.areas)}. ${f.musical ? 'Includes musical changes (clips, lanes, routing, tempo/meter or unknown fields).' : 'Organizational details only (no musical change).'}`);
+        openNote();
+        button(banner, 'Keep working draft', () => session.setFreshness({ ...f, kept: true }));
+        recovery();
+        button(banner, 'Reload note version…', () => {
+            if (banner.querySelector('.mnemobard-confirm'))
+                return;
+            const confirm = element(banner, 'div', undefined, 'mnemobard-confirm');
+            element(confirm, 'p', 'Discard your unsaved arrangement edits and load the note as it is now? A recovery copy of your draft is stored first; the undo history of this draft ends.');
+            button(confirm, 'Keep my edits', () => confirm.remove());
+            button(confirm, 'Store recovery copy, discard edits and reload', () => { void this.discardAndReload(session).catch(e => this.fail(e)); }, 'mod-warning');
+        });
+    }
+    /** Explicit, confirmed: checkpoint first (aborts on failure), then discard the draft and open the authoritative note. */
+    private async discardAndReload(session: CanvasSession): Promise<void> {
+        const s = this.available; if (!s || this.session !== session)
+            return;
+        if (this.hasPending())
+            throw Error('Apply or discard pending properties first. Nothing was discarded.');
+        await session.checkpoint();
+        if (!this.active || this.session !== session)
+            return;
+        const copy = session.recoveryPath, id = session.draft.id;
+        this.sessionUnsubscribe?.(); this.sessionUnsubscribe = undefined; s.canvas.discard(session); this.session = undefined; this.renderEditor(); this.renderDrafts();
+        await this.openComposition(id);
+        this.say(`Reloaded the note version.${copy ? ` Your previous draft is in ${copy}.` : ''}`);
     }
     private renderSelection(force = false): void { const s = this.available, session = this.session; if (!s || !session || !this.inspector || !this.laneRoot || !this.plan)
         return; if (!force && this.hasPending())
@@ -529,9 +595,8 @@ export class CanvasView extends ModuleView {
         throw Error(`Source is ${source.status}; clip remains. Inspect/restore the original note.`); if (!s.modules.enabled('motif')) {
         this.openMarkdown(source.path);
         return;
-    } await s.modules.open('motif'); const leaf = this.app.workspace.getLeavesOfType('mnemobard-motif')[0]; await leaf?.loadIfDeferred(); if (!this.active)
-        return; if (!(leaf?.view instanceof MotifView))
-        throw Error('MOTIF view is not ready; reopen it or inspect its Markdown.'); await leaf.view.setState({ selectedId: id }); }
+    } // 4E: verified navigation (latest request wins, bounded, displayed UUID checked); failures surface here, CANVAS stays as is.
+        await s.navigation.navigate('canvas', 'motif', id, { enabled: () => s.modules.enabled('motif'), open: () => s.modules.open('motif'), view: async () => { const leaf = this.app.workspace.getLeavesOfType('mnemobard-motif')[0]; await leaf?.loadIfDeferred(); return leaf?.view instanceof MotifView ? leaf.view : undefined; } }); }
     private recovery(): void { const s = this.available, root = this.recoveryRoot; if (!s || !root)
         return; this.recoveryPanel?.dispose(); this.recoveryPanel = new RecoveryInspector(root, { recovery: s.canvas.recovery, settings: s.settings, recover: v => s.canvas.recover(v) }, session => { if (this.active) {
         this.recoveryPanel?.dispose();

@@ -163,3 +163,11 @@ Implemented under Prompt011: contextual inspector and workspace hierarchy, docum
 Validation: 492 → 538 tests; golden MIDI unchanged; native 4D workflow (2 parts + cold restart), MOTIF/MIDI/PATCHBOOK/foundation regressions incl. restart; same-host performance A/B against the signed 4C build. Report: docs/MILESTONE_4D_REPORT.md.
 
 **Stop gate:** human review of 4D is required. Candidate next scopes (not authorized): CANVAS clean-session auto-reload on external change; MOTIF→PATCHBOOK navigation readiness instrumentation; optional section/marker MIDI meta export; colour/category.
+
+## Milestone 4E — document freshness, navigation readiness and regression closure
+
+Implemented under Prompt012 on the signed 4D baseline `1e11155`: conflict-safe freshness for open CANVAS compositions (clean refresh without history entries, dirty conflict with recovery choices, invalid/future-schema/deleted/renamed handling, race-guarded), integration with musical invalidation (metadata-only external changes keep compilation and playback), cross-module navigation readiness with latest-request-wins and dev trace, view-level modal refusal tests, explicit legacy duplicate-link repair, section-selection and index-publish performance fixes.
+
+Validation: 538 → 573 tests (43 files); golden MIDI unchanged; native 4E workflow (18 checks + 2 cold-restart checks on the final build), MOTIF/MOTIF-MIDI/PATCHBOOK/foundation regressions incl. restart phases; same-process performance A/B against the signed 4D build. Report: docs/MILESTONE_4E_REPORT.md.
+
+**Stop gate:** human review of 4E is required. Candidate next scope (not authorized): see the report's §P.

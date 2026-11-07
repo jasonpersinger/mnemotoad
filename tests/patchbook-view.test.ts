@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { WorkspaceLeaf } from 'obsidian';
 import { CanvasLibrary } from '../src/modules/canvas/library';
 import type { FoundationServices } from '../src/application/services';
+import { NavigationCoordinator } from '../src/application/navigation';
 import { SettingsService } from '../src/application/settings';
 import { ModuleController } from '../src/application/modules';
 import { EntityIndex } from '../src/storage/index';
@@ -24,7 +25,7 @@ afterEach(() => { for (const close of cleanup.splice(0)) close(); document.body.
 async function fixture() {
   const vault = new MemoryVault(), index = new EntityIndex(vault), repository = new EntityRepository(vault, index), library = new PatchbookLibrary(index, repository);
   const settings = new SettingsService({ load: async () => null, save: async () => {} }); await settings.load();
-  const services: FoundationServices = { repository, index, patchbook: library, references: new ReferenceResolver(index, p => vault.exists(p)), settings,
+  const services: FoundationServices = { navigation: new NavigationCoordinator(), repository, index, patchbook: library, references: new ReferenceResolver(index, p => vault.exists(p)), settings,
     canvas: new CanvasLibrary(index,repository,vault), motifs: new MotifLibrary(index, repository, vault), musical: new MusicalTransport(), assets: new PatchbookAssets(vault), preview: new AudioPreview(), recovery: new PatchbookRecovery(vault, index, repository),
     modules: new ModuleController(settings.current.modules, { open: async () => {}, close: () => {} }) };
   const view = new PatchbookView({} as WorkspaceLeaf, () => services); document.body.append(view.contentEl);

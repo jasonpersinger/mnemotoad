@@ -250,3 +250,15 @@
 .mnemobard-diagnostic-row[data-severity="error"] { border-inline-start-color: var(--text-error); }
 .mnemobard-diagnostic-row[data-severity="warning"] { border-inline-start-color: var(--text-warning); }
 .mnemobard-diagnostic-row p { margin: 0; flex: 1 1 260px; overflow-wrap: anywhere; }
+/* Milestone 4E: document freshness. A quiet toolbar indicator; a bounded banner only when something needs attention. Host theme tokens only. */
+.mnemobard-canvas-toolbar .mnemobard-freshness { margin-inline: 6px; color: var(--text-muted); font-size: var(--font-ui-smaller); }
+.mnemobard-freshness[data-freshness="checking"], .mnemobard-freshness[data-freshness="refreshed"] { color: var(--text-accent); }
+.mnemobard-freshness[data-freshness="conflict"], .mnemobard-freshness[data-freshness="unavailable"] { color: var(--text-warning); }
+.mnemobard-freshness-banner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px; margin-block: 6px; padding: 6px 10px; border: 1px solid var(--background-modifier-border); border-inline-start: 3px solid var(--text-accent); border-radius: var(--radius-s, 4px); background: var(--background-secondary); font-size: var(--font-ui-small); }
+.mnemobard-freshness-banner[hidden] { display: none; }
+.mnemobard-freshness-banner[data-freshness="conflict"], .mnemobard-freshness-banner[data-freshness="unavailable"] { border-inline-start-color: var(--text-warning); }
+.mnemobard-freshness-banner > p { flex: 1 1 100%; margin: 0; overflow-wrap: anywhere; }
+.mnemobard-freshness-banner > details { flex: 1 1 100%; color: var(--text-muted); }
+.mnemobard-freshness-banner > details > summary { cursor: pointer; }
+.mnemobard-freshness-banner .mnemobard-confirm { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+.mnemobard-freshness-banner .mnemobard-confirm > p { flex: 1 1 100%; margin: 0; }

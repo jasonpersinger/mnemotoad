@@ -418,3 +418,7 @@ No schema bump or migration. The schema1 arrays are activated with additive opti
 ## Milestone 4D — no schema change; field classification
 
 Schema 1 unchanged; no migration. For compilation identity, composition fields are classified: **organizational** = `data.sections`, `data.markers`, `data.audioRefs`, entity `description`, `notes`, `tags`, `assets` (incl. the `mnemobard_audio` frontmatter mirror); **musical** = everything else, including `title`, lanes (names, order, routing), clips (positions, repeats, labels, reviewed revisions), tempo, meter, PPQ, length, `extra`, and unknown fields (fail-safe). The `mnemobard_audio` mirror holds exact `[[vault/path]]` links; on relink, other audio mirror links resolving to the same file are removed. Paths remain constrained by `vaultPath()` (no `# [ ] | < > : " ? *`).
+
+## Milestone 4E — no schema change
+
+Schema 1 unchanged; no migration; no new persisted field. Freshness state, navigation requests/traces and the add-form open state are ephemeral. The only persisted change 4E can make is the explicit, user-confirmed removal of duplicate `mnemobard_audio` frontmatter mirror links that resolve to the same referenced file (X10); `data.audioRefs` (UUIDs, labels, notes, anchors, associations) is never touched by it. External changes are classified with the 4D field classification: organizational (`sections`, `markers`, `audioRefs`, `description`, `notes`, `tags`, `assets`) vs musical (everything else, unknown fields included).

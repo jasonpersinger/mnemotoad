@@ -31,7 +31,7 @@ export class MotifLibrary {
     });
   }
   items(search = ''): { path: string; entity: Motif; ambiguous: boolean }[] {
-    const entries = this.index.all();
+    const entries = this.index.ofKind('motif');
     return entries.flatMap(entry => entry.entity?.kind === 'motif' && entry.entity.title.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ? [{ path: entry.path, entity: entry.entity, ambiguous: this.index.resolve(entry.entity.id).status !== 'ready' }] : [])
       .sort((a, b) => a.entity.title.localeCompare(b.entity.title) || a.entity.id.localeCompare(b.entity.id));
   }

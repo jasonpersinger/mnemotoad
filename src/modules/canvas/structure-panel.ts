@@ -2,7 +2,7 @@ import { element, button } from '../../ui/dom';
 import { messageOf } from '../../domain/errors';
 import type { Composition } from '../../domain/entities';
 import { musicalPosition, positionTick } from '../../music/positions';
-import type { CanvasLibrary, RenameOffer } from './library';
+import type { CanvasLibrary, DuplicateMirror, RenameOffer } from './library';
 import type { CanvasSession } from './session';
 import {
   addMarker, addSection, deleteMarker, deleteSection, orderedMarkers, orderedSections, removeReference, sectionOverlaps,
@@ -48,6 +48,11 @@ export class CanvasStructurePanel {
   private renameKey = '';
   private renameJob = 0;
   private fileEpoch = 0;
+  /** 4E legacy duplicate mirror links: memoised per file event and draft version (renders on every selection). */
+  private duplicateKey = '';
+  /** 4E performance: the add-reference form (vault scan + one option per section/marker) is built only while its disclosure is open. */
+  private addReferenceOpen = false;
+  private duplicateValue: DuplicateMirror[] = [];
 
   /** `editorRoot` (4D): the shared contextual inspector slot. Without it, editors render inline (4C layout). */
   constructor(root: HTMLElement, private readonly host: StructureHost, private readonly editorRoot?: HTMLElement) {
@@ -263,6 +268,14 @@ export class CanvasStructurePanel {
       element(note, 'p', `“${suggestion.from}” is missing, and this note's recording link now points to “${suggestion.to}” (likely a rename). Relink ${suggestion.referenceIds.length} reference(s)? Nothing changes until you confirm.`);
       button(note, 'Relink to renamed file', () => this.edit(() => this.host.library.relinkRecording(this.host.session, suggestion.referenceIds, suggestion.to), undefined, 'Relinked. Undo restores the previous path.'));
     }
+    const duplicates = this.duplicates(c);
+    if (duplicates.length) {
+      const note = element(box, 'div', undefined, 'mnemobard-structure-warning'); note.dataset.duplicateLinks = 'true';
+      const count = duplicates.reduce((n, d) => n + d.remove.length, 0);
+      element(note, 'p', `This note lists ${count} duplicate recording link(s) that Obsidian resolves to the same file as ${duplicates.map(d => d.keep).join(', ')} (left by an earlier relink). Remove the duplicates and keep the exact links? Recording references, their notes and associations, and the audio files are unchanged. One Undo step; Save to write it.`);
+      const repair = button(note, 'Remove duplicate recording links', () => this.edit(() => { this.host.library.removeDuplicateMirrors(this.host.session); }, undefined, 'Duplicate recording links removed. Undo restores them.'));
+      repair.disabled = this.host.readOnly();
+    }
     this.detectRename(c);
     const offer = this.renameOffer;
     if (offer) {
@@ -281,6 +294,11 @@ export class CanvasStructurePanel {
     const list = element(box, 'ul', undefined, 'mnemobard-structure-list mnemobard-structure-references');
     for (const r of this.paged(box, 'reference', refs, 'recordings')) this.referenceRow(list, c, r);
     const add = element(box, 'details'); element(add, 'summary', 'Add recording reference');
+    const build = (): void => { if (add.dataset.built === 'true') return; add.dataset.built = 'true'; this.addReferenceForm(add); };
+    add.addEventListener('toggle', () => { this.addReferenceOpen = add.open; if (add.open) build(); });
+    if (this.addReferenceOpen) { add.open = true; build(); }
+  }
+  private addReferenceForm(add: HTMLElement): void {
     this.form(add, 'Add recording reference', form => {
   this.filePicker(form, 'Recording file');
     this.field(form, 'Reference name', '', false, 'Defaults to the file name');
@@ -337,6 +355,11 @@ export class CanvasStructurePanel {
       button(confirm, 'Remove reference only', () => { this.mode = undefined; this.edit(() => this.host.session.edit('Remove recording reference', x => removeReference(x, r.id)), undefined, `Removed reference “${r.label}”. ${r.path} is untouched.`); }, 'mod-warning');
       button(confirm, 'Keep reference', () => { this.mode = undefined; this.render(); });
     }
+  }
+  private duplicates(c: Composition): DuplicateMirror[] {
+    const key = `${this.fileEpoch}:${this.host.session.changeVersion}:${this.host.sourcePath()}`;
+    if (key !== this.duplicateKey) { this.duplicateKey = key; this.duplicateValue = this.host.library.duplicateMirrors(c, this.host.sourcePath()); }
+    return this.duplicateValue;
   }
   private detectRename(c: Composition): void {
     const s = this.host.session, missing = c.data.audioRefs.filter(r => this.host.library.recordingStatus(r.path).status === 'missing').map(r => r.path).sort().join('|');

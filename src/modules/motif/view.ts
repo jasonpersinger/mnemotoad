@@ -2,7 +2,7 @@ import { Notice, Scope, type WorkspaceLeaf } from 'obsidian';
 import { openModal } from '../../ui/modal-host';
 import type { FoundationServices } from '../../application/services';
 import type { Motif } from '../../domain/entities';
-import { messageOf } from '../../domain/errors';
+import { FoundationError, messageOf } from '../../domain/errors';
 import { ModuleView } from '../../ui/module-view';
 import { element, button } from '../../ui/dom';
 import { RecoveryInspector } from '../../ui/recovery-inspector';
@@ -16,6 +16,7 @@ import { MidiImportDialog, MidiExportDialog } from './midi-dialog';
 import { PatchAssociation } from './patch-association';
 import { transformPanel } from './transform-panel';
 import { PatchbookView } from '../patchbook/view';
+import { ReadyGate, type NavigationNote } from '../../application/navigation';
 
 export class MotifView extends ModuleView {
   private active = false; private epoch = 0; private lifetime = new AbortController(); private cleanups: (() => void)[] = [];
@@ -29,7 +30,11 @@ export class MotifView extends ModuleView {
   private tickMap?: TempoMap; private animation?: number;
   constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) { super(leaf, 'motif', foundation); this.scope = new Scope(this.app.scope); }
   private get available(): FoundationServices | undefined { const services = this.foundation(); return services?.modules.enabled('motif') ? services : undefined; }
-  override async onOpen(): Promise<void> {
+  /** 4E navigation readiness: open once onOpen (including any restored selection) has finished. */
+  private readonly ready = new ReadyGate();
+  private revealing = 0;
+  override async onOpen(): Promise<void> { this.ready.reset(); try { await this.openView(); } finally { this.ready.open(); } }
+  private async openView(): Promise<void> {
     this.release(); this.active = true; this.lifetime = new AbortController(); const root = this.contentEl; root.replaceChildren(); root.classList.add('mnemobard-module', 'mnemobard-motif');
     const services = this.available; if (!services) { element(root, 'p', 'MOTIF is disabled. Musical notes remain in the vault.'); return; }
     const heading = element(root, 'header', undefined, 'mnemobard-motif-heading');
@@ -93,7 +98,7 @@ export class MotifView extends ModuleView {
     if (!items.length) element(root, 'p', 'No matching motifs. Create a phrase to begin.');
     if (this.page) button(root, 'Previous motifs', () => { this.page--; this.renderBrowser(); });
     if ((this.page + 1) * 100 < items.length) button(root, 'More motifs', () => { this.page++; this.renderBrowser(); });
-    for (const entry of services.index.all().filter(entry => entry.error).slice(0, 10)) { element(root, 'p', `${entry.path}: ${entry.error?.message}`, 'mnemobard-library-issues'); button(root, 'Open uneditable source', () => this.openNote(entry.path)); }
+    for (const entry of services.index.heads().filter(entry => entry.errorCode).slice(0, 10)) { element(root, 'p', `${entry.path}: ${entry.message}`, 'mnemobard-library-issues'); button(root, 'Open uneditable source', () => this.openNote(entry.path)); }
     this.renderDrafts();
   }
   private renderDrafts(): void {
@@ -221,7 +226,19 @@ export class MotifView extends ModuleView {
     for (const [label, value] of Object.entries(values)) { const control = this.editor?.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[aria-label="${label}"]`); if (control && control !== this.contentEl.ownerDocument.activeElement && control.closest('form')?.dataset.pending !== 'true') control.value = value; }
     const ppq = this.editor?.querySelector<HTMLInputElement>('[aria-label="PPQ"]'); if (ppq) ppq.disabled = motif.data.notes.length > 0;
   }
-  private async navigatePatch(id:string):Promise<void>{const services=this.available;if(!services)return;const state=services.index.resolve(id);if(state.status!=='ready'||state.entity.kind!=='patch')throw Error(`Associated patch is ${state.status}; reference retained.`);await this.leave();if(!services.modules.enabled('patchbook')){this.openNote(state.path);return;}await services.modules.open('patchbook');const leaf=this.app.workspace.getLeavesOfType('mnemobard-patchbook')[0];await leaf?.loadIfDeferred();if(!this.active)return;const view=leaf?.view;if(!(view instanceof PatchbookView))throw Error('PATCHBOOK view is not ready. Reopen it or inspect the linked Markdown.');await view.setState({kind:'patch',selectedId:id,archived:'all',search:''});}
+  /** 4E: verified navigation through the shared coordinator (latest request wins, bounded, selection checked by UUID). */
+  private async navigatePatch(id:string):Promise<void>{const services=this.available;if(!services)return;const state=services.index.resolve(id);if(state.status!=='ready'||state.entity.kind!=='patch')throw Error(`Associated patch is ${state.status}; reference retained.`);await this.leave();if(!services.modules.enabled('patchbook')){this.openNote(state.path);return;}
+    await services.navigation.navigate('motif','patchbook',id,{enabled:()=>services.modules.enabled('patchbook'),open:()=>services.modules.open('patchbook'),view:async()=>{const leaf=this.app.workspace.getLeavesOfType('mnemobard-patchbook')[0];await leaf?.loadIfDeferred();const view=leaf?.view;return view instanceof PatchbookView?view:undefined;}});}
+  /** 4E NavigationTarget: completes only when this view displays `id`; otherwise rejects with the view's own message. */
+  async reveal(id: string, signal: AbortSignal, note?: NavigationNote): Promise<void> {
+    await this.ready.promise; note?.('view-ready');
+    if (!this.active) throw new FoundationError('disposed', 'MOTIF closed before the motif could be shown. Nothing was selected.');
+    if (signal.aborted) return;
+    this.revealing++; try { await this.applyState({ selectedId: id, search: '' }); } finally { this.revealing--; }
+    note?.('state-applied'); if (signal.aborted) return;
+    if (!this.active) throw new FoundationError('disposed', 'MOTIF closed before the motif could be shown. Nothing was selected.');
+    if (this.session?.draft.id.toLowerCase() !== id.toLowerCase()) throw new FoundationError('io', this.feedback?.textContent || 'MOTIF did not show the requested motif. Nothing else was selected.');
+  }
   private async save(): Promise<void> {
     if (!this.session) return; if (this.editor?.querySelector('form[data-pending="true"]')) { this.say('Apply or discard pending note/musical properties before saving. The motif was not written.'); return; } try { await this.session.save(); if (this.active) { this.updateStatus(); this.renderBrowser(); this.say('Motif saved in the vault.'); } } catch (error) { this.fail(error); }
   }
@@ -243,7 +260,13 @@ export class MotifView extends ModuleView {
     button(root, 'Close motif recovery', () => { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; });
   }
   override getState(): Record<string, unknown> { return { selectedId: this.selectedId, search: this.search }; }
-  override async setState(value: unknown): Promise<void> { if (!value || typeof value !== 'object') return; const state = value as Record<string, unknown>; if (typeof state.search === 'string') this.search = state.search.slice(0, 1000); if (typeof state.selectedId === 'string') this.selectedId = state.selectedId; if (this.active) { const search = this.contentEl.querySelector<HTMLInputElement>('[aria-label="Search motifs"]'); if (search) search.value = this.search; this.renderBrowser(); if (this.selectedId) await this.select(this.selectedId); } }
+  /** Host restoration/state. While an explicit navigation is being applied it wins (deterministic); the call is recorded for the dev trace. */
+  override async setState(value: unknown): Promise<void> {
+    const target = value && typeof value === 'object' ? String((value as Record<string, unknown>).selectedId ?? '') : '';
+    const navigation = this.foundation()?.navigation; navigation?.note({ request: 0, phase: this.revealing ? 'host-state-deferred' : 'host-state', from: 'motif', to: 'motif', target });
+    if (this.revealing) return; await this.applyState(value);
+  }
+  private async applyState(value: unknown): Promise<void> { if (!value || typeof value !== 'object') return; const state = value as Record<string, unknown>; if (typeof state.search === 'string') this.search = state.search.slice(0, 1000); if (typeof state.selectedId === 'string') this.selectedId = state.selectedId; if (this.active) { const search = this.contentEl.querySelector<HTMLInputElement>('[aria-label="Search motifs"]'); if (search) search.value = this.search; this.renderBrowser(); if (this.selectedId) await this.select(this.selectedId); } }
   override release(): void {
     this.active = false; this.midiDialog?.close();this.midiDialog=undefined;if(this.session)this.foundation()?.motifs.release(this.session,this); if (this.editorScope) this.app.keymap.popScope(this.editorScope); this.editorScope = undefined; this.epoch++; this.lifetime.abort(); this.foundation()?.musical.stop(this); this.roll?.dispose(); this.roll = undefined;
     this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.unsubscribeSession?.(); this.unsubscribeSession = undefined;

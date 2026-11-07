@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { WorkspaceLeaf } from 'obsidian';
 import { CanvasLibrary } from '../src/modules/canvas/library';
 import type { FoundationServices } from '../src/application/services';
+import { NavigationCoordinator } from '../src/application/navigation';
 import { SettingsService } from '../src/application/settings';
 import { ModuleController } from '../src/application/modules';
 import { EntityIndex } from '../src/storage/index';
@@ -24,7 +25,7 @@ beforeEach(() => { installDomHelpers(); Object.defineProperty(HTMLCanvasElement.
 afterEach(() => { for(const close of closers.splice(0))close();document.body.replaceChildren(); });
 async function fixture() {
   const vault=new MemoryVault(),index=new EntityIndex(vault),repository=new EntityRepository(vault,index),settings=new SettingsService({load:async()=>null,save:async()=>{}});await settings.load();
-  const services:FoundationServices={settings,index,repository,modules:new ModuleController(settings.current.modules,{open:async()=>{},close:()=>{}}),references:new ReferenceResolver(index,path=>vault.exists(path)),patchbook:new PatchbookLibrary(index,repository),assets:new PatchbookAssets(vault),preview:new AudioPreview(),recovery:new PatchbookRecovery(vault,index,repository),canvas:new CanvasLibrary(index,repository,vault),motifs:new MotifLibrary(index,repository,vault),musical:new MusicalTransport()};
+  const services:FoundationServices={ navigation: new NavigationCoordinator(),settings,index,repository,modules:new ModuleController(settings.current.modules,{open:async()=>{},close:()=>{}}),references:new ReferenceResolver(index,path=>vault.exists(path)),patchbook:new PatchbookLibrary(index,repository),assets:new PatchbookAssets(vault),preview:new AudioPreview(),recovery:new PatchbookRecovery(vault,index,repository),canvas:new CanvasLibrary(index,repository,vault),motifs:new MotifLibrary(index,repository,vault),musical:new MusicalTransport()};
   const view=new MotifView({} as WorkspaceLeaf,()=>services);document.body.append(view.contentEl);closers.push(()=>{view.release();services.canvas.dispose();services.motifs.dispose();services.musical.dispose();services.patchbook.dispose();repository.dispose();index.dispose();settings.dispose();});await view.onOpen();return{view,services,vault,repository};
 }
 const settle=async()=>{await new Promise(r=>setTimeout(r,0));await new Promise(r=>setTimeout(r,0));};

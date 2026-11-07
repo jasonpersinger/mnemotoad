@@ -2,7 +2,8 @@ import { Notice, Scope, type WorkspaceLeaf } from 'obsidian';
 import { openModal } from '../../ui/modal-host';
 import type { FoundationServices } from '../../application/services';
 import type { AssetReference, LibraryKind } from '../../domain/entities';
-import { messageOf } from '../../domain/errors';
+import { FoundationError, messageOf } from '../../domain/errors';
+import { ReadyGate, type NavigationNote } from '../../application/navigation';
 import { validateEntity } from '../../domain/validation';
 import type { LibraryQuery } from './query';
 import type { LibrarySession } from './session';
@@ -44,7 +45,11 @@ export class PatchbookView extends ModuleView {
     this.scope = new Scope(this.app.scope);
   }
   private get available(): FoundationServices | undefined { const services = this.foundation(); return services?.modules.enabled('patchbook') ? services : undefined; }
-  override async onOpen(): Promise<void> {
+  /** 4E navigation readiness: open once onOpen (including any restored selection) has finished. */
+  private readonly ready = new ReadyGate();
+  private revealing = 0;
+  override async onOpen(): Promise<void> { this.ready.reset(); try { await this.openView(); } finally { this.ready.open(); } }
+  private async openView(): Promise<void> {
     this.release(); this.inactive = false; this.loading = true; this.lifetime = new AbortController();
     const root = this.contentEl; root.replaceChildren(); root.classList.add('mnemobard-module', 'mnemobard-patchbook');
     const services = this.available;
@@ -148,10 +153,10 @@ export class PatchbookView extends ModuleView {
       element(paging, 'span', `${this.page + 1} / ${Math.ceil(records.length / 100)}`);
       button(paging, 'Next page', () => { this.page++; this.renderBrowser(); }).disabled = (this.page + 1) * 100 >= records.length;
     }
-    const errors = services.index.all().filter(item => item.error);
+    const errors = services.index.heads().filter(item => item.errorCode);
     if (errors.length) {
       const details = element(root, 'details', undefined, 'mnemobard-library-issues'); element(details, 'summary', `${errors.length} unreadable record${errors.length === 1 ? '' : 's'}`);
-      for (const item of errors.slice(0, 50)) { element(details, 'p', `${item.path}: ${item.error?.message}`); button(details, 'Open original note', () => { this.openNote(item.path); }); }
+      for (const item of errors.slice(0, 50)) { element(details, 'p', `${item.path}: ${item.message}`); button(details, 'Open original note', () => { this.openNote(item.path); }); }
     }
     this.renderDrafts();
   }
@@ -318,7 +323,23 @@ export class PatchbookView extends ModuleView {
     });
   }
   override getState(): Record<string, unknown> { return { ...this.queryState, selectedId: this.selectedId }; }
+  /** 4E NavigationTarget: completes only when this view displays `id` (archived records included); otherwise rejects with the view's message. */
+  async reveal(id: string, signal: AbortSignal, note?: NavigationNote): Promise<void> {
+    await this.ready.promise; note?.('view-ready');
+    if (this.inactive) throw new FoundationError('disposed', 'PATCHBOOK closed before the record could be shown. Nothing was selected.');
+    if (signal.aborted) return;
+    this.revealing++; try { await this.applyState({ selectedId: id, archived: 'all', search: '' }); } finally { this.revealing--; }
+    note?.('state-applied'); if (signal.aborted) return;
+    if (this.inactive) throw new FoundationError('disposed', 'PATCHBOOK closed before the record could be shown. Nothing was selected.');
+    if (this.currentSession?.draft.id.toLowerCase() !== id.toLowerCase()) throw new FoundationError('io', this.feedback?.textContent || 'PATCHBOOK did not show the requested record. Nothing else was selected.');
+  }
+  /** Host restoration/state. While an explicit navigation is being applied it wins (deterministic); the call is recorded for the dev trace. */
   override async setState(value: unknown): Promise<void> {
+    const target = value && typeof value === 'object' ? String((value as Record<string, unknown>).selectedId ?? '') : '';
+    this.foundation()?.navigation.note({ request: 0, phase: this.revealing ? 'host-state-deferred' : 'host-state', from: 'patchbook', to: 'patchbook', target });
+    if (this.revealing) return; await this.applyState(value);
+  }
+  private async applyState(value: unknown): Promise<void> {
     if (!value || typeof value !== 'object') return;
     const state = value as Record<string, unknown>;
     if (['patch', 'instrument', 'effects-chain'].includes(String(state.kind))) this.queryState.kind = state.kind as LibraryKind;

@@ -16,19 +16,25 @@ import { ArrangementPreparation } from '../../arrangement/preparation';
 import { MidiFiles } from '../../midi/files';
 import type { VaultAsset } from '../../storage/asset-port';
 import { linkOnlyRewrite, type RenameMove } from './rename-merge';
+import { CanvasFreshness } from './freshness';
 import { addReference, relinkReference, relinkSuggestion, recordingPath, RECORDING_EXTENSIONS, type ReferenceInput, type RelinkSuggestion } from './structure';
 export type RecordingStatus = { status: 'available'; file: VaultAsset } | { status: 'missing' | 'invalid'; message: string };
 export interface RenameOffer { readonly record: EntityRecord; readonly moves: readonly RenameMove[] }
+/** 4E: mirror links that Obsidian resolves to the same referenced file; `keep` is the exact `[[path]]` form. */
+export interface DuplicateMirror { readonly path: string; readonly keep: string; readonly remove: readonly string[] }
 export class CanvasLibrary {
     readonly sources: SourceCatalog;
     readonly recovery: CheckpointRecovery<Composition>;
     readonly capture:SourceCapture;readonly midiFiles:MidiFiles;
+    /** 4E: keeps open sessions fresh against their authoritative notes. */
+    readonly freshness: CanvasFreshness;
     private sessions = new Map<string, CanvasSession>();
     private owners = new Map<CanvasSession, Set<object>>();
     private closed = false;
     constructor(readonly index: EntityIndex, private readonly repository: EntityRepository, private readonly vault: VaultPort & AssetPort, private readonly unsavedSource: (id: string) => boolean = () => false, private readonly resolveLink?: (target: string, source: string) => string | null) {
         this.sources = new SourceCatalog(index);
         this.capture=new SourceCapture(this.sources,index,repository,vault);this.midiFiles=new MidiFiles(vault);
+        this.freshness = new CanvasFreshness(index, repository, () => [...this.sessions.values()], async s => !!(await this.renameConflict(s)));
         this.recovery = new CheckpointRecovery(vault, index, repository, raw => { const fields = object(raw, 'composition recovery'), title = fields.title, e = validateEntity({ ...fields, title: title === '' ? 'Untitled recovery' : title }); if (e.kind !== 'composition')
             throw new FoundationError('wrong-kind', 'Use the original module for this checkpoint.'); if (title === '')
             e.title = ''; return editableComposition(e); });
@@ -45,6 +51,7 @@ export class CanvasLibrary {
         const s = new CanvasSession(draft, base, { save: (original, next, signal) => original ? this.repository.save(original, editableComposition(next), signal) : this.repository.create(editableComposition(next), signal), checkpoint: (next, original, signal) => this.repository.saveEditorDraft(next, original, signal) });
         this.sessions.set(draft.id.toLowerCase(), s);
         s.subscribe(() => this.trim());
+        this.freshness.watch(s);
         this.trim();
         return s;
     }
@@ -99,6 +106,35 @@ export class CanvasLibrary {
         const assets = c.assets.filter(a => a.role !== 'audio' || a.link === exact || resolve(a.link.replace(/^\[\[|\]\]$/g, '').split('|')[0] ?? '', source) !== path);
         return assets.length === c.assets.length ? c : { ...c, assets };
     }
+    /**
+     * 4E legacy cleanup (detection only): audio mirror links that Obsidian's own resolver maps to the SAME referenced,
+     * existing file, where the exact `[[path]]` form is present. A shortest-form link whose name matches more than one
+     * vault file is ambiguous and never counted. Reference records are not involved.
+     */
+    duplicateMirrors(c: Composition, sourcePath = ''): DuplicateMirror[] {
+        const resolve = this.resolveLink; if (!resolve || !c.assets?.length) return [];
+        const referenced = new Set(c.data.audioRefs.map(r => r.path)), groups = new Map<string, string[]>();
+        let names: Map<string, number> | undefined;
+        const unique = (name: string): boolean => { names ??= this.vault.assetFiles().reduce((m, f) => m.set(f.name.toLowerCase(), (m.get(f.name.toLowerCase()) ?? 0) + 1), new Map<string, number>()); return names.get(name.toLowerCase()) === 1; };
+        for (const asset of c.assets) {
+            const target = asset.role === 'audio' ? /^\[\[([^\]|#^]+)\]\]$/.exec(asset.link)?.[1] : undefined; if (!target) continue;
+            const path = resolve(target, sourcePath); if (!path || !referenced.has(path) || this.recordingStatus(path).status !== 'available') continue;
+            if (!target.includes('/') && !unique(target)) continue;
+            groups.set(path, [...groups.get(path) ?? [], asset.link]);
+        }
+        return [...groups].filter(([path, links]) => links.length > 1 && links.includes(`[[${path}]]`)).map(([path, links]) => { const keep = `[[${path}]]`, first = links.indexOf(keep); return { path, keep, remove: links.filter((l, i) => l !== keep || i !== first) }; });
+    }
+    /** Explicit user action: one undo step; only the detected duplicate mirror links are removed. Files, UUIDs, notes and associations are untouched. */
+    removeDuplicateMirrors(s: CanvasSession): number {
+        checkActive(undefined, this.closed); let removed = 0; const source = s.base?.path ?? '';
+        s.edit('Remove duplicate recording links', c => {
+            const groups = this.duplicateMirrors(c, source); if (!groups.length || !c.assets) throw new FoundationError('invalid', 'No provable duplicate recording links remain. Nothing was changed.');
+            const kept = new Set<string>(), drop = new Set(groups.map(g => g.path));
+            const assets = c.assets.filter(a => { if (a.role !== 'audio') return true; const target = /^\[\[([^\]|#^]+)\]\]$/.exec(a.link)?.[1]; const path = target && this.resolveLink?.(target, source); const group = path && drop.has(path) ? groups.find(g => g.path === path) : undefined; if (!group || !group.remove.includes(a.link)) return true; if (a.link === group.keep && !kept.has(a.link)) { kept.add(a.link); return true; } removed++; return false; });
+            return { ...c, assets };
+        });
+        return removed;
+    }
     /** Vault-wide file events (create/delete/rename) for availability display; no reads. */
     subscribeFiles(listener: () => void): () => void { return this.vault.subscribe(() => listener()); }
     relinkSuggestion(c: Composition, sourcePath = ''): RelinkSuggestion | undefined { const exists = (p: string) => this.recordingStatus(p).status === 'available'; return relinkSuggestion(c, exists, link => this.resolveLink ? this.resolveLink(link, sourcePath) : exists(link) ? link : null); }
@@ -129,6 +165,6 @@ export class CanvasLibrary {
     discard(s: CanvasSession): void { this.owners.delete(s); this.sessions.delete(s.draft.id.toLowerCase()); s.dispose(); }
     async checkpointAll(): Promise<void> { for (const s of this.drafts())
         await s.checkpoint(); }
-    dispose(): void { this.closed = true; this.capture.dispose();this.recovery.dispose(); for (const s of this.sessions.values())
+    dispose(): void { this.closed = true; this.freshness.dispose(); this.capture.dispose();this.recovery.dispose(); for (const s of this.sessions.values())
         s.dispose(); this.sessions.clear(); this.owners.clear(); }
 }

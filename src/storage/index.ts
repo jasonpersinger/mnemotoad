@@ -93,6 +93,8 @@ export class EntityIndex {
     return [...this.entries.values()].map(e=>({path:e.path,id:e.id,kind:e.entity?.kind,title:e.entity?.title,revision:e.revision,errorCode:e.error?.code,message:e.error?.message}));
   }
   all(): IndexEntry[] { return [...this.entries.values()].map(cloneEntry); }
+  /** 4E: clone only entries of these kinds (all() clones every entity, e.g. large compositions, on each index publish). */
+  ofKind(...kinds: Entity['kind'][]): IndexEntry[] { return [...this.entries.values()].filter(e => !!e.entity && kinds.includes(e.entity.kind)).map(cloneEntry); }
   subscribe(listener: () => void): () => void { if (this.closed) return () => {}; this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
   private publish(): void { if (!this.closed) { this.revision++; for (const listener of this.listeners) listener(); } }
   dispose(): void { this.closed = true; this.unsubscribe?.(); this.listeners.clear(); this.entries.clear(); this.versions.clear(); }

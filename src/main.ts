@@ -20,6 +20,7 @@ import { MotifView } from './modules/motif/view';
 import { CanvasLibrary } from './modules/canvas/library';
 import { CanvasView } from './modules/canvas/view';
 import { MusicalTransport } from './music/transport';
+import { NavigationCoordinator } from './application/navigation';
 
 export default class MnemobardPlugin extends Plugin {
   /** Shared foundation, PATCHBOOK library and production basic MOTIF services. */
@@ -55,7 +56,7 @@ export default class MnemobardPlugin extends Plugin {
     const musical = new MusicalTransport(() => preview.stop());
     const motifs = new MotifLibrary(index, repository, vault);
     const canvas = new CanvasLibrary(index,repository,vault,id=>motifs.isDirty(id),(target, source) => this.app.metadataCache.getFirstLinkpathDest(target, source)?.path ?? null);
-    this.services = { settings, modules, index, repository, references, patchbook, assets, preview, recovery: new PatchbookRecovery(vault, index, repository), motifs, musical, canvas };
+    this.services = { settings, modules, index, repository, references, patchbook, assets, preview, recovery: new PatchbookRecovery(vault, index, repository), motifs, musical, canvas, navigation: new NavigationCoordinator() };
     for (const module of MODULES) {
       this.registerView(VIEW_TYPES[module], leaf => module === 'patchbook' ? new PatchbookView(leaf, () => this.active ? this.services : undefined) : module === 'motif' ? new MotifView(leaf, () => this.active ? this.services : undefined) : new CanvasView(leaf, () => this.active ? this.services : undefined));
       this.addCommand({ id: `open-${module}`, name: `Open ${MODULE_LABELS[module]}`,
@@ -84,7 +85,7 @@ export default class MnemobardPlugin extends Plugin {
     this.generation++;
     const services = this.services;
     if (services) {
-      services.canvas.dispose(); services.musical.dispose(); services.motifs.dispose(); services.preview.dispose(); services.assets.dispose(); services.recovery.dispose();
+      services.navigation.dispose(); services.canvas.dispose(); services.musical.dispose(); services.motifs.dispose(); services.preview.dispose(); services.assets.dispose(); services.recovery.dispose();
       services.modules.dispose(); services.repository.dispose(); services.settings.dispose();
       for (const type of Object.values(VIEW_TYPES)) for (const leaf of this.app.workspace.getLeavesOfType(type)) {
         if (leaf.view instanceof ModuleView) leaf.view.release();

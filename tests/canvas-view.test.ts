@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { WorkspaceLeaf } from 'obsidian';
 import type { FoundationServices } from '../src/application/services';
+import { NavigationCoordinator } from '../src/application/navigation';
 import { SettingsService } from '../src/application/settings';
 import { ModuleController } from '../src/application/modules';
 import { EntityIndex } from '../src/storage/index';
@@ -20,12 +21,15 @@ import { createEntity } from '../src/domain/entities';
 import { addSection as addSection4d, updateSection as updateSection4d, addMarker as addMarker4d } from '../src/modules/canvas/structure';
 import type { ArrangementPreparation } from '../src/arrangement/preparation';
 import { MemoryVault } from './support/memory-vault';
+import { updateEntityDocument } from '../src/storage/document';
+import { contentRevision } from '../src/storage/content-revision';
+import type { Composition } from '../src/domain/entities';
 import { installDomHelpers, Keymap } from './support/obsidian';
 const cleanup: (() => void)[] = [];
 beforeEach(() => { installDomHelpers(); Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', { configurable: true, value: () => null }); });
 afterEach(() => { for (const fn of cleanup.splice(0))
     fn(); document.body.replaceChildren(); });
-async function fixture() { const vault = new MemoryVault(), index = new EntityIndex(vault), repository = new EntityRepository(vault, index), settings = new SettingsService({ load: async () => null, save: async () => { } }); await settings.load(); const motifs = new MotifLibrary(index, repository, vault); const services: FoundationServices = { settings, index, repository, modules: new ModuleController(settings.current.modules, { open: async () => { }, close: () => { } }), references: new ReferenceResolver(index, p => vault.exists(p)), patchbook: new PatchbookLibrary(index, repository), assets: new PatchbookAssets(vault), preview: new AudioPreview(), recovery: new PatchbookRecovery(vault, index, repository), motifs, musical: new MusicalTransport(), canvas: new CanvasLibrary(index, repository, vault, id => motifs.isDirty(id)) }; const view = new CanvasView({} as WorkspaceLeaf, () => services); document.body.append(view.contentEl); cleanup.push(() => { view.release(); services.canvas.dispose(); motifs.dispose(); services.musical.dispose(); services.patchbook.dispose(); repository.dispose(); index.dispose(); settings.dispose(); }); await (view as unknown as {
+async function fixture() { const vault = new MemoryVault(), index = new EntityIndex(vault), repository = new EntityRepository(vault, index), settings = new SettingsService({ load: async () => null, save: async () => { } }); await settings.load(); const motifs = new MotifLibrary(index, repository, vault); const services: FoundationServices = { navigation: new NavigationCoordinator(), settings, index, repository, modules: new ModuleController(settings.current.modules, { open: async () => { }, close: () => { } }), references: new ReferenceResolver(index, p => vault.exists(p)), patchbook: new PatchbookLibrary(index, repository), assets: new PatchbookAssets(vault), preview: new AudioPreview(), recovery: new PatchbookRecovery(vault, index, repository), motifs, musical: new MusicalTransport(), canvas: new CanvasLibrary(index, repository, vault, id => motifs.isDirty(id)) }; const view = new CanvasView({} as WorkspaceLeaf, () => services); document.body.append(view.contentEl); cleanup.push(() => { view.release(); services.canvas.dispose(); motifs.dispose(); services.musical.dispose(); services.patchbook.dispose(); repository.dispose(); index.dispose(); settings.dispose(); }); await (view as unknown as {
     open: () => Promise<void>;
 }).open(); return { view, services, vault }; }
 function click(root: HTMLElement, text: string) { const b = [...root.querySelectorAll('button')].find(b => b.textContent === text && !b.disabled); if (!b)
@@ -98,6 +102,7 @@ it('navigates markers without history entries and keeps duplicate-position marke
 it('adds, annotates, warns about missing and removes recording references without touching files', async () => { const { s, panel, vault } = await structureView(); const bytes = new Uint8Array([1, 2, 3]).buffer; await vault.createBinary('Field/station.wav', bytes); await vault.createBinary('Field/notes.pdf', bytes);
     input(panel, 'New section name', 'Theme A'); submit(panel, 'Add section');
     await new Promise(r => setTimeout(r, 200));
+    /* 4E: the add form is built when its disclosure opens (as a user opens it). */ const add = [...panel.querySelectorAll('details')].find(d => d.querySelector(':scope > summary')?.textContent === 'Add recording reference'); if (!add) throw Error('add disclosure'); expect(add.querySelector('select')).toBeNull(); add.open = true; add.dispatchEvent(new Event('toggle'));
     const options = [...panel.querySelectorAll<HTMLSelectElement>('select[aria-label="Recording file"] option')].map(o => o.value); expect(options).toContain('Field/station.wav'); expect(options).not.toContain('Field/notes.pdf');
     choose(panel, 'Recording file', 'Field/station.wav'); input(panel, 'Reference description', 'Platform ambience'); choose(panel, 'Associated section', s.draft.data.sections[0]?.id ?? ''); submit(panel, 'Add recording reference');
     expect(s.draft.data.audioRefs[0]).toMatchObject({ label: 'station', path: 'Field/station.wav', description: 'Platform ambience', sectionId: s.draft.data.sections[0]?.id });
@@ -170,6 +175,7 @@ it('4D: offers an explicit rename adoption for provable link-only conflicts and 
     const { s, panel, vault, services } = await structureView(); const bytes = new Uint8Array([7, 7]).buffer;
     await vault.createBinary('Field/take.wav', bytes); await vault.createBinary('Field/odd#1.wav', bytes); await services.index.settled();
     services.canvas.addRecording(s, { label: 'Take', path: 'Field/take.wav' }); await s.save(); await settle();
+    /* 4E: lazily built add form */ const add = [...panel.querySelectorAll('details')].find(d => d.querySelector(':scope > summary')?.textContent === 'Add recording reference'); if (add) { add.open = true; add.dispatchEvent(new Event('toggle')); }
     expect(panel.querySelector<HTMLElement>('[data-unlinkable]')?.textContent).toContain('1 audio file(s) hidden');
     s.edit('unsaved', c => addSection4d(c, { label: 'Unsaved', startTick: 0, endTick: 960 })); const path = s.base?.path ?? '';
     const moved = vault.binaries.get('Field/take.wav'); vault.binaries.delete('Field/take.wav'); if (moved) vault.binaries.set('Field/take-2.wav', moved);
@@ -192,4 +198,72 @@ it('4D: diagnostics name the musical object and position, state blocking impact,
 it('4D: Escape inside CANVAS never propagates to the host, even with nothing selected', async () => {
     const { view } = await structureView(); const canvas = view.contentEl.querySelector<HTMLElement>('canvas:not(.mnemobard-structure-ruler)'); if (!canvas) throw Error('canvas');
     const host = vi.fn(); document.addEventListener('keydown', host); try { key(canvas, 'Escape'); expect(contextKind(view)).toEqual(['none']); expect(host).not.toHaveBeenCalled(); } finally { document.removeEventListener('keydown', host); }
+});
+it('4E: a refused modal (stale active document) leaves no pending state, keeps the draft, and works on retry; disposal closes an open dialog', async () => {
+    const { view, services } = await fixture(); click(view.contentEl, 'New composition'); await settle(); click(view.contentEl, 'Add lane');
+    const session = services.canvas.drafts()[0]; if (!session) throw Error('session'); const draft = JSON.stringify(session.draft), history = session.historySize;
+    const host = globalThis as { activeDocument?: Document }, previous = host.activeDocument; host.activeDocument = document.implementation.createHTMLDocument('closed popout');
+    try {
+        click(view.contentEl, 'Place motif');
+        const picker = (view as unknown as { picker?: { contentEl: HTMLElement } }).picker;
+        expect(view.contentEl.querySelector('.mnemobard-feedback')?.textContent).toContain('closed window'); expect(picker?.contentEl.childElementCount).toBe(0);
+        expect(view.contentEl.querySelector('form[data-pending="true"]')).toBeNull(); expect(JSON.stringify(session.draft)).toBe(draft); expect(session.historySize).toBe(history);
+    } finally { host.activeDocument = previous; }
+    click(view.contentEl, 'Place motif'); const opened = (view as unknown as { picker?: { contentEl: HTMLElement; onClose: () => void } }).picker; expect(opened?.contentEl.childElementCount).toBeGreaterThan(0);
+    const closed = vi.spyOn(opened as { onClose: () => void }, 'onClose'); await view.onClose(); expect(closed).toHaveBeenCalled(); expect((view as unknown as { picker?: unknown }).picker).toBeUndefined();
+});
+
+/** 4E: a saved composition with one placed clip and a section, plus a ready (fake-compiled) preparation bound to the saved base. */
+async function freshView() {
+    const { view, services, motif, vault } = await start(); (view as unknown as { picker?: { close: () => void } }).picker?.close(); await services.index.settled();
+    const session = services.canvas.drafts()[0]; if (!session) throw Error('session'); const lane = session.draft.data.lanes[0]; if (!lane) throw Error('lane');
+    services.canvas.place(session, lane.id, motif.entity.id, 0, 1); session.edit('section', c => addSection4d(c, { label: 'Intro', startTick: 0, endTick: 3840 }, '00000000-0000-4000-8000-00000000d001'));
+    click(view.contentEl, 'Save composition'); await vi.waitFor(() => expect(session.dirty).toBe(false)); await services.index.settled(); await settle();
+    const panel = (view as unknown as { performancePanel: { preparation: ArrangementPreparation; stop: () => void } }).performancePanel, prep = panel.preparation;
+    const capture = await services.canvas.capture.capture(session.draft), base = session.base?.source ?? '', state = prep as unknown as { state: string; prepared: unknown };
+    state.prepared = { capture, arrangement: { lanes: [], events: [], expandedNotes: 0, lengthTicks: 3840, inputRevision: 'fake', diagnostics: [] }, bytes: new Uint8Array([1, 2, 3]), baseSource: base, baseRevision: await contentRevision(base), metrics: { compileMs: 0, serializeMs: 0 } }; state.state = 'ready';
+    const path = session.base?.path ?? '', external = (change: (c: Composition) => Composition) => { const current = vault.files.get(path) ?? '', disk = services.index.resolve(session.draft.id); if (disk.status !== 'ready') throw Error('disk'); vault.modify(path, updateEntityDocument(current, current, change(disk.entity as Composition))); };
+    return { view, services, vault, session, panel, prep, lane, path, external, stop: vi.spyOn(panel, 'stop') };
+}
+const freshness = (view: CanvasView) => view.contentEl.querySelector<HTMLElement>('.mnemobard-freshness');
+const banner = (view: CanvasView) => view.contentEl.querySelector<HTMLElement>('.mnemobard-freshness-banner');
+it('4E: a clean metadata-only external edit refreshes the view, keeps compiled playback and the selection, and adds no undo step', async () => {
+    const f = await freshView(); expect(freshness(f.view)?.textContent).toBe('Matches the saved note');
+    const clip = f.session.draft.data.lanes[0]?.clips[0]; if (!clip) throw Error('clip'); click(f.view.contentEl, `${clip ? f.view.contentEl.querySelector<HTMLButtonElement>(`[data-clip-id="${clip.id}"]`)?.textContent ?? '' : ''}`);
+    const history = f.session.historySize;
+    f.external(c => updateSection4d(c, '00000000-0000-4000-8000-00000000d001', { label: 'Verse from elsewhere' })); await f.services.index.settled();
+    await vi.waitFor(() => expect(f.session.freshness.state).toBe('refreshed')); await settle(); expect([f.prep.state, f.prep.diagnostics]).toEqual(['ready', []]); await vi.waitFor(() => expect(f.prep.prepared && (f.prep.prepared as { baseSource?: string }).baseSource).toBe(f.session.base?.source));
+    expect(f.prep.state).toBe('ready'); expect(f.stop).not.toHaveBeenCalled(); expect(f.session.historySize).toBeLessThanOrEqual(history); expect(f.session.selectedClip).toBe(clip.id);
+    expect(freshness(f.view)?.textContent).toBe('Refreshed from the note · compilation kept'); expect(banner(f.view)?.hidden).toBe(false); expect(banner(f.view)?.textContent).toContain('sections');
+    expect(f.view.contentEl.querySelector('.mnemobard-canvas-structure')?.textContent).toContain('Verse from elsewhere');
+    f.session.edit('Mine', c => addMarker4d(c, { label: 'Cue', tick: 960 })); await settle(); expect(freshness(f.view)?.textContent).toBe('Unsaved edits · note unchanged on disk'); expect(banner(f.view)?.hidden).toBe(true);
+});
+it('4E: a clean musical external edit refreshes and stops/invalidates the compilation', async () => {
+    const f = await freshView(); f.external(c => ({ ...c, data: { ...c.data, tempoMicrosecondsPerQuarter: 400000 } })); await f.services.index.settled();
+    await vi.waitFor(() => expect(f.prep.state).toBe('invalidated')); expect(f.stop).toHaveBeenCalled(); expect(f.prep.prepared).toBeUndefined();
+    expect(freshness(f.view)?.textContent).toBe('Refreshed from the note · compile again'); expect(f.session.draft.data.tempoMicrosecondsPerQuarter).toBe(400000);
+});
+it('4E: a dirty session shows a conflict with safe choices; reload requires confirmation and stores a recovery copy first', async () => {
+    const f = await freshView(); f.session.edit('Mine', c => updateSection4d(c, '00000000-0000-4000-8000-00000000d001', { label: 'My verse' })); const history = f.session.historySize;
+    f.external(c => ({ ...c, notes: 'Edited in another app' })); await f.services.index.settled(); await vi.waitFor(() => expect(f.session.freshness.state).toBe('conflict')); await settle();
+    expect(freshness(f.view)?.textContent).toBe('Note changed elsewhere · your edits are kept · Save blocked'); expect(banner(f.view)?.getAttribute('role')).toBe('alert');
+    expect(banner(f.view)?.textContent).toContain('description, tags and notes'); expect(f.session.draft.data.sections[0]?.label).toBe('My verse'); expect(f.session.historySize).toBe(history);
+    expect(f.prep.state).toBe('invalidated');
+    const root = banner(f.view); if (!root) throw Error('banner');
+    click(root, 'Keep working draft'); await settle(); expect(banner(f.view)?.hidden).toBe(true); expect(freshness(f.view)?.textContent).toContain('Save blocked');
+    click(f.view.contentEl, 'Save composition'); await vi.waitFor(() => expect(f.view.contentEl.querySelector('.mnemobard-feedback')?.textContent).toContain('changed elsewhere')); expect(f.vault.files.get(f.path)).toContain('Edited in another app');
+    f.session.setFreshness({ ...(f.session.freshness as { state: 'conflict'; areas: string[]; musical: boolean; rename: boolean }), kept: false }); await settle();
+    const live = banner(f.view); if (!live) throw Error('banner'); click(live, 'Reload note version…'); expect(live.textContent).toContain('Discard your unsaved arrangement edits'); click(live, 'Keep my edits'); expect(f.session.draft.data.sections[0]?.label).toBe('My verse');
+    click(live, 'Reload note version…'); click(live, 'Store recovery copy, discard edits and reload');
+    await vi.waitFor(() => expect(f.view.contentEl.querySelector('.mnemobard-feedback')?.textContent).toContain('Reloaded the note version'));
+    const fresh = f.services.canvas.drafts()[0] ?? (f.view as unknown as { session?: { draft: Composition; dirty: boolean } }).session; expect(fresh?.draft.notes).toBe('Edited in another app'); expect(fresh?.draft.data.sections[0]?.label).toBe('Intro');
+    expect([...f.vault.files.keys()].some(p => p.startsWith('MNEMOBARD/Recovery/') && (f.vault.files.get(p) ?? '').includes('My verse'))).toBe(true);
+});
+it('4E perf: the add-reference form (vault scan, section/marker options) is built only while its disclosure is open, and stays open across selection renders', async () => {
+    const { s, panel, view } = await structureView(); s.edit('Sections', c => addSection4d(addSection4d(c, { label: 'A', startTick: 0, endTick: 960 }, '00000000-0000-4000-8000-0000000e0001'), { label: 'B', startTick: 960, endTick: 1920 }, '00000000-0000-4000-8000-0000000e0002')); await settle();
+    const disclosure = () => [...panel.querySelectorAll('details')].find(d => d.querySelector(':scope > summary')?.textContent === 'Add recording reference');
+    const library = (view as unknown as { available: FoundationServices }).available.canvas, scans = vi.spyOn(library, 'recordingCandidates');
+    click(view.contentEl, 'Next section'); click(view.contentEl, 'Next section'); expect(disclosure()?.querySelector('select')).toBeNull(); expect(scans).not.toHaveBeenCalled();
+    const add = disclosure(); if (!add) throw Error('add'); add.open = true; add.dispatchEvent(new Event('toggle')); expect(scans).toHaveBeenCalledTimes(1); expect(add.querySelectorAll('select[aria-label="Associated section"] option').length).toBeGreaterThanOrEqual(2);
+    click(view.contentEl, 'Previous section'); expect(disclosure()?.open).toBe(true); expect(disclosure()?.querySelector('select[aria-label="Recording file"]')).not.toBeNull();
 });

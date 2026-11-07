@@ -86,7 +86,10 @@ export class CanvasPerformancePanel {
     if (snapshot) {
       for (const d of snapshot.documents) { const state = this.services.canvas.sources.get(d.id); if (state.status !== 'ready' || state.source.revision !== d.revision) { this.invalidate(`Saved motif is changed/${state.status}. Review its revision and compile again.`); break; } }
       const prepared = this.preparation.prepared;
-      if (prepared?.baseRevision && !this.session.busy) { const head = this.services.index.heads().find(h => h.id === this.model.id.toLowerCase()); if (!head || head.revision !== prepared.baseRevision) this.invalidate('Saved composition changed externally. Resolve/reload its protected session.'); }
+      // 4E: a clean session is refreshed by the freshness watcher (then classified musical vs organizational above);
+      // with unsaved edits the external change stays a protected conflict, so the compiled base is no longer trusted.
+      if (prepared?.baseRevision && !this.session.busy && this.session.dirty) { const head = this.services.index.heads().find(h => h.id === this.model.id.toLowerCase()); if (!head || head.revision !== prepared.baseRevision) this.invalidate('Saved composition changed externally while you have unsaved edits. Resolve the conflict, then compile again.'); }
+      if (this.session.freshness.state === 'unavailable') this.invalidate('The composition note is unavailable (deleted, invalid or ambiguous). Your draft is kept; compile again once the note is restored.');
     }
     let draftChanged = false; for (const [id, old] of this.drafts) { const next = this.services.motifs.draftRevision(id); if (next !== old && this.services.motifs.isDirty(id)) draftChanged = true; }
     this.drafts.clear(); this.captureDraftVersions();

@@ -66,3 +66,14 @@ it('keeps a known identity diagnosable after a transient read failure',async()=>
   expect(index.resolve(e.id).status).toBe('invalid');expect(index.all()[0]?.error?.code).toBe('io');
   vault.delayRead=undefined;await index.refresh('P.md');expect(index.resolve(e.id).status).toBe('ready');index.dispose();
 });
+
+it('4E: ofKind clones only the requested kinds; heads() carries error codes for issue lists without cloning entities', async () => {
+  const { EntityIndex: Index } = await import('../src/storage/index'); const { createEntityDocument: doc } = await import('../src/storage/document'); const { createEntity: make } = await import('../src/domain/entities'); const { MemoryVault: Vault } = await import('./support/memory-vault');
+  const vault = new Vault(), index = new Index(vault);
+  for (const [kind, title] of [['motif', 'M'], ['patch', 'P'], ['composition', 'C'], ['instrument', 'I']] as const) await vault.create(`${title}.md`, doc(make(kind, title)));
+  await vault.create('Broken.md', '---\nmnemobard_id: 00000000-0000-4000-8000-000000000bad\nmnemobard_kind: motif\nmnemobard_schema: 2\n---\n');
+  await index.start();
+  expect(index.ofKind('motif').map(e => e.entity?.title)).toEqual(['M']); expect(index.ofKind('instrument', 'patch', 'effects-chain').map(e => e.entity?.kind).sort()).toEqual(['instrument', 'patch']);
+  const issues = index.heads().filter(h => h.errorCode); expect(issues).toHaveLength(1); expect(issues[0]).toMatchObject({ path: 'Broken.md', errorCode: 'unsupported-schema' }); expect(issues[0]?.message).toContain('schema');
+  index.dispose();
+});

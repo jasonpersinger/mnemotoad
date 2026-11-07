@@ -1,0 +1,377 @@
+{
+  "milestone": "4E",
+  "authority": "Prompt012",
+  "status": "CONDITIONAL PASS",
+  "baseline": {
+    "commit": "1e11155",
+    "signed": true,
+    "signature": "Good EdDSA signature (existing configuration)",
+    "tests": "538/41",
+    "discrepancies": [
+      "4D validation JSON lists GENTS.md (truncated AGENTS.md)",
+      "progress.md modified (4D line) but not listed"
+    ]
+  },
+  "verification": {
+    "tests": "573/43",
+    "typecheck": true,
+    "lint": true,
+    "build": true,
+    "audit": "0 vulnerabilities",
+    "goldenMidi": "85c8ecf39936d1de7612f65d17d3df2f4599472cda8027096bced1c93bb3ab77",
+    "independentFixtures": "10 valid / 4 rejections"
+  },
+  "native": {
+    "host": "Obsidian 1.15.0, electron43 43.8.7, isolated profile, dev-vault, CDP 127.0.0.1:9227",
+    "finalBuild": true,
+    "part1": {
+      "checks": [
+        "A 1–7",
+        "B 8–12",
+        "B 13–14",
+        "B 15–20",
+        "B 21",
+        "B 22",
+        "B 23",
+        "B 24",
+        "C 25–28",
+        "C 30–34",
+        "D 35–42",
+        "E 43–44",
+        "E 45–46",
+        "E 47–48",
+        "E 49–50",
+        "F 51–64",
+        "G 65–76",
+        "H 77–79"
+      ],
+      "rendererExceptions": 0
+    },
+    "restart": {
+      "checks": [
+        "C 29",
+        "H 80–84"
+      ],
+      "rendererExceptions": 0
+    },
+    "regressions": {
+      "motif": 19,
+      "motifMidi": 16,
+      "patchbookAssets": 12,
+      "foundation": 11,
+      "restartPhases": [
+        "motif",
+        "motif-midi",
+        "patchbook-assets"
+      ],
+      "firstAttempt": true,
+      "exceptions": 0
+    },
+    "retries": 6,
+    "screenshots": 20,
+    "evidence": {
+      "midi": {
+        "export0MatchesD4": true,
+        "afterFreshness": true,
+        "afterUndoRecompile": true,
+        "afterRestart": true,
+        "python": true
+      },
+      "audioIntact": true,
+      "playbackDuringExternalRefresh": "playing",
+      "navigationConcurrent": {
+        "selected": "f8fb6bb6-97f4-416b-a731-420c33eba796",
+        "selectedEvents": [
+          "f8fb6bb6-97f4-416b-a731-420c33eba796"
+        ],
+        "superseded": [
+          "0381cffa-059e-4d3d-8468-5e6a99ffbca1"
+        ],
+        "failed": 0
+      },
+      "coldNavigation": [
+        "host-state",
+        "request",
+        "leaf-ready",
+        "view-loaded",
+        "view-ready",
+        "state-applied",
+        "selected"
+      ],
+      "modalRefusalNative": "not reproducible (popout close returned activeDocument to main)"
+    },
+    "unreproduced": [
+      "MOTIF→PATCHBOOK intermittent navigation",
+      "stale activeDocument (native refusal path)"
+    ]
+  },
+  "performance": {
+    "method": "same Obsidian process; 4D build (1e11155) vs final 4E; medians (7 samples, 3 for compile/export/save)",
+    "comparison": {
+      "small": {
+        "initialRender": {
+          "build4d": 35.4,
+          "build4e": 26.2
+        },
+        "sectionSelect": {
+          "build4d": 10.4,
+          "build4e": 4.6
+        },
+        "markerNavigate": {
+          "build4d": 11.8,
+          "build4e": 5.1
+        },
+        "clipSelect": {
+          "build4d": 2,
+          "build4e": 1.8
+        },
+        "inspectorSwitch": {
+          "build4d": 9.4,
+          "build4e": 4.1
+        },
+        "sectionMove": {
+          "build4d": 12.8,
+          "build4e": 6.2
+        },
+        "undoRedo": {
+          "build4d": 25.7,
+          "build4e": 11.9
+        },
+        "save": {
+          "build4d": 30.4,
+          "build4e": 14.6
+        },
+        "compile": {
+          "build4d": 72.7,
+          "build4e": 66.5
+        },
+        "compileAndExport": {
+          "build4d": 77,
+          "build4e": 76.6
+        },
+        "zoom": {
+          "build4d": 0.5,
+          "build4e": 0.5
+        },
+        "scroll": {
+          "build4d": 0.3,
+          "build4e": 0.2
+        },
+        "crossModuleNavigation": {
+          "build4d": 98.2,
+          "build4e": 54.9
+        },
+        "cleanExternalRefresh": {
+          "build4d": "skipped",
+          "build4e": 41
+        },
+        "metadataRefreshKeepsCompilation": {
+          "build4d": "skipped",
+          "build4e": 40.2
+        },
+        "musicalRefreshInvalidation": {
+          "build4d": "skipped",
+          "build4e": 35.9
+        },
+        "dirtyConflictDetection": {
+          "build4d": "skipped",
+          "build4e": 45.3
+        }
+      },
+      "medium": {
+        "initialRender": {
+          "build4d": 29,
+          "build4e": 18.6
+        },
+        "sectionSelect": {
+          "build4d": 8.3,
+          "build4e": 2.3
+        },
+        "markerNavigate": {
+          "build4d": 8.7,
+          "build4e": 2.6
+        },
+        "clipSelect": {
+          "build4d": 1.3,
+          "build4e": 1.5
+        },
+        "inspectorSwitch": {
+          "build4d": 8.2,
+          "build4e": 3.1
+        },
+        "sectionMove": {
+          "build4d": 13.8,
+          "build4e": 7.7
+        },
+        "undoRedo": {
+          "build4d": 28.6,
+          "build4e": 13.6
+        },
+        "save": {
+          "build4d": 27.2,
+          "build4e": 20.8
+        },
+        "compile": {
+          "build4d": 68.7,
+          "build4e": 68
+        },
+        "compileAndExport": {
+          "build4d": 84.5,
+          "build4e": 83.7
+        },
+        "zoom": {
+          "build4d": 0.2,
+          "build4e": 0.2
+        },
+        "scroll": {
+          "build4d": 0.2,
+          "build4e": 0.1
+        },
+        "crossModuleNavigation": {
+          "build4d": 112.8,
+          "build4e": 47.3
+        },
+        "cleanExternalRefresh": {
+          "build4d": "skipped",
+          "build4e": 59.9
+        },
+        "metadataRefreshKeepsCompilation": {
+          "build4d": "skipped",
+          "build4e": 52.3
+        },
+        "musicalRefreshInvalidation": {
+          "build4d": "skipped",
+          "build4e": 46.4
+        },
+        "dirtyConflictDetection": {
+          "build4d": "skipped",
+          "build4e": 55
+        }
+      },
+      "large": {
+        "initialRender": {
+          "build4d": 70,
+          "build4e": 52.5
+        },
+        "sectionSelect": {
+          "build4d": 15.3,
+          "build4e": 5.5
+        },
+        "markerNavigate": {
+          "build4d": 16.7,
+          "build4e": 6.4
+        },
+        "clipSelect": {
+          "build4d": 3.1,
+          "build4e": 3.3
+        },
+        "inspectorSwitch": {
+          "build4d": 13.7,
+          "build4e": 5.3
+        },
+        "sectionMove": {
+          "build4d": 29.9,
+          "build4e": 24
+        },
+        "undoRedo": {
+          "build4d": 56.9,
+          "build4e": 36.1
+        },
+        "save": {
+          "build4d": 82.3,
+          "build4e": 70.2
+        },
+        "compile": {
+          "build4d": 98,
+          "build4e": 97.4
+        },
+        "compileAndExport": {
+          "build4d": 166.7,
+          "build4e": 150.8
+        },
+        "zoom": {
+          "build4d": 0.2,
+          "build4e": 0.2
+        },
+        "scroll": {
+          "build4d": 0.2,
+          "build4e": 0.2
+        },
+        "crossModuleNavigation": {
+          "build4d": 114.8,
+          "build4e": 50.8
+        },
+        "cleanExternalRefresh": {
+          "build4d": "skipped",
+          "build4e": 119.9
+        },
+        "metadataRefreshKeepsCompilation": {
+          "build4d": "skipped",
+          "build4e": 115.8
+        },
+        "musicalRefreshInvalidation": {
+          "build4d": "skipped",
+          "build4e": 93.1
+        },
+        "dirtyConflictDetection": {
+          "build4d": "skipped",
+          "build4e": 115.2
+        }
+      }
+    },
+    "sectionSelectLarge": {
+      "build4d": 15.3,
+      "build4e": 5.5
+    }
+  },
+  "repository": {
+    "branch": "main",
+    "head": "1e11155",
+    "pendingPaths": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs/ARCHITECTURE.md",
+      "docs/DATA_MODEL.md",
+      "docs/DECISIONS.md",
+      "docs/DESIGN_DIRECTION.md",
+      "docs/MILESTONE_4E_REPORT.md",
+      "docs/RISKS.md",
+      "docs/ROADMAP.md",
+      "docs/validation/milestone-4e-native.json",
+      "progress.md",
+      "scripts/canvas-4e-benchmark.mjs",
+      "scripts/canvas-4e-cpu-profile.mjs",
+      "scripts/canvas-4e-native.mjs",
+      "scripts/canvas-4e-playback-probe.mjs",
+      "scripts/canvas-4e-profile.mjs",
+      "scripts/canvas-4e-refresh-profile.mjs",
+      "scripts/dev-obsidian.mjs",
+      "src/application/document-session.ts",
+      "src/application/navigation.ts",
+      "src/application/services.ts",
+      "src/main.ts",
+      "src/modules/canvas/freshness.ts",
+      "src/modules/canvas/library.ts",
+      "src/modules/canvas/performance-panel.ts",
+      "src/modules/canvas/session.ts",
+      "src/modules/canvas/structure-panel.ts",
+      "src/modules/canvas/view.ts",
+      "src/modules/motif/library.ts",
+      "src/modules/motif/view.ts",
+      "src/modules/patchbook/library.ts",
+      "src/modules/patchbook/view.ts",
+      "src/storage/index.ts",
+      "styles.css",
+      "tests/canvas-freshness.test.ts",
+      "tests/canvas-rename.test.ts",
+      "tests/canvas-view.test.ts",
+      "tests/index-references.test.ts",
+      "tests/motif-view.test.ts",
+      "tests/navigation.test.ts",
+      "tests/patchbook-view.test.ts"
+    ],
+    "pushed": false
+  },
+  "evidenceDirectory": "output/canvas/milestone-4e",
+  "report": "docs/MILESTONE_4E_REPORT.md"
+}

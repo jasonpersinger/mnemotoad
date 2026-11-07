@@ -94,6 +94,16 @@ export class DocumentSession<T extends Entity> {
     if (this.busy || !this.base || !this.accepts(record.entity) || record.entity.id !== this.value.id || record.entity.kind !== this.value.kind || record.path !== this.base.path) throw new FoundationError('conflict', 'The saved note cannot be adopted while a save runs or for another record.');
     this.base = structuredClone(record); this.error = ''; this.publish();
   }
-  private publish(): void { for (const listener of this.listeners) listener(); }
+  /**
+   * 4E: follow the same note to a new vault path (Obsidian rename/move). Only when the bytes are identical to the
+   * current base, so nothing about the protected-save comparison changes except where it is read from.
+   */
+  relocate(record: EntityRecord): void {
+    this.active();
+    if (this.busy || !this.base || record.source !== this.base.source || !this.accepts(record.entity) || record.entity.id !== this.value.id || record.entity.kind !== this.value.kind) throw new FoundationError('conflict', 'Only an unchanged note can be followed to its new path.');
+    if (record.path === this.base.path) return;
+    this.base = structuredClone(record); this.publish();
+  }
+  protected publish(): void { for (const listener of this.listeners) listener(); }
   dispose(): void { if (this.closed) return; this.closed = true; this.lifetime.abort(); if (this.timer) clearTimeout(this.timer); this.timer = undefined; this.listeners.clear(); }
 }

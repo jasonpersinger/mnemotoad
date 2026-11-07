@@ -4,7 +4,9 @@
 
 Read README and the relevant documents in `docs/` before implementation: PRODUCT_SPEC, ARCHITECTURE, DATA_MODEL, ROADMAP, DECISIONS, TROUBADOUR_AUDIT and RISKS. DESIGN_DIRECTION and TECHNICAL_RESEARCH inform UI/dependency work. Read the decision approval log and current user instructions; do not confuse a proposal with approval. Parent workspace rules also apply.
 
-Current authority: Prompt011 authorizes **Milestone 4D only** (CANVAS usability, contextual inspector, navigation, musical-vs-organizational invalidation, host stability, recording rename workflow, accessibility, performance; no new feature set, schema version, audio engine, maps or structure MIDI export). Signed 4C baseline 0a3dc72 (492 tests/38 files). Agent: Claude Code; see CLAUDE.md. Stop after 4D for human review.
+Current authority: Prompt012 authorizes **Milestone 4E only** (document freshness for open CANVAS compositions, cross-module navigation readiness, modal lifecycle verification, recording-reference edge cases, section-selection performance, full native regression; no new composition features, schema version, audio features, maps, broad redesign or new frameworks). Signed 4D baseline 1e11155 (538 tests/41 files). Agent: Claude Code; see CLAUDE.md. Stop after 4E for human review.
+
+Previous authority (historical): Prompt011 authorizes **Milestone 4D only** (CANVAS usability, contextual inspector, navigation, musical-vs-organizational invalidation, host stability, recording rename workflow, accessibility, performance; no new feature set, schema version, audio engine, maps or structure MIDI export). Signed 4C baseline 0a3dc72 (492 tests/38 files). Agent: Claude Code; see CLAUDE.md. Stop after 4D for human review.
 
 Previous authority (historical): Prompt010 authorizes **Milestone4C only** (sections, markers, recording references in CANVAS; no audio engine, maps, section looping or MIDI export of structure). Signed4B baseline a64b267 (449 tests/37 files). Agent: Claude Code; see CLAUDE.md for orientation. Stop after4C for human review.
 

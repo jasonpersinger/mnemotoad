@@ -25,7 +25,8 @@ if(existing) {
   const id=createHash('sha256').update(vault).digest('hex').slice(0,16);
   await writeFile(registry,JSON.stringify({vaults:{[id]:{path:vault,ts:Date.now(),open:true}}},null,2),{flag:'wx'});
 }
-const child=spawn('obsidian',[`--user-data-dir=${profile}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=9227','--disable-gpu','--no-first-run'],{
+// 4E: electron43 43.8.7 auto-selects Wayland, whose socket is not in the isolated XDG_RUNTIME_DIR; pin X11 (XWayland) per launch.
+const child=spawn('obsidian',['--ozone-platform=x11',`--user-data-dir=${profile}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=9227','--disable-gpu','--no-first-run'],{
   stdio:'inherit',env:{...process.env,XDG_CONFIG_HOME:join(root,'.runtime/config'),XDG_CACHE_HOME:join(root,'.runtime/cache'),XDG_DATA_HOME:join(root,'.runtime/data'),XDG_RUNTIME_DIR:join(root,'.runtime/run'),GSETTINGS_BACKEND:'memory'},
 });
 child.on('error',error=>{console.error(`Cannot launch the isolated Obsidian desktop: ${error.message}`);process.exitCode=1;});

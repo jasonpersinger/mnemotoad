@@ -113,3 +113,7 @@ Review actual captures in [output/canvas/milestone-4a/](../output/canvas/milesto
 ## Milestone 4D CANVAS hierarchy
 
 Primary: identity, essential transport, the timeline with section/marker ruler (sticky on tall panes). Context: one bounded inspector directly beneath the timeline, uppercase muted context label, accent left rule, facts as a definition grid — never more than one large editor visible. Secondary: collapsed disclosures (structure lists, lane management, seek/export, routing, compilation diagnostics, clip list, prose) in muted text. Diagnostics use severity rules (error/warning colours from the theme), musical names and positions first, UUIDs only in tooltips. No new colours, gradients or animation; dark and light themes verified.
+
+## Milestone 4E freshness presentation
+
+A quiet one-line indicator beside the save status (muted when current, accent when refreshed/checking, warning colour for conflicts or unavailable notes). A bounded banner appears only when something needs attention, with the explanation first, the safe choices before the destructive one, and the destructive one behind an explicit confirmation that states what is kept. Titles and musical areas (sections, clips and lanes, routing…) are used instead of UUIDs; the note path is reachable via *Open composition Markdown*. Host theme tokens only; verified in dark, light, narrow and high-DPI.
