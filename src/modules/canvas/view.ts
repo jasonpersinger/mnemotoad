@@ -1,4 +1,5 @@
 import { Notice, Scope, type WorkspaceLeaf } from 'obsidian';
+import { openModal } from '../../ui/modal-host';
 import { ModuleView } from '../../ui/module-view';
 import { element, button } from '../../ui/dom';
 import type { FoundationServices } from '../../application/services';
@@ -6,6 +7,8 @@ import type { Composition } from '../../domain/entities';
 import { messageOf } from '../../domain/errors';
 import { RecoveryInspector } from '../../ui/recovery-inspector';
 import { diagnosticText, type ArrangementPlan } from '../../arrangement/preflight';
+import { musicalPosition } from '../../music/positions';
+import type { Meter } from '../../domain/entities';
 import { gridTicks, type Grid } from '../../music/grid';
 import { MotifView } from '../motif/view';
 import { CanvasSession } from './session';
@@ -16,6 +19,20 @@ import { clipInspector } from './inspector';
 import { CanvasPerformancePanel } from './performance-panel';
 import { CanvasStructurePanel } from './structure-panel';
 import { addMarker, addSection, orderedSections, updateMarker, updateSection } from './structure';
+const SEVERITY = { error: 'Blocks compile/export', warning: 'Can continue · review', info: 'Note' } as const;
+/** What resolves each preflight diagnostic (4D diagnostic usability). */
+const DIAGNOSTIC_ACTION: Partial<Record<string, string>> = {
+    missing: 'Restore the motif note (UUID unchanged) or delete the clip.', duplicate: 'Open both notes and give one a new identity outside CANVAS.', malformed: 'Open the source Markdown and repair it.',
+    unreviewed: 'Select the clip → Review saved source → Acknowledge.', changed: 'Select the clip → Review saved source → Acknowledge the new revision.', moved: 'Optional: acknowledge to refresh the path hint.',
+    'unsaved-source': 'Save the MOTIF to include its edits.', 'inexact-timing': 'Use a source with compatible PPQ/length or remove the clip.', 'beyond-end': 'Extend the composition length or move the clip.', 'clip-overlap': 'Move a clip or compile to check exact collisions.',
+};
+/** Documented keyboard interactions (also shown in the "Timeline gestures and keys" disclosure). */
+export const CANVAS_KEYS = Object.freeze([
+    '[ / ] · previous / next section (playhead-relative, no wrap, never starts playback)',
+    ', / . · previous / next marker (markers sharing a position are visited in name order)',
+    'Escape · cancel a drag, otherwise clear the selection and return focus to the timeline',
+    'Tab · move between timeline, structure ruler, inspector and tools; keys are ignored while typing in a field',
+]);
 export class CanvasView extends ModuleView {
     private active = false;
     private epoch = 0;
@@ -35,6 +52,12 @@ export class CanvasView extends ModuleView {
     private saveStatus?: HTMLElement;
     private pending?: HTMLElement;
     private inspector?: HTMLElement;
+    /** 4D contextual inspector: exactly one of empty/clip/lane/structure is visible. Selection is ephemeral (no history). */
+    private context?: { header: HTMLElement; empty: HTMLElement; lane: HTMLElement; structure: HTMLElement };
+    private contextKind: 'none' | 'clip' | 'lane' | 'structure' = 'none';
+    private laneFocus = false;
+    private laneHome?: Comment;
+    private routeHome?: Comment;
     private laneRoot?: HTMLElement;
     private diagnostics?: HTMLElement;
     private clipRegister?: HTMLElement;
@@ -46,6 +69,8 @@ export class CanvasView extends ModuleView {
     private clipPage = 0;
     private plan?: ArrangementPlan;
     private planKey = '';
+    /** Meter of the draft snapshot the current plan was built from (avoids another session.draft clone per refresh). */
+    private planMeter?: Meter;
     private draftEpoch = 0;
     private editorScope?: Scope;
     constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) { super(leaf, 'canvas', foundation); this.scope = new Scope(this.app.scope); }
@@ -96,6 +121,7 @@ export class CanvasView extends ModuleView {
             this.draftEpoch++;
             this.refreshScene();
         } }));
+        const keys = (e: KeyboardEvent) => this.keyboard(e); this.contentEl.addEventListener('keydown', keys); this.cleanup.push(() => this.contentEl.removeEventListener('keydown', keys));
         if(typeof this.app.workspace.on==='function'){const event=this.app.workspace.on('active-leaf-change',leaf=>{if(leaf!==this.leaf)this.performancePanel?.stop();});this.cleanup.push(()=>this.app.workspace.offref(event));}
         this.bindKeys();
         this.renderBrowser();
@@ -263,30 +289,47 @@ export class CanvasView extends ModuleView {
         button(tools, 'Next section', () => this.structurePanel?.step('section', 1));
         button(tools, 'Previous marker', () => this.structurePanel?.step('marker', -1));
         button(tools, 'Next marker', () => this.structurePanel?.step('marker', 1));
-        this.plan = s.canvas.plan(session.draft);
+        const planDraft = session.draft;
+        this.plan = s.canvas.plan(planDraft);
+        this.planMeter = planDraft.data.meter;
         this.planKey = `${session.changeVersion}:${s.index.currentRevision}:${this.draftEpoch}`;
         const surface = element(root, 'div', undefined, 'mnemobard-arrangement-surface');
         this.timeline = new ArrangementTimeline(surface, session.draft, this.plan, (lane, id) => this.select(lane, id), (id, lane, start) => this.act(() => { const current = findClip(session.draft, id).clip; s.canvas.move(session, id, lane, start, current.repeatCount, current.label); }), (lane, start) => this.chooseMotif(lane, start), text => this.say(text), {
-            select: (kind, id) => { this.structurePanel?.select(kind, id); },
+            select: (kind, id) => { if (this.hasPending()) { this.say('Apply or discard pending properties before selecting another item.'); return; } this.structurePanel?.select(kind, id); },
             moveSection: (id, startTick, endTick) => { this.act(() => session.edit('Move section', c => updateSection(c, id, { startTick, endTick }))); },
             moveMarker: (id, tick) => { this.act(() => session.edit('Move marker', c => updateMarker(c, id, { tick }))); },
             createSection: start => { this.act(() => { const c = session.draft, m = c.data.meter, bar = c.data.ppq * 4 / m.denominator * m.numerator, next = orderedSections(c).find(x => x.startTick > start)?.startTick ?? c.data.lengthTicks, id = crypto.randomUUID(); session.edit('Add section', x => addSection(x, { label: `Section ${c.data.sections.length + 1}`, startTick: start, endTick: Math.min(start + bar * 4, next) }, id)); this.structurePanel?.select('section', id); }); },
             createMarker: tick => { this.act(() => { const id = crypto.randomUUID(); session.edit('Add marker', x => addMarker(x, { label: `Marker ${x.data.markers.length + 1}`, tick }, id)); this.structurePanel?.select('marker', id); }); },
         });
         this.timeline.selection(session.selectedLane, session.selectedClip);
-        element(root, 'p', 'Drag clips to move · double-click empty time to place · Ctrl/Cmd-wheel zoom · Shift-wheel scroll. Saved motifs are live references; no source notes are copied. Section/marker ruler: drag to move, drag section edges to resize, double-click to add.', 'mnemobard-hint');
-        const structureRoot = element(root, 'div');
-        this.laneRoot = element(root, 'section', undefined, 'mnemobard-canvas-lane-manager');
-        this.inspector = element(root, 'section', undefined, 'mnemobard-canvas-inspector');
-        const secondary=element(root,'section',undefined,'mnemobard-canvas-performance');
+        const gestures = element(root, 'details', undefined, 'mnemobard-canvas-gestures');
+        element(gestures, 'summary', 'Timeline gestures and keys');
+        element(gestures, 'p', 'Drag clips to move · double-click empty time to place · Ctrl/Cmd-wheel zoom · Shift-wheel scroll. Saved motifs are live references; no source notes are copied. Section/marker ruler: drag to move, drag section edges to resize, double-click to add.', 'mnemobard-hint');
+        const keyList = element(gestures, 'ul', undefined, 'mnemobard-canvas-keys');
+        for (const line of CANVAS_KEYS) element(keyList, 'li', line);
+        const context = element(root, 'section', undefined, 'mnemobard-canvas-context');
+        context.setAttribute('aria-label', 'Selection inspector');
+        const header = element(context, 'div', undefined, 'mnemobard-context-header');
+        header.setAttribute('role', 'status');
+        const empty = element(context, 'p', 'Nothing selected. Choose a clip, lane, section, marker or recording reference; Previous/Next buttons and [ ] , . keys navigate.', 'mnemobard-hint mnemobard-context-empty');
+        this.inspector = element(context, 'section', undefined, 'mnemobard-canvas-inspector');
+        const structureEditor = element(context, 'div', undefined, 'mnemobard-context-structure');
+        this.context = { header, empty, lane: element(context, 'div', undefined, 'mnemobard-context-lane'), structure: structureEditor };
+        this.contextKind = 'none'; this.laneFocus = false;
+        const secondaryTools = element(root, 'div', undefined, 'mnemobard-canvas-tools');
+        const structureRoot = element(secondaryTools, 'div');
+        this.laneRoot = element(secondaryTools, 'section', undefined, 'mnemobard-canvas-lane-manager');
+        this.laneHome = root.ownerDocument.createComment('lane manager home'); this.laneRoot.after(this.laneHome);
+        const secondary=element(secondaryTools,'section',undefined,'mnemobard-canvas-performance');
         this.performancePanel=new CanvasPerformancePanel(performanceToolbar,secondary,this.app,s,session,this,(fn,form)=>this.act(fn,form),()=>this.hasPending(),()=>this.active&&this.app.workspace.activeLeaf===this.leaf,tick=>this.timeline?.playhead(tick),(lane,clip)=>{if(this.select(lane,clip)&&clip)this.timeline?.reveal(clip);});
-        this.structurePanel = new CanvasStructurePanel(structureRoot, { library: s.canvas, session, act: (fn, form) => this.act(fn, form), locate: tick => { this.timeline?.revealTick(tick); this.performancePanel?.locate(tick); }, highlight: (kind, id) => this.timeline?.structureSelection(kind, id), open: path => this.openMarkdown(path), sourcePath: () => session.base?.path ?? '', cursorTick: () => this.performancePanel?.currentTick ?? 0, readOnly: () => s.settings.readOnly });
-        this.clipRegister = element(root, 'details', undefined, 'mnemobard-canvas-clip-register');
+        this.routeHome = root.ownerDocument.createComment('routing home'); this.performancePanel.routing.before(this.routeHome);
+        this.structurePanel = new CanvasStructurePanel(structureRoot, { library: s.canvas, session, act: (fn, form) => this.act(fn, form), locate: tick => { this.timeline?.revealTick(tick); this.performancePanel?.locate(tick); }, highlight: (kind, id) => this.timeline?.structureSelection(kind, id), open: path => this.openMarkdown(path), sourcePath: () => session.base?.path ?? '', cursorTick: () => this.performancePanel?.currentTick ?? 0, readOnly: () => s.settings.readOnly, blocked: () => this.hasPending(), selected: kind => this.structureSelected(kind) }, structureEditor);
+        this.clipRegister = element(secondaryTools, 'details', undefined, 'mnemobard-canvas-clip-register');
         element(this.clipRegister, 'summary', 'Clip list · keyboard alternative');
-        const diagnostics = element(root, 'details', undefined, 'mnemobard-canvas-diagnostics');
+        const diagnostics = element(secondaryTools, 'details', undefined, 'mnemobard-canvas-diagnostics');
         element(diagnostics, 'summary', 'Arrangement diagnostics');
         this.diagnostics = element(diagnostics, 'div');
-        const notes = element(root, 'details');
+        const notes = element(secondaryTools, 'details');
         element(notes, 'summary', 'Description, tags and notes');
         for (const [label, key] of [['Description', 'description'], ['Composition tags', 'tags'], ['Composition notes', 'notes']] as const) {
             const wrap = element(notes, 'label');
@@ -322,8 +365,10 @@ export class CanvasView extends ModuleView {
     private refreshScene(): void { const s = this.available, session = this.session; if (!this.active || !s || !session || session.disposed)
         return; this.performancePanel?.refresh();this.updateStatus(); const key = `${session.changeVersion}:${s.index.currentRevision}:${this.draftEpoch}`; if (key !== this.planKey) {
         this.planKey = key;
-        this.plan = s.canvas.plan(session.draft);
-        this.timeline?.update(session.draft, this.plan);
+        const draft = session.draft;
+        this.plan = s.canvas.plan(draft);
+        this.planMeter = draft.data.meter;
+        this.timeline?.update(draft, this.plan);
         this.structurePanel?.refresh();
         this.renderSelection();
     } this.timeline?.selection(session.selectedLane, session.selectedClip); this.renderDiagnostics(); }
@@ -354,7 +399,7 @@ export class CanvasView extends ModuleView {
         return; if (!force && this.hasPending())
         return; const focused = this.contentEl.ownerDocument.activeElement, restore = focused instanceof HTMLElement && (this.inspector.contains(focused) || this.laneRoot.contains(focused) || this.clipRegister?.contains(focused)), focusLabel = focused?.getAttribute('aria-label'), focusClip = focused?.getAttribute('data-clip-id'), focusText = focused?.tagName === 'BUTTON' ? focused.textContent : undefined; const c = session.draft; if (!c.data.lanes.some(l => l.id === session.selectedLane))
         session.selectedLane = c.data.lanes[0]?.id; if (!c.data.lanes.some(l => l.clips.some(clip => clip.id === session.selectedClip)))
-        session.selectedClip = undefined; this.renderLanes(); clipInspector(this.inspector, session, s.canvas, this.plan, (fn, form) => this.act(fn, form), () => this.renderSelection(true), id => { void this.openMotif(id).catch(e => this.fail(e)); }); this.renderRegister(); this.timeline?.selection(session.selectedLane, session.selectedClip); if (restore && !focused?.isConnected) {
+        session.selectedClip = undefined; this.renderLanes(); clipInspector(this.inspector, session, s.canvas, this.plan, (fn, form) => this.act(fn, form), () => this.renderSelection(true), id => { void this.openMotif(id).catch(e => this.fail(e)); }); this.placeContext(); this.renderRegister(); this.timeline?.selection(session.selectedLane, session.selectedClip); if (restore && !focused?.isConnected) {
         const target = [...this.editor?.querySelectorAll<HTMLElement>('input,select,button') ?? []].find(e => focusClip ? e.dataset.clipId === focusClip : focusLabel ? e.getAttribute('aria-label') === focusLabel : focusText ? e.textContent === focusText : false);
         (target ?? this.timeline?.canvas)?.focus();
     } }
@@ -381,9 +426,13 @@ export class CanvasView extends ModuleView {
         button(root, 'Previous clip page', () => { this.clipPage--; this.renderRegister(); }); if ((this.clipPage + 1) * 50 < clips.length)
         button(root, 'More clips', () => { this.clipPage++; this.renderRegister(); }); }
     private renderDiagnostics(): void { if (!this.diagnostics || !this.plan)
-        return; this.diagnostics.replaceChildren(); for (const d of this.plan.diagnostics.slice(0, 100)) {
-        const row = element(this.diagnostics, 'p', `${d.severity.toUpperCase()}${d.clipId ? ' · ' + d.clipId.slice(0, 8) : ''}: ${diagnosticText(d)}`);
-        row.dataset.diagnostic = d.code;
+        return; this.diagnostics.replaceChildren(); const plan = this.plan, meter = this.planMeter; for (const d of plan.diagnostics.slice(0, 100)) {
+        // 4D: musical names and positions first; UUIDs only as advanced detail (title attribute).
+        const clip = d.clipId ? plan.clips.find(c => c.id === d.clipId) : undefined, where = clip && meter ? `${clip.title} · lane ${clip.laneIndex + 1} · ${musicalPosition(clip.startTick, 960, meter)}` : '';
+        const row = element(this.diagnostics, 'div', undefined, 'mnemobard-diagnostic-row'); row.dataset.diagnostic = d.code; row.dataset.severity = d.severity;
+        element(row, 'p', `${SEVERITY[d.severity]}${where ? ' · ' + where : ''}: ${diagnosticText(d)}${DIAGNOSTIC_ACTION[d.code] ? ' ' + DIAGNOSTIC_ACTION[d.code] : ''}`);
+        if (d.clipId || d.motifId) row.title = [d.clipId && `Clip ${d.clipId}`, d.motifId && `Motif ${d.motifId}`].filter(Boolean).join(' · ');
+        if (clip) button(row, 'Select clip', () => { if (this.select(clip.laneId, clip.id)) { this.timeline?.reveal(clip.id); this.inspector?.querySelector<HTMLElement>('input,button')?.focus(); } });
     } if (this.plan.diagnostics.length > 100)
         element(this.diagnostics, 'p', `${this.plan.diagnostics.length - 100} further diagnostics; select a clip for its full detail.`); const summary = this.diagnostics.parentElement?.querySelector('summary'); if (summary)
         summary.textContent = `Arrangement diagnostics · ${this.plan.diagnostics.filter(d => d.severity === 'error').length} errors / ${this.plan.diagnostics.filter(d => d.severity === 'warning').length} warnings`; }
@@ -391,7 +440,58 @@ export class CanvasView extends ModuleView {
         this.say('Apply or discard pending clip/lane settings before selecting another item.');
         return false;
     } if (!this.session)
-        return false; this.session.selectedLane = lane; this.session.selectedClip = clip; this.renderSelection(true); this.timeline?.selection(lane, clip); return true; }
+        return false; if (this.structurePanel && !this.structurePanel.clear())
+        return false; this.laneFocus = !clip; this.session.selectedLane = lane; this.session.selectedClip = clip; this.renderSelection(true); this.timeline?.selection(lane, clip); return true; }
+    /** Structure panel callback: a section/marker/reference selection replaces the clip/lane context (ephemeral). */
+    private structureSelected(kind: string | undefined): void { const session = this.session; if (!session)
+        return; if (kind) {
+        session.selectedClip = undefined;
+        this.laneFocus = false;
+        this.timeline?.selection(session.selectedLane, undefined);
+        this.renderRegister();
+    } this.placeContext(); }
+    /** Shows exactly one inspector context. Moves (never duplicates) the lane manager and routing form so their state and labels are preserved. */
+    private placeContext(): void { const ctx = this.context, session = this.session; if (!ctx || !session || !this.inspector)
+        return; const structure = this.structurePanel?.selection, kind = structure ? 'structure' : session.selectedClip ? 'clip' : this.laneFocus && session.selectedLane ? 'lane' : 'none';
+        this.contextKind = kind; ctx.empty.hidden = kind !== 'none'; this.inspector.hidden = kind !== 'clip'; ctx.structure.hidden = kind !== 'structure'; ctx.lane.hidden = kind !== 'lane';
+        ctx.header.textContent = kind === 'none' ? 'Inspector' : `Inspector · ${kind === 'structure' ? structure?.kind === 'reference' ? 'Recording reference' : structure?.kind === 'section' ? 'Section' : 'Marker' : kind === 'clip' ? 'Clip' : 'Lane'}`;
+        const routing = this.performancePanel?.routing;
+        if (kind === 'lane') {
+            const c = session.draft, lane = c.data.lanes.find(l => l.id === session.selectedLane), index = c.data.lanes.findIndex(l => l.id === session.selectedLane);
+            const facts = ctx.lane.querySelector<HTMLElement>('.mnemobard-context-facts') ?? element(ctx.lane, 'dl', undefined, 'mnemobard-context-facts');
+            ctx.lane.prepend(facts); facts.replaceChildren();
+            if (lane) for (const [term, detail] of [['Lane', `${index + 1}. ${lane.name}`], ['Clips', String(lane.clips.length)], ['Routing', lane.midiChannel === undefined ? 'Auto (derived at compile)' : `Channel ${lane.midiChannel + 1}${lane.percussion ? ' · percussion' : ''} (explicit)`], ['Compiled channel', this.performancePanel?.compiledChannel(lane.id) ?? 'Not compiled']] as const) { element(facts, 'dt', term); element(facts, 'dd', detail); }
+            if (this.laneRoot && this.laneRoot.parentElement !== ctx.lane) ctx.lane.append(this.laneRoot);
+            const laneRoot = this.laneRoot, details = laneRoot?.querySelector('details'); if (laneRoot && details && laneRoot.dataset.context !== 'true') { laneRoot.dataset.wasOpen = String(details.open); laneRoot.dataset.context = 'true'; details.open = true; }
+            if (routing && lane) { this.performancePanel?.routeLane(lane.id); if (routing.parentElement !== ctx.lane) ctx.lane.append(routing); }
+        }
+        else {
+            if (this.laneRoot && this.laneHome && this.laneRoot.parentElement === ctx.lane) { this.laneHome.before(this.laneRoot); const details = this.laneRoot.querySelector('details'); if (details) details.open = this.laneRoot.dataset.wasOpen === 'true'; delete this.laneRoot.dataset.context; }
+            if (routing && this.routeHome && routing.parentElement === ctx.lane) this.routeHome.after(routing);
+        } }
+    /** Documented CANVAS keys; never with modifiers (no Obsidian conflicts) and never while typing in a field. */
+    private keyboard(e: KeyboardEvent): void { if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !this.session)
+        return; const target = e.target instanceof HTMLElement ? e.target : undefined; if (target?.closest('input,textarea,select,[contenteditable="true"],.modal'))
+        return; const steps: Record<string, () => void> = { '[': () => this.structurePanel?.step('section', -1), ']': () => this.structurePanel?.step('section', 1), ',': () => this.structurePanel?.step('marker', -1), '.': () => this.structurePanel?.step('marker', 1) };
+        const step = steps[e.key]; if (step) {
+        e.preventDefault();
+        if (this.hasPending()) { this.say('Apply or discard pending properties before navigating.'); return; }
+        step();
+        return;
+    } if (e.key === 'Escape') {
+        // Always consumed inside CANVAS (as in 4C): an unhandled Escape reaches Obsidian and moves the active leaf away.
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.contextKind !== 'none')
+            this.clearSelection();
+    } }
+    /** Escape: back to the empty inspector; focus returns to the timeline. No data or history change. */
+    private clearSelection(): void { const session = this.session; if (!session)
+        return; if (this.hasPending()) {
+        this.say('Apply or discard pending properties first.');
+        return;
+    } if (this.structurePanel && !this.structurePanel.clear())
+        return; session.selectedClip = undefined; this.laneFocus = false; this.renderSelection(true); this.timeline?.canvas.focus(); }
     private chooseMotif(laneId = this.session?.selectedLane, start = 0): void { if (this.hasPending()) {
         this.say('Apply or discard pending properties before placement.');
         return;
@@ -399,7 +499,7 @@ export class CanvasView extends ModuleView {
         return; if (!laneId) {
         this.say('Add/select a lane before placing a motif.');
         return;
-    } this.picker?.close(); this.picker = new ArrangementMotifPicker(this.app, s.canvas, session, laneId, start, () => { session.selectedLane = laneId; session.selectedClip = session.draft.data.lanes.find(l => l.id === laneId)?.clips.at(-1)?.id; this.refreshScene(); this.renderSelection(true); }); this.picker.open(); }
+    } this.picker?.close(); this.picker = new ArrangementMotifPicker(this.app, s.canvas, session, laneId, start, () => { session.selectedLane = laneId; session.selectedClip = session.draft.data.lanes.find(l => l.id === laneId)?.clips.at(-1)?.id; this.refreshScene(); this.renderSelection(true); }); openModal(this.contentEl, this.picker, t => this.say(t)); }
     private nextClip(delta: number): void { const session = this.session, clips = this.plan?.clips; if (!session || !clips?.length)
         return; const index = clips.findIndex(c => c.id === session.selectedClip), next = clips[(index + delta + clips.length) % clips.length]; if (next && this.select(next.laneId, next.id)) {
         this.clipPage = Math.floor(clips.indexOf(next) / 50);

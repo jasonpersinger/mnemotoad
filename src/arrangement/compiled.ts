@@ -26,3 +26,14 @@ export function lexical(a: string, b: string): number { return a < b ? -1 : a > 
 export function compilationInput(composition: Composition, sources: readonly CapturedSource[]): string {
   return JSON.stringify({ policy: ARRANGEMENT_POLICY, composition, sources: sources.map(s => ({ id: s.motif.id.toLowerCase(), revision: s.revision })).sort((a, b) => lexical(a.id, b.id)) }, (_key, value: unknown) => value && typeof value === 'object' && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => lexical(a, b))) : value);
 }
+/** Organizational fields the compiler/serializer never read (4D). Denylist on purpose: every other field, including unknown ones, stays musical. */
+export const ORGANIZATIONAL_DATA_FIELDS = Object.freeze(['sections', 'markers', 'audioRefs'] as const);
+/** Composition-level prose and the frontmatter audio mirror (`assets`). `title` is deliberately NOT here: it is copied into the compiled arrangement. */
+export const ORGANIZATIONAL_ENTITY_FIELDS = Object.freeze(['description', 'notes', 'tags', 'assets'] as const);
+/** Canonical musical identity: `compilationInput` minus organizational metadata. Independent of document save state. */
+export function musicalInput(composition: Composition, sources: readonly CapturedSource[]): string {
+  const entity: Record<string, unknown> = { ...composition }, data: Record<string, unknown> = { ...composition.data };
+  for (const key of ORGANIZATIONAL_ENTITY_FIELDS) delete entity[key];
+  for (const key of ORGANIZATIONAL_DATA_FIELDS) delete data[key];
+  return compilationInput({ ...entity, data } as unknown as Composition, sources);
+}

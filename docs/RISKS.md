@@ -149,3 +149,10 @@ See [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md) for exact workloads/results
 | Large structure lists | 100/500/100 workload: select24ms, move/resize~42ms, undo+redo73ms, save107ms, draw≤0.6ms, zoom/scroll≤1.4ms (native medians). Lists paged at50 rows. | Commit-time costs scale with composition JSON size (validation/clone); no per-frame cost. |
 | Overlaps from other writers | Loaded and preserved, flagged in ruler and panel; edits that would keep/introduce overlap are rejected. | User must resolve manually; no automatic repair by design. |
 | Host stale active window | Native runs after cold restarts observed Obsidian's `activeDocument` pointing at a detached document, making all Modals inert (MOTIF and CANVAS export). Reproduced with the4B build; refocusing the main window repairs it. The4C harness asserts this precondition. | Not a4C defect; consider defensive modal mounting or a host bug report after review. |
+
+| Audition invalidation on structure edits (4D update) | Resolved by W01/W02: only musical input invalidates. Residual: a Save during an in-flight compile invalidates (safe). | Monitor. |
+| Clean CANVAS session after external note change | An open clean session is not reloaded when its note changes on disk; next Save of a later edit conflicts. 4D offers explicit adoption for provable link-only rewrites only. | Candidate follow-up. |
+| Legacy duplicate mirror links (from 4C) | Obsidian shortest-form duplicates already on disk make the link-only proof refuse; protected conflict path remains. New relinks dedupe. | User relink resolves. |
+| Host stale active window (4D update) | All plugin modals now refuse instead of mounting invisibly (W06). Not reproduced via popout open/close in 4D; upstream cause unknown. | Open (host). |
+| MOTIF→PATCHBOOK intermittent navigation | Passed in 4D runs including first run after cold restart; root cause unproven (W10). | Open. |
+| 4D selection cost | Same-host large workload: section select 28.4 ms vs 24.7 ms on the 4C build (+15%, inspector context + clip register refresh); other operations at parity. | Accepted; candidate optimisation. |

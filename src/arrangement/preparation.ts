@@ -5,7 +5,7 @@ import { contentRevision } from '../storage/content-revision';
 import type { MidiFiles } from '../midi/files';
 import { SourceCapture, CompilationFault, type ArrangementCapture } from './capture';
 import { compileArrangementIsolated, type CompilationJob } from './job';
-import { compilationInput, type CompileDiagnostic, type CompiledArrangement } from './compiled';
+import { musicalInput, type CompileDiagnostic, type CompiledArrangement } from './compiled';
 export type PreparationState='idle'|'resolving'|'compiling'|'ready'|'exporting'|'invalidated'|'error';
 export interface PreparedArrangement {readonly capture:ArrangementCapture;readonly arrangement:CompiledArrangement;readonly bytes:Uint8Array;readonly baseSource?:string;readonly baseRevision?:string;readonly metrics:CompilationJob['metrics']}
 export interface ExportOutcome {readonly path:string;readonly verified:boolean;readonly message:string}
@@ -32,9 +32,28 @@ export class ArrangementPreparation {
     }catch(error){if(!this.closed&&generation===this.generation)this.error(error);return false;}finally{if(this.job===job)this.job=undefined;}
   }
   private async verify(snapshot:ArrangementCapture,baseSource:string|undefined,signal?:AbortSignal):Promise<void>{
-    const check=():void=>{checkActive(signal,this.closed);const current=this.input();if(current.base?.source!==baseSource||compilationInput(current.composition,snapshot.sources)!==compilationInput(snapshot.composition,snapshot.sources))throw new CompilationFault([{code:'composition-changed',severity:'error',message:'Composition draft/save base changed. Compile the displayed state again.'}]);};
+    const check=():void=>{checkActive(signal,this.closed);const current=this.input();if(current.base?.source!==baseSource||musicalInput(current.composition,snapshot.sources)!==musicalInput(snapshot.composition,snapshot.sources))throw new CompilationFault([{code:'composition-changed',severity:'error',message:'Composition draft/save base changed. Compile the displayed state again.'}]);};
     check();if(baseSource!==undefined){const record=await this.repository.read(snapshot.composition.id,signal);if(record.source!==baseSource)throw new CompilationFault([{code:'composition-conflict',severity:'error',message:'The saved composition changed externally. Resolve the protected editing conflict before compiling/exporting.'}]);}
     await this.capture.verify(snapshot,signal);check();
+  }
+  /** True when `composition` compiles to the same musical input as the captured/prepared snapshot (organizational edits only). */
+  musicallyCurrent(composition:Composition):boolean{const captured=this.captured;return!!captured&&musicalInput(composition,captured.sources)===musicalInput(captured.composition,captured.sources);}
+  /**
+   * After this editor's own protected Save of a musically identical draft, adopt the new save base without recompiling.
+   * Re-reads the saved record (must equal the session base: no external change) and re-verifies sources; any failure invalidates.
+   * Until it resolves, export verification still compares the old base and fails closed.
+   */
+  async adoptSavedBase():Promise<boolean>{
+    const prepared=this.prepared,generation=this.generation;if(this.closed||this.writing||this.state!=='ready'||!prepared)return false;
+    const input=this.input(),baseSource=input.base?.source;if(baseSource===prepared.baseSource)return true;
+    this.prepared={...prepared,baseRevision:undefined};
+    try{
+      if(baseSource===undefined||!this.musicallyCurrent(input.composition))throw Error('Composition musical input changed; compile again.');
+      const record=await this.repository.read(prepared.capture.composition.id);if(record.source!==baseSource)throw Error('The saved composition changed externally. Resolve the protected editing conflict before compiling/exporting.');
+      await this.capture.verify(prepared.capture);const baseRevision=await contentRevision(baseSource);
+      const now=this.input();if(this.closed||generation!==this.generation||this.prepared?.capture!==prepared.capture||now.base?.source!==baseSource||!this.musicallyCurrent(now.composition))return false;
+      this.prepared={...prepared,baseSource,baseRevision};this.publish();return true;
+    }catch(error){if(!this.closed&&generation===this.generation)this.invalidate(error instanceof Error?error.message:String(error));return false;}
   }
   async verifyPrepared():Promise<void>{const prepared=this.prepared;if(!prepared)throw Error('Compile a valid arrangement first.');await this.verify(prepared.capture,prepared.baseSource);}
   async export(path:string):Promise<ExportOutcome>{

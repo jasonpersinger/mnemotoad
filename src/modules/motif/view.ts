@@ -1,4 +1,5 @@
 import { Notice, Scope, type WorkspaceLeaf } from 'obsidian';
+import { openModal } from '../../ui/modal-host';
 import type { FoundationServices } from '../../application/services';
 import type { Motif } from '../../domain/entities';
 import { messageOf } from '../../domain/errors';
@@ -37,7 +38,7 @@ export class MotifView extends ModuleView {
     const create = button(actions, 'New motif', () => { void this.newMotif().catch(error => this.fail(error)); }, 'mod-cta'); create.disabled = true;
     button(actions, 'Browse motifs', () => { if (this.browserDetails) this.browserDetails.open = !this.browserDetails.open; });
     button(actions, 'Motif recovery', () => this.recovery());
-    button(actions, 'Import MIDI', () => { if(services.settings.readOnly)return;this.midiDialog?.close();this.midiDialog=new MidiImportDialog(this.app,services.motifs,async session=>{await this.leave();if(this.active)this.attach(session);});this.midiDialog.open(); });
+    button(actions, 'Import MIDI', () => { if(services.settings.readOnly)return;this.midiDialog?.close();this.midiDialog=new MidiImportDialog(this.app,services.motifs,async session=>{await this.leave();if(this.active)this.attach(session);});openModal(this.contentEl,this.midiDialog,t=>this.say(t)); });
     this.feedback = element(root, 'p', '', 'mnemobard-feedback'); this.feedback.setAttribute('role', 'status'); this.feedback.setAttribute('aria-live', 'polite');
     this.drafts = element(root, 'div', undefined, 'mnemobard-drafts');
     this.recoveryRoot = element(root, 'section', undefined, 'mnemobard-recovery');
@@ -129,7 +130,7 @@ export class MotifView extends ModuleView {
     this.saveStatus = element(header, 'p', session.status, 'mnemobard-save-status'); this.saveStatus.setAttribute('role', 'status');
     const actions = element(header, 'div', undefined, 'mnemobard-actions');
     button(actions, 'Save motif', () => { void this.save(); }, 'mod-cta');
-    button(actions,'Export MIDI',()=>{if(this.editor?.querySelector('form[data-pending="true"]')){this.say('Apply or discard pending properties before choosing an export snapshot.');return;}this.midiDialog?.close();this.midiDialog=new MidiExportDialog(this.app,services.motifs,session,async()=>{const record=await services.repository.read(session.draft.id);if(record.entity.kind!=='motif')throw Error('Expected a saved motif.');return record.entity;},services.settings.current.creationRoot);this.midiDialog.open();});
+    button(actions,'Export MIDI',()=>{if(this.editor?.querySelector('form[data-pending="true"]')){this.say('Apply or discard pending properties before choosing an export snapshot.');return;}this.midiDialog?.close();this.midiDialog=new MidiExportDialog(this.app,services.motifs,session,async()=>{const record=await services.repository.read(session.draft.id);if(record.entity.kind!=='motif')throw Error('Expected a saved motif.');return record.entity;},services.settings.current.creationRoot);openModal(this.contentEl,this.midiDialog,t=>this.say(t));});
     if (session.base) { button(actions, 'Open Markdown record', () => { const state = services.index.resolve(motif.id); if (state.status === 'ready') this.openNote(state.path); }); button(actions, 'Reload saved motif', () => { if (session.dirty) this.say('Save or explicitly discard this draft before reloading. Recovery is retained.'); else void this.select(motif.id).catch(error => this.fail(error)); }); }
     button(actions, 'Discard draft…', () => {
       const confirm = element(root, 'div', undefined, 'mnemobard-confirm'); element(confirm, 'p', 'Discard the working draft and its undo history? Saved notes and checkpoints are retained.');

@@ -4,7 +4,9 @@
 
 Read README and the relevant documents in `docs/` before implementation: PRODUCT_SPEC, ARCHITECTURE, DATA_MODEL, ROADMAP, DECISIONS, TROUBADOUR_AUDIT and RISKS. DESIGN_DIRECTION and TECHNICAL_RESEARCH inform UI/dependency work. Read the decision approval log and current user instructions; do not confuse a proposal with approval. Parent workspace rules also apply.
 
-Current authority: Prompt010 authorizes **Milestone4C only** (sections, markers, recording references in CANVAS; no audio engine, maps, section looping or MIDI export of structure). Signed4B baseline a64b267 (449 tests/37 files). Agent: Claude Code; see CLAUDE.md for orientation. Stop after4C for human review.
+Current authority: Prompt011 authorizes **Milestone 4D only** (CANVAS usability, contextual inspector, navigation, musical-vs-organizational invalidation, host stability, recording rename workflow, accessibility, performance; no new feature set, schema version, audio engine, maps or structure MIDI export). Signed 4C baseline 0a3dc72 (492 tests/38 files). Agent: Claude Code; see CLAUDE.md. Stop after 4D for human review.
+
+Previous authority (historical): Prompt010 authorizes **Milestone4C only** (sections, markers, recording references in CANVAS; no audio engine, maps, section looping or MIDI export of structure). Signed4B baseline a64b267 (449 tests/37 files). Agent: Claude Code; see CLAUDE.md for orientation. Stop after4C for human review.
 
 Previous authority (historical): Prompt009 authorized **Milestone4B only**, after4A review. Implement deterministic arrangement compilation from acknowledged saved sources, exact PPQ, verified source capture/recheck, bounded expansion, transient automatic routing plus explicit existing preferences, collision diagnostics, deterministic Type1 export and one shared audition transport with pause/resume/seek. Preserve sessions/history/repository/catalog and PATCHBOOK/MOTIF. No sections/markers/recording UI, timing maps, hardware/plugins/mixing, broad redesign, legacy adoption, publication, personal vaults or4C. Dark-first CANVAS remains host-theme compatible.
 

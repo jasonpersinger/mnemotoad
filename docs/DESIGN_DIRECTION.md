@@ -109,3 +109,7 @@ Prompt008 approves a dark-first CANVAS workspace, scoped to this module. Its arc
 All colors use active Obsidian variables; no global dark theme or custom fonts/artwork were introduced. Default dark/light and620px desktop layouts were inspected in the actual host. Native keyboard nudge/undo and numerical alternatives were exercised. A narrow pane exposes less musical time, so scrolling/zoom are necessary; clip labels may be abbreviated. The paged clip list is the textual alternative, not a screen-reader certification.
 
 Review actual captures in [output/canvas/milestone-4a/](../output/canvas/milestone-4a/). Stronger shared instrument/archival styling, final typography/icons and cross-module visual unification remain proposals for later human review. PATCHBOOK/MOTIF styling is preserved.
+
+## Milestone 4D CANVAS hierarchy
+
+Primary: identity, essential transport, the timeline with section/marker ruler (sticky on tall panes). Context: one bounded inspector directly beneath the timeline, uppercase muted context label, accent left rule, facts as a definition grid — never more than one large editor visible. Secondary: collapsed disclosures (structure lists, lane management, seek/export, routing, compilation diagnostics, clip list, prose) in muted text. Diagnostics use severity rules (error/warning colours from the theme), musical names and positions first, UUIDs only in tooltips. No new colours, gradients or animation; dark and light themes verified.

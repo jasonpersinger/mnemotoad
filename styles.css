@@ -216,3 +216,37 @@
 
 .mnemobard-canvas-performance .mnemobard-route-percussion { display:flex; align-items:center; gap:6px; padding-block:6px; }
 .mnemobard-canvas-performance input[type=checkbox] { flex:none; justify-self:start; width:var(--checkbox-size,16px); }
+
+/* ── Milestone 4D: workspace hierarchy · contextual inspector · secondary tools ── */
+/* Primary: the arrangement stays visible while editing in the inspector (only when the pane is tall enough). */
+@media (min-height: 720px) {
+  .mnemobard-canvas-editor .mnemobard-arrangement-surface { position: sticky; top: 0; z-index: 2; }
+  /* Shorter while sticky so the inspector keeps most of the pane; browser-driven scrolling stops below the timeline. */
+  .mnemobard-canvas-editor .mnemobard-arrangement-scroll { height: clamp(240px, 36vh, 480px); }
+  .mnemobard-canvas-context, .mnemobard-canvas-context *, .mnemobard-canvas-tools * { scroll-margin-top: calc(clamp(240px, 36vh, 480px) + 96px); }
+}
+.mnemobard-canvas-gestures { margin-block: 4px; color: var(--text-muted); font-size: var(--font-ui-small); }
+.mnemobard-canvas-gestures > summary { cursor: pointer; }
+.mnemobard-canvas-keys { margin: 4px 0 0; padding-inline-start: 18px; }
+/* Context: one compact, clearly bounded inspector directly under the timeline. */
+.mnemobard-canvas-context { margin-block: 8px; padding: 8px 12px; border: 1px solid var(--background-modifier-border); border-inline-start: 3px solid var(--canvas-accent, var(--interactive-accent)); border-radius: var(--radius-s, 4px); background: var(--background-secondary); }
+.mnemobard-context-header { font-size: var(--font-ui-smaller); text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-block-end: 4px; }
+.mnemobard-context-empty { margin: 0; }
+.mnemobard-canvas-context .mnemobard-canvas-inspector { border: 0; margin: 0; padding: 0; }
+.mnemobard-canvas-context .mnemobard-structure-editor { border: 0; margin: 0; }
+.mnemobard-canvas-context h3, .mnemobard-canvas-context h4 { margin-block: 2px 6px; font-size: var(--font-ui-medium); }
+.mnemobard-canvas-context h4:focus-visible { outline: 2px solid var(--interactive-accent); outline-offset: 2px; }
+.mnemobard-context-facts { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 0 0 8px; }
+.mnemobard-context-facts dt { color: var(--text-muted); }
+.mnemobard-context-facts dd { margin: 0; overflow-wrap: anywhere; }
+.mnemobard-context-lane form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-block: 8px; }
+.mnemobard-context-lane .mnemobard-route-percussion { display: flex; align-items: center; gap: 6px; padding-block: 6px; }
+.mnemobard-context-lane input[type=checkbox] { flex: none; width: var(--checkbox-size, 16px); }
+.mnemobard-context-lane .mnemobard-canvas-lane-manager details > summary { display: none; }
+/* Secondary tools: visually subordinate, collapsed disclosures. */
+.mnemobard-canvas-tools { margin-block-start: 12px; padding-block-start: 4px; border-block-start: 1px solid var(--background-modifier-border); }
+.mnemobard-canvas-tools > details > summary, .mnemobard-canvas-tools > section > details > summary, .mnemobard-canvas-tools .mnemobard-canvas-structure > summary { color: var(--text-muted); }
+.mnemobard-diagnostic-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; border-inline-start: 2px solid var(--background-modifier-border); padding-inline-start: 8px; margin-block: 4px; }
+.mnemobard-diagnostic-row[data-severity="error"] { border-inline-start-color: var(--text-error); }
+.mnemobard-diagnostic-row[data-severity="warning"] { border-inline-start-color: var(--text-warning); }
+.mnemobard-diagnostic-row p { margin: 0; flex: 1 1 260px; overflow-wrap: anywhere; }

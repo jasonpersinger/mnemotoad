@@ -7,7 +7,7 @@ import type { VaultPort } from '../storage/vault-port';
 import type { AssetPort } from '../storage/asset-port';
 import { contentRevision } from '../storage/content-revision';
 import type { SourceCatalog } from './catalog';
-import { ARRANGEMENT_LIMITS as LIMIT, compilationInput, lexical, type CapturedSource, type CompileDiagnostic } from './compiled';
+import { ARRANGEMENT_LIMITS as LIMIT, musicalInput, lexical, type CapturedSource, type CompileDiagnostic } from './compiled';
 export class CompilationFault extends Error {
   constructor(readonly diagnostics: readonly CompileDiagnostic[]) { super(diagnostics.map(d=>d.message).join('\n')); this.name='CompilationFault'; }
 }
@@ -43,7 +43,7 @@ export class SourceCapture {
       const document=freeze({id,path:current.path,revision,text,source});documents.push(document);this.cache.delete(id);this.cache.set(id,document);
       while(this.cache.size>LIMIT.sources||[...this.cache.values()].reduce((sum,d)=>sum+d.source.textBytes,0)>LIMIT.captureBytes){const first=this.cache.keys().next().value;if(first===undefined)break;this.cache.delete(first);}
     }
-    const snapshot:ArrangementCapture=freeze({composition,sources:documents.map(d=>d.source),documents,inputRevision:await contentRevision(compilationInput(composition,documents.map(d=>d.source))),textBytes,cacheHits});
+    const snapshot:ArrangementCapture=freeze({composition,sources:documents.map(d=>d.source),documents,inputRevision:await contentRevision(musicalInput(composition,documents.map(d=>d.source))),textBytes,cacheHits});
     await this.verify(snapshot,signal);return snapshot;
   }
   async verify(snapshot:ArrangementCapture,signal?:AbortSignal):Promise<void>{

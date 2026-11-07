@@ -2,7 +2,7 @@ import { element, button } from '../../ui/dom';
 import { messageOf } from '../../domain/errors';
 import type { Composition } from '../../domain/entities';
 import { musicalPosition, positionTick } from '../../music/positions';
-import type { CanvasLibrary } from './library';
+import type { CanvasLibrary, RenameOffer } from './library';
 import type { CanvasSession } from './session';
 import {
   addMarker, addSection, deleteMarker, deleteSection, orderedMarkers, orderedSections, removeReference, sectionOverlaps,
@@ -22,6 +22,10 @@ export interface StructureHost {
   sourcePath(): string;
   cursorTick(): number;
   readOnly(): boolean;
+  /** 4D: the view keeps exactly one inspector context; notified on every structure selection change. */
+  selected?(kind: StructureKind | undefined): void;
+  /** 4D: true while any other inspector form holds unapplied changes. */
+  blocked?(): boolean;
 }
 
 /** Keyboard/numeric alternative for every ruler operation plus the recording inspector. */
@@ -39,13 +43,19 @@ export class CanvasStructurePanel {
   private timer?: ReturnType<typeof setTimeout>;
   private readonly unsubscribe: () => void;
   private closed = false;
+  /** 4D rename workflow: provable link-only conflict offer, refreshed after file events / edits (one disk read per change). */
+  private renameOffer?: RenameOffer;
+  private renameKey = '';
+  private renameJob = 0;
+  private fileEpoch = 0;
 
-  constructor(root: HTMLElement, private readonly host: StructureHost) {
+  /** `editorRoot` (4D): the shared contextual inspector slot. Without it, editors render inline (4C layout). */
+  constructor(root: HTMLElement, private readonly host: StructureHost, private readonly editorRoot?: HTMLElement) {
     this.details = element(root, 'details', undefined, 'mnemobard-canvas-structure');
     this.summary = element(this.details, 'summary');
     this.body = element(this.details, 'div');
     // File events only refresh availability text; coalesced, never reads recordings.
-    this.unsubscribe = host.library.subscribeFiles(() => { if (this.timer === undefined) this.timer = setTimeout(() => { this.timer = undefined; this.refresh(); }, 150); });
+    this.unsubscribe = host.library.subscribeFiles(() => { this.fileEpoch++; if (this.timer === undefined) this.timer = setTimeout(() => { this.timer = undefined; this.refresh(); }, 150); });
     this.render();
   }
   /** session.draft deep-clones on every read; one snapshot per render keeps list rendering linear. Handlers outside render read fresh. */
@@ -54,17 +64,26 @@ export class CanvasStructurePanel {
   private pos(tick: number): string { return musicalPosition(tick, this.model.data.ppq, this.model.data.meter); }
   private tick(value: string): number { return positionTick(value, this.model.data.ppq, this.model.data.meter); }
   private get bar(): number { const m = this.model.data.meter; return this.model.data.ppq * 4 / m.denominator * m.numerator; }
-  private pending(): boolean { return !!this.body.querySelector('form[data-pending="true"]'); }
+  private pending(): boolean { return !!this.body.querySelector('form[data-pending="true"]') || !!this.editorRoot?.querySelector('form[data-pending="true"]'); }
+  get selection(): { kind: StructureKind; id: string } | undefined { return this.selected ? { ...this.selected } : undefined; }
+  /** Ephemeral: clears the structure selection without touching composition data or history. */
+  clear(): boolean {
+    if (this.pending()) { this.status('Apply or discard the pending structure form first.'); return false; }
+    if (!this.selected) return true;
+    this.selected = undefined; this.mode = undefined; this.host.highlight(); this.render(); this.host.selected?.(undefined); return true;
+  }
 
   refresh(): void { if (!this.closed && !this.pending()) this.render(); else this.renderSummary(); }
   /** From the ruler; selection is ephemeral and never enters history. */
   select(kind: StructureKind, id: string, navigate = false): boolean {
-    if (this.pending()) { this.status('Apply or discard the pending structure form first.'); return false; }
-    this.selected = { kind, id }; this.mode = undefined; this.details.open = true; this.followSelection = true;
+    if (this.pending() || this.host.blocked?.()) { this.status('Apply or discard the pending form first.'); return false; }
+    this.selected = { kind, id }; this.mode = undefined; this.followSelection = true; if (!this.editorRoot) this.details.open = true;
+    this.host.selected?.(kind);
     if (kind !== 'reference') this.host.highlight(kind, id);
     if (navigate) { const tick = this.anchorOf(kind, id); if (tick !== undefined) this.host.locate(tick); }
     this.render();
-    [...this.body.querySelectorAll<HTMLElement>('[data-structure-id]')].find(node => node.dataset.structureId === id)?.focus();
+    const row = [...this.body.querySelectorAll<HTMLElement>('[data-structure-id]')].find(node => node.dataset.structureId === id);
+    if (!this.editorRoot || (this.details.open && row)) row?.focus(); else this.editorRoot.querySelector<HTMLElement>('h4')?.focus();
     return true;
   }
   /** Previous/next navigation across ordered sections or markers. */
@@ -82,7 +101,7 @@ export class CanvasStructurePanel {
     const c = this.model;
     return kind === 'section' ? c.data.sections.find(s => s.id === id)?.startTick : kind === 'marker' ? c.data.markers.find(m => m.id === id)?.tick : c.data.audioRefs.find(r => r.id === id)?.atTick;
   }
-  private status(text: string): void { const node = this.body.querySelector('.mnemobard-structure-status'); if (node) node.textContent = text; }
+  private status(text: string): void { for (const root of [this.body, this.editorRoot]) { const node = root?.querySelector('.mnemobard-structure-status'); if (node) node.textContent = text; } }
   /** Wraps the shared gate so validation errors also appear beside the structure form. */
   private edit(fn: () => void, form?: HTMLFormElement, done?: string): void {
     let failure = '';
@@ -101,9 +120,10 @@ export class CanvasStructurePanel {
     try { this.renderBody(this.snapshot); } finally { this.snapshot = undefined; }
   }
   private renderBody(c: Composition): void {
-    if (this.selected && this.anchorOf(this.selected.kind, this.selected.id) === undefined) { this.selected = undefined; this.mode = undefined; this.host.highlight(); }
+    if (this.selected && this.anchorOf(this.selected.kind, this.selected.id) === undefined) { this.selected = undefined; this.mode = undefined; this.host.highlight(); this.host.selected?.(undefined); }
     this.renderSummary();
     this.body.replaceChildren();
+    if (this.editorRoot) { this.editorRoot.replaceChildren(); if (this.selected) { const live = element(this.editorRoot, 'p', '', 'mnemobard-structure-status'); live.setAttribute('role', 'status'); } }
     const status = element(this.body, 'p', '', 'mnemobard-structure-status'); status.setAttribute('role', 'status');
     element(this.body, 'p', 'Sections, markers and recording references organize the piece. They never change notes, routing, playback or MIDI export. Navigation does not create undo steps.', 'mnemobard-hint');
     this.groups = element(this.body, 'div', undefined, 'mnemobard-structure-groups');
@@ -156,7 +176,7 @@ export class CanvasStructurePanel {
     const list = element(box, 'ol', undefined, 'mnemobard-structure-list');
     for (const s of this.paged(box, 'section', sections, 'sections')) this.row(list, 'section', s.id, s.label, `${this.pos(s.startTick)} → ${this.pos(s.endTick)} · ${((s.endTick - s.startTick) / this.bar).toFixed(2).replace(/\.00$/, '')} bars`);
     const current = this.selected?.kind === 'section' ? c.data.sections.find(s => s.id === this.selected?.id) : undefined;
-    if (current) this.sectionEditor(box, current);
+    if (current) this.sectionEditor(this.editorRoot ?? box, current);
     const add = element(box, 'details'); element(add, 'summary', 'Add section');
     const last = sections.at(-1), start = Math.min(last?.endTick ?? this.host.cursorTick(), c.data.lengthTicks - 1), end = Math.min(c.data.lengthTicks, start + this.bar * 4);
     this.form(add, 'Add section', form => {
@@ -167,7 +187,8 @@ export class CanvasStructurePanel {
     });
   }
   private sectionEditor(box: HTMLElement, s: Section): void {
-    const panel = element(box, 'div', undefined, 'mnemobard-structure-editor'); element(panel, 'h4', `Section · ${s.label}`);
+    const panel = element(box, 'div', undefined, 'mnemobard-structure-editor'); heading(panel, `Section · ${s.label}`);
+    if (this.editorRoot) element(panel, 'p', `${this.pos(s.startTick)} → ${this.pos(s.endTick)}`, 'mnemobard-hint');
     this.form(panel, 'Apply section', form => {
   this.field(form, 'Section name', s.label); this.field(form, 'Section start (bar:beat:tick)', this.pos(s.startTick)); this.field(form, 'Section end (bar:beat:tick)', this.pos(s.endTick)); this.field(form, 'Section description', s.description ?? '', true, 'Optional');
     }, f => {
@@ -190,7 +211,7 @@ export class CanvasStructurePanel {
     const shared = new Map<number, number>(); for (const m of markers) shared.set(m.tick, (shared.get(m.tick) ?? 0) + 1);
     for (const m of this.paged(box, 'marker', markers, 'markers')) this.row(list, 'marker', m.id, m.label, this.pos(m.tick) + ((shared.get(m.tick) ?? 0) > 1 ? ' · shares position' : ''));
     const current = this.selected?.kind === 'marker' ? c.data.markers.find(m => m.id === this.selected?.id) : undefined;
-    if (current) this.markerEditor(box, current);
+    if (current) this.markerEditor(this.editorRoot ?? box, current);
     const add = element(box, 'details'); element(add, 'summary', 'Add marker');
     this.form(add, 'Add marker', form => {
   this.field(form, 'New marker name', `Marker ${markers.length + 1}`); this.field(form, 'New marker position (bar:beat:tick)', this.pos(Math.min(this.host.cursorTick(), c.data.lengthTicks))); this.field(form, 'New marker description', '', true, 'Optional');
@@ -200,7 +221,8 @@ export class CanvasStructurePanel {
     });
   }
   private markerEditor(box: HTMLElement, m: Marker): void {
-    const panel = element(box, 'div', undefined, 'mnemobard-structure-editor'); element(panel, 'h4', `Marker · ${m.label}`);
+    const panel = element(box, 'div', undefined, 'mnemobard-structure-editor'); heading(panel, `Marker · ${m.label}`);
+    const twins = this.model.data.markers.filter(x => x.tick === m.tick).length; if (twins > 1) element(panel, 'p', `${twins} markers share ${this.pos(m.tick)}; Previous/Next marker visits each in name order.`, 'mnemobard-hint');
     this.form(panel, 'Apply marker', form => {
   this.field(form, 'Marker name', m.label); this.field(form, 'Marker position (bar:beat:tick)', this.pos(m.tick)); this.field(form, 'Marker description', m.description ?? '', true, 'Optional');
     }, f => {
@@ -226,7 +248,8 @@ export class CanvasStructurePanel {
     const search = this.field(form, `Find ${label.toLowerCase()}`, this.search, false, 'Filter vault audio by path');
     const wrap = element(form, 'label'); element(wrap, 'span', label);
     const select = element(wrap, 'select'); select.setAttribute('aria-label', label); select.required = true;
-    const fill = () => { const files = this.host.library.recordingFiles(search.value); select.replaceChildren(); element(select, 'option', files.length ? 'Choose a vault recording…' : 'No matching audio files').value = ''; for (const f of files) element(select, 'option', `${f.path} · ${size(f.size)}`).value = f.path; if (files.some(f => f.path === current)) select.value = current; };
+    const hidden = element(form, 'p', '', 'mnemobard-hint'); hidden.dataset.unlinkable = 'true';
+    const fill = () => { const { files, hidden: skipped } = this.host.library.recordingCandidates(search.value); hidden.textContent = skipped ? `${skipped} audio file(s) hidden: their paths contain characters a portable vault link cannot store (# [ ] | < > : " ? * or a trailing dot/space). Rename them in Obsidian to reference them.` : ''; hidden.hidden = !skipped; select.replaceChildren(); element(select, 'option', files.length ? 'Choose a vault recording…' : 'No matching audio files').value = ''; for (const f of files) element(select, 'option', `${f.path} · ${size(f.size)}`).value = f.path; if (files.some(f => f.path === current)) select.value = current; };
     search.addEventListener('input', () => { this.search = search.value; fill(); });
     fill();
   }
@@ -239,6 +262,20 @@ export class CanvasStructurePanel {
       const note = element(box, 'div', undefined, 'mnemobard-structure-warning');
       element(note, 'p', `“${suggestion.from}” is missing, and this note's recording link now points to “${suggestion.to}” (likely a rename). Relink ${suggestion.referenceIds.length} reference(s)? Nothing changes until you confirm.`);
       button(note, 'Relink to renamed file', () => this.edit(() => this.host.library.relinkRecording(this.host.session, suggestion.referenceIds, suggestion.to), undefined, 'Relinked. Undo restores the previous path.'));
+    }
+    this.detectRename(c);
+    const offer = this.renameOffer;
+    if (offer) {
+      const note = element(box, 'div', undefined, 'mnemobard-structure-warning'); note.dataset.renameOffer = 'true';
+      const count = offer.moves.reduce((n, m) => n + m.referenceIds.length, 0);
+      element(note, 'p', `Renamed in the vault: ${offer.moves.map(m => `“${m.from}” → “${m.to}”`).join(', ')}. Obsidian updated this note's recording links, so Save would report a protected conflict. Adopt the updated note and relink ${count} reference(s)? Your unsaved edits stay, this is one Undo step, and nothing is written until you Save.`);
+      const adopt = button(note, 'Adopt rename and keep my edits', () => {
+        if (this.pending() || this.host.blocked?.()) { this.status('Apply or discard the pending form first.'); return; }
+        adopt.disabled = true;
+        void this.host.library.adoptRename(this.host.session, offer).then(() => { if (this.closed) return; this.renameOffer = undefined; this.renameKey = ''; this.render(); this.status('Relinked; the renamed note is now the save base. Save to keep your edits.'); })
+          .catch(error => { if (this.closed) return; adopt.disabled = false; this.status(messageOf(error)); });
+      });
+      adopt.disabled = this.host.readOnly();
     }
     if (!refs.length) element(box, 'p', 'No recording references.', 'mnemobard-hint');
     const list = element(box, 'ul', undefined, 'mnemobard-structure-list mnemobard-structure-references');
@@ -265,6 +302,19 @@ export class CanvasStructurePanel {
     availability.dataset.recordingState = state.status;
     if (r.description) element(item, 'p', r.description, 'mnemobard-structure-description');
     if (!selected) return;
+    if (this.editorRoot) { this.referenceEditor(this.editorRoot, c, r, state); return; }
+    this.referenceActions(item, r, state);
+  }
+  /** 4D inspector context: identity, availability, associations and the same safe actions as the inline row. */
+  private referenceEditor(root: HTMLElement, c: Composition, r: RecordingReference, state: ReturnType<CanvasLibrary['recordingStatus']>): void {
+    const panel = element(root, 'div', undefined, 'mnemobard-structure-editor'); heading(panel, `Recording · ${r.label}`);
+    const section = c.data.sections.find(s => s.id === r.sectionId), marker = c.data.markers.find(m => m.id === r.markerId);
+    const facts = element(panel, 'dl', undefined, 'mnemobard-context-facts');
+    for (const [term, detail] of [['File', r.path], ['Availability', state.status === 'available' ? `Available · ${size(state.file.size)}` : `⚠ ${state.message}`], ['Section', section ? section.label : r.sectionId ? '(deleted)' : 'None'], ['Marker', marker ? marker.label : r.markerId ? '(deleted)' : 'None'], ['Anchor', this.pos(r.atTick)]] as const) { element(facts, 'dt', term); const dd = element(facts, 'dd', detail); if (term === 'Availability' && state.status !== 'available') dd.className = 'mnemobard-structure-warning'; }
+    if (r.description) element(panel, 'p', r.description, 'mnemobard-structure-description');
+    this.referenceActions(panel, r, state);
+  }
+  private referenceActions(item: HTMLElement, r: RecordingReference, state: ReturnType<CanvasLibrary['recordingStatus']>): void {
     const actions = element(item, 'div', undefined, 'mnemobard-structure-actions');
     const open = button(actions, 'Open recording', () => this.host.open(r.path)); open.disabled = state.status !== 'available';
     button(actions, 'Jump to anchor', () => this.host.locate(r.atTick));
@@ -288,7 +338,17 @@ export class CanvasStructurePanel {
       button(confirm, 'Keep reference', () => { this.mode = undefined; this.render(); });
     }
   }
-  dispose(): void { this.closed = true; this.unsubscribe(); if (this.timer !== undefined) clearTimeout(this.timer); this.timer = undefined; }
+  private detectRename(c: Composition): void {
+    const s = this.host.session, missing = c.data.audioRefs.filter(r => this.host.library.recordingStatus(r.path).status === 'missing').map(r => r.path).sort().join('|');
+    const key = s.base && missing ? `${this.fileEpoch}:${s.changeVersion}:${missing}` : '';
+    if (key === this.renameKey) return;
+    this.renameKey = key; const job = ++this.renameJob;
+    if (!key) { this.renameOffer = undefined; return; }
+    void this.host.library.renameConflict(s).then(offer => { if (this.closed || job !== this.renameJob) return; const changed = !!offer !== !!this.renameOffer; this.renameOffer = offer; if (changed) this.refresh(); }, () => { if (job === this.renameJob) this.renameOffer = undefined; });
+  }
+  dispose(): void { this.closed = true; this.renameJob++; this.unsubscribe(); if (this.timer !== undefined) clearTimeout(this.timer); this.timer = undefined; }
 }
+/** Focusable (tabindex -1) heading so keyboard focus can land on the inspector after a selection. */
+function heading(parent: HTMLElement, text: string): HTMLElement { const h = element(parent, 'h4', text); h.tabIndex = -1; return h; }
 function value(form: HTMLFormElement, label: string): string { return form.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[aria-label="${label}"]`)?.value ?? ''; }
 function size(bytes: number): string { return bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MiB` : bytes >= 1024 ? `${(bytes / 1024).toFixed(1)} KiB` : `${bytes} B`; }

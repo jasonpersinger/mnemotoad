@@ -94,7 +94,8 @@ export class ArrangementTimeline {
         listen(this.ruler, 'keydown', e => { if (e.key === 'Escape' && this.structureGesture) { e.preventDefault(); e.stopPropagation(); this.cancelStructure(); } });
         listen(this.ruler, 'dblclick', e => { const x = this.rulerPoint(e).x, y = this.rulerPoint(e).y; if (x < LANE_GUTTER || structureHit(this.sections, this.markers, x, y, this.viewportState)) return; const tick = Math.max(0, Math.min(this.model.data.lengthTicks, snapped(timelinePoint(x, 0, this.viewportState).tick, this.model.data.ppq, this.grid))); if (y < SECTION_BAND) this.structure.createSection(tick); else this.structure.createMarker(tick); });
         listen(this.canvas, 'lostpointercapture', () => this.cancelGesture());
-        listen(this.canvas, 'keydown', e => { if (e.key === 'Escape') {
+        // 4D: Escape cancels an active drag; with no gesture it bubbles so the view can clear the selection.
+        listen(this.canvas, 'keydown', e => { if (e.key === 'Escape' && this.gesture) {
             e.preventDefault();
             e.stopPropagation();
             this.cancelGesture();

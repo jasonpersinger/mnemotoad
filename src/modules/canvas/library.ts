@@ -15,8 +15,10 @@ import { SourceCapture } from '../../arrangement/capture';
 import { ArrangementPreparation } from '../../arrangement/preparation';
 import { MidiFiles } from '../../midi/files';
 import type { VaultAsset } from '../../storage/asset-port';
+import { linkOnlyRewrite, type RenameMove } from './rename-merge';
 import { addReference, relinkReference, relinkSuggestion, recordingPath, RECORDING_EXTENSIONS, type ReferenceInput, type RelinkSuggestion } from './structure';
 export type RecordingStatus = { status: 'available'; file: VaultAsset } | { status: 'missing' | 'invalid'; message: string };
+export interface RenameOffer { readonly record: EntityRecord; readonly moves: readonly RenameMove[] }
 export class CanvasLibrary {
     readonly sources: SourceCatalog;
     readonly recovery: CheckpointRecovery<Composition>;
@@ -78,16 +80,52 @@ export class CanvasLibrary {
         }
     } }
     /** Vault metadata only: recording bytes are never read, copied or modified. */
-    recordingFiles(search = '', limit = 200): VaultAsset[] { checkActive(undefined, this.closed); const needle = search.toLocaleLowerCase(); return this.vault.assetFiles().filter(f => RECORDING_EXTENSIONS.includes(f.extension.toLowerCase()) && f.path.toLocaleLowerCase().includes(needle) && !f.path.split('/').some(part => part.startsWith('.')) && this.safe(f.path)).sort((a, b) => a.path.localeCompare(b.path)).slice(0, limit); }
+    recordingFiles(search = '', limit = 200): VaultAsset[] { return this.recordingCandidates(search, limit).files; }
+    /** One vault scan: linkable audio files (sorted, bounded) plus the count hidden by the portable path/wikilink contract (4D). */
+    recordingCandidates(search = '', limit = 200): { files: VaultAsset[]; hidden: number } { checkActive(undefined, this.closed); const needle = search.toLocaleLowerCase(), files: VaultAsset[] = []; let hidden = 0; for (const f of this.vault.assetFiles()) { if (!RECORDING_EXTENSIONS.includes(f.extension.toLowerCase()) || !f.path.toLocaleLowerCase().includes(needle) || f.path.split('/').some(part => part.startsWith('.'))) continue; if (this.safe(f.path)) files.push(f); else hidden++; } return { files: files.sort((a, b) => a.path.localeCompare(b.path)).slice(0, limit), hidden }; }
     private safe(path: string): boolean { try { recordingPath(path); return true; } catch { return false; } }
     recordingStatus(path: string): RecordingStatus { try { recordingPath(path); const file = this.vault.fileInfo(path); return file ? { status: 'available', file } : { status: 'missing', message: `Missing recording: ${path}. The reference is preserved; relink it explicitly.` }; } catch (error) { return { status: 'invalid', message: error instanceof Error ? error.message : String(error) }; } }
     private available(path: string): void { const state = this.recordingStatus(path); if (state.status !== 'available') throw new FoundationError(state.status === 'missing' ? 'missing' : 'invalid', state.status === 'missing' ? 'The selected recording no longer exists. Choose it again.' : state.message); }
     addRecording(s: CanvasSession, input: ReferenceInput): void { checkActive(undefined, this.closed); this.available(input.path); s.edit('Add recording reference', c => addReference(c, input)); }
     /** One undo entry even when one renamed file backs several references. */
-    relinkRecording(s: CanvasSession, ids: string | readonly string[], path: string): void { checkActive(undefined, this.closed); this.available(path); const list = typeof ids === 'string' ? [ids] : ids; s.edit('Relink recording reference', c => list.reduce((next, id) => relinkReference(next, id, path), c)); }
+    relinkRecording(s: CanvasSession, ids: string | readonly string[], path: string): void { checkActive(undefined, this.closed); this.available(path); const list = typeof ids === 'string' ? [ids] : ids, source = s.base?.path ?? ''; s.edit('Relink recording reference', c => this.dedupeMirror(list.reduce((next, id) => relinkReference(next, id, path), c), path, source)); }
+    /**
+     * 4D: Obsidian's link updater may leave a shortest-form mirror link (e.g. [[take.wav]]) that resolves to the
+     * same file as the exact mirror [[folder/take.wav]] the relink just wrote. Drop only links that resolve to exactly
+     * `path`; never by basename guessing, never another file's link.
+     */
+    private dedupeMirror(c: Composition, path: string, source: string): Composition {
+        const exact = `[[${path}]]`, resolve = this.resolveLink; if (!resolve || !c.assets) return c;
+        const assets = c.assets.filter(a => a.role !== 'audio' || a.link === exact || resolve(a.link.replace(/^\[\[|\]\]$/g, '').split('|')[0] ?? '', source) !== path);
+        return assets.length === c.assets.length ? c : { ...c, assets };
+    }
     /** Vault-wide file events (create/delete/rename) for availability display; no reads. */
     subscribeFiles(listener: () => void): () => void { return this.vault.subscribe(() => listener()); }
     relinkSuggestion(c: Composition, sourcePath = ''): RelinkSuggestion | undefined { const exists = (p: string) => this.recordingStatus(p).status === 'available'; return relinkSuggestion(c, exists, link => this.resolveLink ? this.resolveLink(link, sourcePath) : exists(link) ? link : null); }
+    /**
+     * 4D: detects an external change that is ONLY Obsidian rewriting this note's recording links after a rename.
+     * Read-only; works for clean and unsaved drafts; returns undefined for unchanged notes and anything not provably link-only.
+     */
+    async renameConflict(s: CanvasSession, signal?: AbortSignal): Promise<RenameOffer | undefined> {
+        checkActive(signal, this.closed); const base = s.base; if (!base || base.entity.kind !== 'composition') return undefined;
+        const record = await this.repository.read(base.entity.id, signal); checkActive(signal, this.closed);
+        if (record.source === base.source || record.path !== base.path || s.base?.source !== base.source) return undefined;
+        const exists = (p: string) => this.recordingStatus(p).status === 'available';
+        const moves = linkOnlyRewrite(base.source, record.source, base.entity, s.draft, exists, link => this.resolveLink ? this.resolveLink(link, record.path) : exists(link) ? link : null);
+        return moves ? { record, moves } : undefined;
+    }
+    /**
+     * Explicit user action: relink the draft (one undo step) and adopt the rewritten note as the save base.
+     * Re-verifies the note first; nothing is written to disk until the user saves.
+     */
+    async adoptRename(s: CanvasSession, offer: RenameOffer, signal?: AbortSignal): Promise<void> {
+        checkActive(signal, this.closed); const fresh = await this.repository.read(offer.record.entity.id, signal); checkActive(signal, this.closed);
+        if (fresh.source !== offer.record.source || s.base?.path !== fresh.path) throw new FoundationError('conflict', 'The note changed again since the rename was detected. Review it before retrying; nothing was changed.');
+        for (const move of offer.moves) this.available(move.to);
+        const relink = offer.moves.filter(m => m.referenceIds.length);
+        if (relink.length) s.edit('Adopt renamed recordings', c => relink.reduce((next, m) => m.referenceIds.reduce((x, id) => relinkReference(x, id, m.to), next), c));
+        s.adoptBase(fresh);
+    }
     discard(s: CanvasSession): void { this.owners.delete(s); this.sessions.delete(s.draft.id.toLowerCase()); s.dispose(); }
     async checkpointAll(): Promise<void> { for (const s of this.drafts())
         await s.checkpoint(); }

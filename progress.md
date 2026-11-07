@@ -78,3 +78,5 @@ The final benchmark varied full motif length2/4/6/8quarters, PPQ and note densit
 ##4C (Prompt010, Claude Code)
 
 Signed4B baseline a64b267 verified (449/37, check pass). Pure structure commands/tests, persistence/history integration, ruler + Structure panel, native workflow (15 checks + cold restart), MOTIF/MIDI/PATCHBOOK/foundation native regressions, benchmarks. Final492 tests/38files; golden MIDI unchanged. Report: docs/MILESTONE_4C_REPORT.md. Stopped for human review.
+
+Milestone 4D (Prompt011): signed 4C baseline 0a3dc72 verified (492/38). Contextual inspector, sticky timeline, keys [ ] , . Esc, musicalInput denylist + adoptSavedBase (metadata edits keep playback), modal host guard, provable link-only rename adoption, mirror dedupe, diagnostics with navigation. 538 tests/41 files; native 18 checks + regressions; same-host perf A/B vs 4C build. Uncommitted for review; report docs/MILESTONE_4D_REPORT.md.

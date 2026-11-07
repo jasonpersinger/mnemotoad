@@ -84,6 +84,16 @@ export class DocumentSession<T extends Entity> {
     this.base = structuredClone(record); this.value = structuredClone(record.entity);
     this.revision++; this.savedRevision = this.revision; this.error = ''; this.publish();
   }
+  /**
+   * 4D: replace ONLY the protected-save base with a record the caller has verified differs from the current
+   * base in nothing the draft does not already supersede (see canvas/rename-merge.ts). The draft, history and
+   * dirty state are untouched; the next Save is still checked against this new base.
+   */
+  adoptBase(record: EntityRecord): void {
+    this.active();
+    if (this.busy || !this.base || !this.accepts(record.entity) || record.entity.id !== this.value.id || record.entity.kind !== this.value.kind || record.path !== this.base.path) throw new FoundationError('conflict', 'The saved note cannot be adopted while a save runs or for another record.');
+    this.base = structuredClone(record); this.error = ''; this.publish();
+  }
   private publish(): void { for (const listener of this.listeners) listener(); }
   dispose(): void { if (this.closed) return; this.closed = true; this.lifetime.abort(); if (this.timer) clearTimeout(this.timer); this.timer = undefined; this.listeners.clear(); }
 }

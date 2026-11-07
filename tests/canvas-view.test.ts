@@ -17,6 +17,8 @@ import { CanvasLibrary } from '../src/modules/canvas/library';
 import { CanvasView } from '../src/modules/canvas/view';
 import { MotifView } from '../src/modules/motif/view';
 import { createEntity } from '../src/domain/entities';
+import { addSection as addSection4d, updateSection as updateSection4d, addMarker as addMarker4d } from '../src/modules/canvas/structure';
+import type { ArrangementPreparation } from '../src/arrangement/preparation';
 import { MemoryVault } from './support/memory-vault';
 import { installDomHelpers, Keymap } from './support/obsidian';
 const cleanup: (() => void)[] = [];
@@ -74,7 +76,7 @@ function choose(root: HTMLElement, label: string, value: string) { const e = [..
 function submit(root: HTMLElement, text: string) { const b = [...root.querySelectorAll<HTMLButtonElement>('button[type="submit"]')].find(b => b.textContent === text); if (!b)
     throw Error('Missing submit ' + text); b.form?.requestSubmit(b); }
 async function structureView() { const f = await fixture(); click(f.view.contentEl, 'New composition'); await settle(); const s = f.services.canvas.drafts()[0] ?? [...(f.services.canvas as unknown as { sessions: Map<string, import('../src/modules/canvas/session').CanvasSession> }).sessions.values()][0]; if (!s)
-    throw Error('No session'); const panel = f.view.contentEl.querySelector<HTMLElement>('.mnemobard-canvas-structure'); if (!panel)
+    throw Error('No session'); /* 4D: selected-item editors render in the shared inspector, so query the editor region (lists + inspector). */ const panel = f.view.contentEl.querySelector<HTMLElement>('.mnemobard-canvas-editor'); if (!panel?.querySelector('.mnemobard-canvas-structure'))
     throw Error('No structure panel'); return { ...f, s, panel }; }
 it('creates, edits, rejects overlapping and deletes sections from the keyboard panel with one Undo step each', async () => { const { s, panel } = await structureView(); const before = s.historySize;
     input(panel, 'New section name', 'Introduction'); input(panel, 'New section start (bar:beat:tick)', '1:1:0'); input(panel, 'New section end (bar:beat:tick)', '5:1:0'); submit(panel, 'Add section');
@@ -121,3 +123,73 @@ it('pages long structure lists at 50 rows and follows keyboard selection across 
     click(panel, 'Previous markers page'); expect(rows()[0]).toBe('Cue 1');
     const perf = (view as unknown as { performancePanel: { locate(t: number): void } }).performancePanel; perf.locate(54 * 960); click(view.contentEl, 'Next marker');
     expect(panel.querySelector('button[aria-pressed="true"]')?.textContent).toBe('Cue 55'); expect(rows()[0]).toBe('Cue 51'); });
+it('4D: organizational edits keep prepared playback; musical edits stop and invalidate', async () => {
+    const { view, services, motif } = await start(); (view as unknown as { picker?: { close: () => void } }).picker?.close(); await services.index.settled();
+    const session = services.canvas.drafts()[0]; if (!session) throw Error('session'); const lane = session.draft.data.lanes[0]; if (!lane) throw Error('lane');
+    services.canvas.place(session, lane.id, motif.entity.id, 0, 1); session.edit('section', c => addSection4d(c, { label: 'Intro', startTick: 0, endTick: 3840 }, '00000000-0000-4000-8000-00000000c001'));
+    const panel = (view as unknown as { performancePanel: { preparation: ArrangementPreparation; stop: () => void } }).performancePanel, prep = panel.preparation;
+    const capture = await services.canvas.capture.capture(session.draft), state = prep as unknown as { state: string; prepared: unknown };
+    state.prepared = { capture, arrangement: {}, bytes: new Uint8Array([1]), metrics: { compileMs: 0, serializeMs: 0 } }; state.state = 'ready';
+    const stop = vi.spyOn(panel, 'stop'), history = session.historySize;
+    session.edit('Rename section', c => updateSection4d(c, '00000000-0000-4000-8000-00000000c001', { label: 'Verse' })); await settle();
+    session.edit('Add marker', c => addMarker4d(c, { label: 'Cue', tick: 960 })); await settle();
+    expect(stop).not.toHaveBeenCalled(); expect(prep.state).toBe('ready'); expect(session.historySize).toBe(history + 2);
+    const clip = session.draft.data.lanes[0]?.clips[0]; if (!clip) throw Error('clip');
+    services.canvas.move(session, clip.id, lane.id, 960, 1); await settle();
+    expect(stop).toHaveBeenCalled(); expect(prep.state).toBe('invalidated'); expect(prep.prepared).toBeUndefined();
+});
+const contextKind = (view: CanvasView) => { const ctx = view.contentEl.querySelector('.mnemobard-canvas-context'); if (!ctx) throw Error('context'); const shown = [['none', '.mnemobard-context-empty'], ['clip', '.mnemobard-canvas-inspector'], ['lane', '.mnemobard-context-lane'], ['structure', '.mnemobard-context-structure']].filter(([, sel]) => !(ctx.querySelector<HTMLElement>(sel ?? '')?.hidden)).map(([k]) => k); return shown; };
+const key = (target: HTMLElement, k: string) => target.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+it('4D: one selection-driven inspector context; selection never edits or adds history; tools are moved, not duplicated', async () => {
+    const { view, services, motif } = await start(); (view as unknown as { picker?: { close: () => void } }).picker?.close(); await services.index.settled();
+    const s = services.canvas.drafts()[0]; if (!s) throw Error('session'); const lane = s.draft.data.lanes[0]; if (!lane) throw Error('lane');
+    services.canvas.place(s, lane.id, motif.entity.id, 0, 1); s.edit('section', c => addSection4d(c, { label: 'Intro', startTick: 3840, endTick: 7680 }, '00000000-0000-4000-8000-00000000d001')); await settle();
+    const root = view.contentEl, history = s.historySize, draft = JSON.stringify(s.draft), clip = s.draft.data.lanes[0]?.clips[0]; if (!clip) throw Error('clip');
+    click(root, 'Next clip'); expect(contextKind(view)).toEqual(['clip']); expect(root.querySelector('.mnemobard-context-header')?.textContent).toBe('Inspector · Clip');
+    choose(root, 'Selected lane', lane.id); expect(contextKind(view)).toEqual(['lane']);
+    const laneCtx = root.querySelector('.mnemobard-context-lane'); expect(laneCtx?.querySelector('[aria-label="Routing lane"]')).toBeTruthy(); expect(laneCtx?.querySelector('[aria-label="Lane name"]')).toBeTruthy(); expect(laneCtx?.textContent).toContain('Auto (derived at compile)');
+    expect(root.querySelectorAll('[aria-label="Routing lane"]')).toHaveLength(1); expect(root.querySelectorAll('[aria-label="Lane name"]')).toHaveLength(1);
+    click(root, 'Next section'); expect(contextKind(view)).toEqual(['structure']); expect(s.selectedClip).toBeUndefined();
+    expect(root.querySelector('.mnemobard-canvas-tools [aria-label="Routing lane"]')).toBeTruthy(); expect(root.querySelector('.mnemobard-context-structure [aria-label="Section name"]')).toBeTruthy();
+    expect(document.activeElement?.textContent).toBe('Section · Intro');
+    click(root, 'Next clip'); expect(contextKind(view)).toEqual(['clip']); expect(root.querySelector('.mnemobard-context-structure')?.children.length).toBe(0);
+    key(root.querySelector('canvas') as HTMLElement, 'Escape'); expect(contextKind(view)).toEqual(['none']); expect(s.selectedClip).toBeUndefined();
+    expect(s.historySize).toBe(history); expect(JSON.stringify(s.draft)).toBe(draft);
+});
+it('4D: documented keys navigate structure without history, ignore typing, and respect pending forms', async () => {
+    const { s, panel, view } = await structureView(); for (const [name, at] of [['Choir', '3:1:0'], ['Build', '3:1:0']] as const) { input(panel, 'New marker name', name); input(panel, 'New marker position (bar:beat:tick)', at); submit(panel, 'Add marker'); }
+    s.edit('section', c => addSection4d(c, { label: 'Verse', startTick: 15360, endTick: 19200 })); await settle(); const history = s.historySize;
+    const canvas = view.contentEl.querySelector('canvas') as HTMLElement; key(canvas, '.'); expect(document.activeElement?.textContent).toBe('Marker · Build'); key(document.activeElement as HTMLElement, '.'); expect(document.activeElement?.textContent).toBe('Marker · Choir');
+    key(document.activeElement as HTMLElement, '.'); expect(view.contentEl.querySelector('.mnemobard-context-structure .mnemobard-structure-status')?.textContent).toBe('Already at the last marker.');
+    key(canvas, ']'); expect(document.activeElement?.textContent).toBe('Section · Verse'); expect(s.historySize).toBe(history);
+    const field = input(view.contentEl, 'Section name', 'Typing ] here'); const typed = new KeyboardEvent('keydown', { key: ',', bubbles: true, cancelable: true }); field.dispatchEvent(typed); expect(typed.defaultPrevented).toBe(false); expect(view.contentEl.querySelector('.mnemobard-context-header')?.textContent).toBe('Inspector · Section');
+    key(canvas, ','); expect(view.contentEl.querySelector('.mnemobard-context-header')?.textContent).toBe('Inspector · Section'); key(canvas, 'Escape'); expect(contextKind(view)).toEqual(['structure']);
+    click(view.contentEl, 'Discard'); key(canvas, 'Escape'); expect(contextKind(view)).toEqual(['none']); expect(document.activeElement).toBe(view.contentEl.querySelector('canvas:not(.mnemobard-structure-ruler)')); expect(s.historySize).toBe(history);
+});
+it('4D: offers an explicit rename adoption for provable link-only conflicts and explains hidden unlinkable recordings', async () => {
+    const { s, panel, vault, services } = await structureView(); const bytes = new Uint8Array([7, 7]).buffer;
+    await vault.createBinary('Field/take.wav', bytes); await vault.createBinary('Field/odd#1.wav', bytes); await services.index.settled();
+    services.canvas.addRecording(s, { label: 'Take', path: 'Field/take.wav' }); await s.save(); await settle();
+    expect(panel.querySelector<HTMLElement>('[data-unlinkable]')?.textContent).toContain('1 audio file(s) hidden');
+    s.edit('unsaved', c => addSection4d(c, { label: 'Unsaved', startTick: 0, endTick: 960 })); const path = s.base?.path ?? '';
+    const moved = vault.binaries.get('Field/take.wav'); vault.binaries.delete('Field/take.wav'); if (moved) vault.binaries.set('Field/take-2.wav', moved);
+    expect(panel.querySelector('[data-rename-offer]')).toBeNull();
+    vault.modify(path, (vault.files.get(path) ?? '').replace('[[Field/take.wav]]', '[[Field/take-2.wav]]')); await services.index.settled();
+    await vi.waitFor(() => expect(panel.querySelector('[data-rename-offer]')?.textContent).toContain('“Field/take.wav” → “Field/take-2.wav”'), { timeout: 2000 });
+    click(panel, 'Adopt rename and keep my edits'); await vi.waitFor(() => expect(s.draft.data.audioRefs[0]?.path).toBe('Field/take-2.wav'));
+    await s.save(); expect(vault.files.get(path)).toContain('Unsaved'); expect(vault.binaries.get('Field/take-2.wav')).toBe(moved);
+});
+it('4D: diagnostics name the musical object and position, state blocking impact, and navigate to the clip', async () => {
+    const { view, services, motif, vault } = await start(); (view as unknown as { picker?: { close: () => void } }).picker?.close(); await services.index.settled();
+    const s = services.canvas.drafts()[0]; if (!s) throw Error('session'); const lane = s.draft.data.lanes[0]; if (!lane) throw Error('lane');
+    services.canvas.place(s, lane.id, motif.entity.id, 3840, 1); const clip = s.draft.data.lanes[0]?.clips[0]; if (!clip) throw Error('clip');
+    vault.files.delete(motif.path); await services.index.refresh(motif.path); s.edit('touch', c => ({ ...c, title: 'Touched' })); await settle();
+    const row = view.contentEl.querySelector<HTMLElement>('.mnemobard-canvas-diagnostics [data-diagnostic="missing"]'); if (!row) throw Error('row');
+    expect(row.textContent).toContain('Blocks compile/export'); expect(row.textContent).toContain('2:1:0'); expect(row.textContent).toContain('Restore the motif note');
+    expect(row.textContent).not.toContain(clip.id.slice(0, 8)); expect(row.title).toContain(clip.id);
+    const history = s.historySize; click(row, 'Select clip'); expect(s.selectedClip).toBe(clip.id); expect(contextKind(view)).toEqual(['clip']); expect(s.historySize).toBe(history);
+});
+it('4D: Escape inside CANVAS never propagates to the host, even with nothing selected', async () => {
+    const { view } = await structureView(); const canvas = view.contentEl.querySelector<HTMLElement>('canvas:not(.mnemobard-structure-ruler)'); if (!canvas) throw Error('canvas');
+    const host = vi.fn(); document.addEventListener('keydown', host); try { key(canvas, 'Escape'); expect(contextKind(view)).toEqual(['none']); expect(host).not.toHaveBeenCalled(); } finally { document.removeEventListener('keydown', host); }
+});

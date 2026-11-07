@@ -1,4 +1,5 @@
 import type { App } from 'obsidian';
+import { openModal } from '../../ui/modal-host';
 import type { Composition } from '../../domain/entities';
 import type { FoundationServices } from '../../application/services';
 import type { ArrangementPreparation } from '../../arrangement/preparation';
@@ -36,7 +37,7 @@ export class CanvasPerformancePanel {
     seekForm.addEventListener('submit', e => { e.preventDefault(); try { void this.seek(positionTick(this.seekInput.value, 960, this.model.data.meter)); } catch (error) { this.say(error); } });
     this.exportButton = button(seek, 'Export arrangement MIDI', () => {
       if (!this.allowed()) return;
-      this.dialog?.close(); this.dialog = new ArrangementExportDialog(app, this.preparation, services.settings.current.creationRoot, () => this.allowed() && this.preparation.state === 'ready',()=>this.active); this.dialog.open();
+      this.dialog?.close(); this.dialog = new ArrangementExportDialog(app, this.preparation, services.settings.current.creationRoot, () => this.allowed() && this.preparation.state === 'ready',()=>this.active); openModal(this.status, this.dialog, t => this.say(t));
     });
     const routing = element(secondary, 'details', undefined, 'mnemobard-arrangement-routing'); element(routing, 'summary', 'MIDI routing');
     element(routing, 'p', 'Auto is derived, not saved as a channel. Explicit assignments stay unique. Note-only sharing requires matching patch context and separated same-pitch track lifetimes; channel10 is percussion. PATCHBOOK sounds are not reproduced.', 'mnemobard-hint');
@@ -72,7 +73,14 @@ export class CanvasPerformancePanel {
   refresh(): void {
     if (!this.active) return;
     const changed = this.version !== this.session.changeVersion || this.base !== this.session.base?.source;
-    if (changed) { this.version = this.session.changeVersion; this.base = this.session.base?.source; this.model = this.session.draft; this.invalidate('Composition draft/save base changed; compile again.'); this.refreshRouting(); }
+    if (changed) {
+      const baseChanged = this.base !== this.session.base?.source; this.version = this.session.changeVersion; this.base = this.session.base?.source; this.model = this.session.draft;
+      // 4D: organizational edits (sections/markers/references/prose) keep compiled notes and playback; musical edits invalidate.
+      if (!this.preparation.musicallyCurrent(this.model)) this.invalidate('Musical arrangement changed (clips, lanes, routing, tempo/meter or sources); compile again.');
+      else if (baseChanged && this.preparation.state === 'ready') void this.preparation.adoptSavedBase();
+      else if (baseChanged && this.preparation.state !== 'idle' && this.preparation.state !== 'invalidated') this.invalidate('Composition save base changed during compilation; compile again.');
+      this.refreshRouting();
+    }
     if (this.session.error.startsWith('Not saved') && this.preparation.prepared) this.invalidate('Protected Save failed/conflicted; resolve the source before compiling.');
     const snapshot = this.preparation.captured;
     if (snapshot) {
@@ -86,6 +94,12 @@ export class CanvasPerformancePanel {
     this.statusUpdate();
   }
   private invalidate(message: string): void { if (this.preparation.state !== 'idle' && this.preparation.state !== 'invalidated') { this.stop(); this.preparation.invalidate(message); } }
+  /** 4D: the routing form element, placed by the view into the lane inspector context (moved, never duplicated). */
+  get routing(): HTMLFormElement { return this.routeForm; }
+  /** Point the routing form at a lane unless it holds unapplied changes. */
+  routeLane(id: string): void { if (this.routeForm.dataset.pending === 'true' || this.laneSelect.value === id) return; this.laneSelect.value = id; this.routingValues(); }
+  /** Channel chosen by the last verified compilation (display only). */
+  compiledChannel(id: string): string | undefined { const lane = this.preparation.prepared?.arrangement.lanes.find(l => l.id === id); return lane ? lane.channel === undefined ? 'None (no notes)' : `Channel ${lane.channel + 1}` : undefined; }
   private refreshRouting(): void { if (this.routeForm.dataset.pending === 'true') return; const previous = this.laneSelect.value; this.laneSelect.replaceChildren(); for (const lane of this.model.data.lanes) element(this.laneSelect, 'option', lane.name).value = lane.id; this.laneSelect.value = this.model.data.lanes.some(l => l.id === previous) ? previous : this.model.data.lanes[0]?.id ?? ''; this.routingValues(); }
   private routingValues(): void { const lane = this.model.data.lanes.find(l => l.id === this.laneSelect.value); this.channelSelect.value = lane?.midiChannel === undefined ? '' : String(lane.midiChannel); this.percussion.checked = lane?.percussion === true; this.routeForm.dataset.lane = lane?.id ?? ''; }
   private renderDiagnostics(): void {

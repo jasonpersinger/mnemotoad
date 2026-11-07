@@ -26,7 +26,7 @@ Native validation scripts live in `scripts/*-native.mjs` and drive only the isol
 | `src/music/` | Exact timing (`timing.ts`), bar:beat:tick (`positions.ts`), transport, audio. |
 | `src/arrangement/` | Pure arrangement preflight/compiler/routing/collisions/capture/preparation (4B). |
 | `src/midi/` | Shared note-only serializer, import/export, worker. |
-| `src/modules/{patchbook,motif,canvas}/` | Module views. CANVAS: `view.ts` (controller), `timeline.ts` (lane canvas + fixed structure ruler), `geometry.ts` (viewport math), `commands.ts` / `structure.ts` (pure edits), `structure-panel.ts` (sections/markers/recordings UI). |
+| `src/modules/{patchbook,motif,canvas}/` | Module views. CANVAS: `view.ts` (controller), `timeline.ts` (lane canvas + fixed structure ruler), `geometry.ts` (viewport math), `commands.ts` / `structure.ts` (pure edits), `structure-panel.ts` (sections/markers/recordings UI, renders the selected editor into the contextual inspector), `rename-merge.ts` (provable link-only rename). |
 | `tests/` | Vitest suites; `tests/fixtures/` golden MIDI (must stay byte-identical). |
 
 ## Invariants that are easy to break
@@ -46,6 +46,6 @@ Native validation scripts live in `scripts/*-native.mjs` and drive only the isol
 - Milestone evidence: `docs/MILESTONE_*_REPORT.md` (historical, do not rewrite), `docs/validation/*.json`, screenshots in ignored `output/<module>/milestone-*/`. Decisions: [docs/DECISIONS.md](docs/DECISIONS.md); risks: [docs/RISKS.md](docs/RISKS.md).
 - Source is the authority over reports; record discrepancies in the milestone report.
 
-## Known limitations (as of 4C)
+## Known limitations (as of 4D)
 
-Note-only fixed tempo/meter model; sine-tone audition; no DAW import verified; no screen-reader certification; Linux desktop only verified. Structure edits invalidate prepared audition (4B fingerprint policy). Recording references are audio-only, vault-relative, never played. Native runs: assert `activeDocument === document` before using Modals (stale-window host condition, see docs/MILESTONE_4C_REPORT.md).
+Note-only fixed tempo/meter model; sine-tone audition; no DAW import verified; no screen-reader certification; Linux desktop only verified. Only musical edits invalidate compilation/playback (`musicalInput` denylist; keep new organizational fields out of the compiler or add them to the denylist deliberately). Open clean CANVAS sessions are not reloaded on external note changes. Recording references are audio-only, vault-relative, never played. Open modals only via `openModal()` (src/ui/modal-host.ts). Native runs: assert `activeDocument === document`; never let Escape bubble out of CANVAS (Obsidian switches leaves).

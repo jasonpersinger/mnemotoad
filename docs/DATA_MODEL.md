@@ -414,3 +414,7 @@ No schema bump or migration. The schema1 arrays are activated with additive opti
 - Recording paths are vault-relative, pass `vaultPath()`, and must have an audio extension. `atTick` remains required (timeline anchor). Each referenced path is mirrored as `[[path]]` in the existing `mnemobard_audio` frontmatter list; the JSON path is authoritative, the mirror is a navigation/rename hint.
 - Writer: `description` (sections/markers) and `description`/`sectionId`/`markerId` (references) are owned optional fields in `retainExtensions`, so clearing deletes them; all other unknown fields survive round trips.
 - Sections, markers and references are excluded from compilation and MIDI export (unchanged4B contract).
+
+## Milestone 4D — no schema change; field classification
+
+Schema 1 unchanged; no migration. For compilation identity, composition fields are classified: **organizational** = `data.sections`, `data.markers`, `data.audioRefs`, entity `description`, `notes`, `tags`, `assets` (incl. the `mnemobard_audio` frontmatter mirror); **musical** = everything else, including `title`, lanes (names, order, routing), clips (positions, repeats, labels, reviewed revisions), tempo, meter, PPQ, length, `extra`, and unknown fields (fail-safe). The `mnemobard_audio` mirror holds exact `[[vault/path]]` links; on relink, other audio mirror links resolving to the same file are removed. Paths remain constrained by `vaultPath()` (no `# [ ] | < > : " ? *`).

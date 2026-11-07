@@ -1,4 +1,5 @@
 import { Notice, Scope, type WorkspaceLeaf } from 'obsidian';
+import { openModal } from '../../ui/modal-host';
 import type { FoundationServices } from '../../application/services';
 import type { AssetReference, LibraryKind } from '../../domain/entities';
 import { messageOf } from '../../domain/errors';
@@ -211,7 +212,7 @@ export class PatchbookView extends ModuleView {
     // Limit host opening to built-in media/image viewers. Arbitrary presets may
     // be executable extensions, so inspect them inside Obsidian instead.
     if (role !== 'preset' && ['wav', 'mp3', 'ogg', 'flac', 'm4a', 'webm', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'].includes(extension)) this.openNote(path);
-    else { this.assetInspector?.close(); this.assetInspector = new AssetInspector(this.app, path); this.assetInspector.open(); }
+    else { this.assetInspector?.close(); this.assetInspector = new AssetInspector(this.app, path); openModal(this.contentEl, this.assetInspector, t => this.say(t)); }
   }
   private related(id: string): void { void this.select(id).catch(error => this.fail(error)); }
   private renderDetail(): void {

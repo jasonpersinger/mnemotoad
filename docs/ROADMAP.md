@@ -155,3 +155,11 @@ Implemented under Prompt010: named sections (create/rename/move/resize/exact num
 Validation:449 baseline tests→492 tests/38files; golden arrangement MIDI byte-identical; native MIDI after structure byte-identical to the pre-structure export; actual Linux Obsidian workflow, cold restart and MOTIF/MIDI/PATCHBOOK/foundation regressions pass. See [4C report](MILESTONE_4C_REPORT.md).
 
 **Stop gate:** human review of4C is required. Candidate next scopes (not authorized): structure-aware audition invalidation (fingerprint excluding organizational metadata), optional section/marker MIDI meta export, colour/category, investigation of the host stale-active-window condition observed during native runs, and broader platform validation.
+
+## Milestone 4D — CANVAS usability, workflow refinement and stability
+
+Implemented under Prompt011: contextual inspector and workspace hierarchy, documented keyboard navigation, diagnostics naming musical objects with navigation, musical-vs-organizational invalidation (metadata edits keep playback/compilation), modal host guard, provable recording rename adoption, mirror dedupe, picker transparency for unlinkable files. No schema change, no dependency.
+
+Validation: 492 → 538 tests; golden MIDI unchanged; native 4D workflow (2 parts + cold restart), MOTIF/MIDI/PATCHBOOK/foundation regressions incl. restart; same-host performance A/B against the signed 4C build. Report: docs/MILESTONE_4D_REPORT.md.
+
+**Stop gate:** human review of 4D is required. Candidate next scopes (not authorized): CANVAS clean-session auto-reload on external change; MOTIF→PATCHBOOK navigation readiness instrumentation; optional section/marker MIDI meta export; colour/category.
