@@ -89,3 +89,16 @@ it('associates an active PATCHBOOK UUID explicitly and preserves missing-referen
 it('loads a deferred PATCHBOOK leaf before explicit UUID navigation',async()=>{
  const{view,services,repository}=await fixture();const patch=await repository.create(createEntity('patch','Navigate context'));click(view.contentEl,'New motif');await settle();const session=services.motifs.drafts()[0];if(!session)throw Error();services.motifs.associate(session,patch.entity.id);const patchView=new PatchbookView({} as WorkspaceLeaf,()=>services);closers.push(()=>patchView.release());await patchView.onOpen();let loaded=0;const leaf={view:patchView,loadIfDeferred:async()=>{loaded++;}};Object.assign(view.app.workspace,{getLeavesOfType:()=>[leaf]});click(view.contentEl,'Open associated PATCHBOOK record');await settle();expect(loaded).toBe(1);expect(patchView.getState().selectedId).toBe(patch.entity.id);
 });
+it('4H toolbar: every editing operation stays available in labelled groups, and the sealed command path still edits exactly',async()=>{
+ const{view,services}=await fixture();click(view.contentEl,'New motif');await settle();
+ const toolbar=view.contentEl.querySelector('.mnemobard-motif-toolbar');if(!toolbar)throw Error('toolbar');
+ const groups=Object.fromEntries([...toolbar.querySelectorAll('[role="group"]')].map(g=>[g.getAttribute('aria-label'),[...g.querySelectorAll('button,select')].map(b=>b.getAttribute('aria-label')??b.textContent)]));
+ expect(groups).toEqual({'Grid and drawing':['Editing grid','Editing mode','New note duration'],'Note editing':['Add note','Undo','Redo','Delete selected','Duplicate selected','Clear selection'],'Zoom and navigation':['Time −','Time +','Pitch −','Pitch +','Previous note','Next note']});
+ expect([...toolbar.querySelectorAll(':scope > details > summary')].map(s=>s.textContent)).toEqual(['Transform notes','Roll gestures and keys']);
+ expect(toolbar.querySelector('.mnemobard-roll-instructions')?.textContent).toContain('Click empty grid to draw');
+ // Operations through the regrouped controls: add, transpose (sealed transform), undo, redo.
+ click(view.contentEl,'Add note');const session=services.motifs.drafts()[0];if(!session)throw Error('draft');const pitch=session.snapshot.data.notes[0]?.pitch??-1;
+ click(view.contentEl,'Octave up');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch+12);
+ click(view.contentEl,'Undo');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch);click(view.contentEl,'Redo');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch+12);
+ expect(Object.isFrozen(session.snapshot.data.notes[0])).toBe(true);
+});

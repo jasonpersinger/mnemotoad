@@ -1,0 +1,149 @@
+{
+  "milestone": "4H",
+  "date": "2026-11-08",
+  "host": {
+    "ua": "obsidian/1.15.0",
+    "vault": "MNEMOBARD/dev-vault"
+  },
+  "build": {
+    "mainJs": "a9ac6f4f52d4f7ae0727f19585e93ad5f5e647416b6986dd62a30a9c072c5af1",
+    "baseline4gMainJs": "a351b2f96d7ad7762f07a36a8c66b75e97f2379bc25d6dae0dbe998f499fce19"
+  },
+  "checks": [
+    {
+      "step": "1–3",
+      "result": "pass",
+      "evidence": "obsidian/1.15.0 on MNEMOBARD/dev-vault; PATCHBOOK “Night choir” → Open in MOTIF → “Ascending choir” (9 notes); toolbar groups [\"Grid and drawing: Editing grid, Editing mode, New note duration\",\"Note editing: Add note, Undo, Redo, Delete selected, Duplicate selected, Clear selection\",\"Zoom and navigation: Time −, Time +, Pitch −, Pitch +, Previous note, Next note\"]"
+    },
+    {
+      "step": "4–8",
+      "result": "pass",
+      "evidence": "Velocity of E4 74 → 101 (Set velocity); Undo → 74 and clean; Redo → 101; saved; reopened from a fresh leaf: draft and saved record 101, clean"
+    },
+    {
+      "step": "9–14",
+      "result": "pass",
+      "evidence": "5,000 notes opened in 61.4 ms; selected a note and moved to the next one (5000 notes / 1 selected); move committed in 21.9 ms, resize in 19 ms; both undone: draft equals the saved notes and is clean"
+    },
+    {
+      "step": "15–19",
+      "result": "pass",
+      "evidence": "10,000 notes opened in 93.7 ms; native move/resize commit median 32.3 ms (max 55.7; [55.7,30.1,31,32.3,31.8,38.7,29.3,34.8]); 6 repeated edits, 2× undo + 2× redo exact ({\"edits\":6,\"reachableHistory\":3,\"undoRedoExact\":true,\"dirty\":true}); saved and reopened: 10,000 notes identical to the draft, clean"
+    },
+    {
+      "step": "20–23",
+      "result": "pass",
+      "evidence": "CANVAS “Source review required · 1 motif”; review summary {\"Revision\":\"Changed since it was last acknowledged · c9881c3df896 → 24e206c9badc\",\"Affected clips\":\"2 clips on lane Choir\",\"Length per repetition\":\"2 bars (unchanged)\",\"Status\":\"Ready to acknowledge\"}; sections [\"Changes · last acknowledged and current saved revision (collapsed)\",\"Affected placements · 2 (open)\",\"Technical details (collapsed)\"]; placements [\"1. Choir | Ascending choir | 1:1:0 | ×2 | 4 bars | 4 bars | Eligible\",\"1. Choir | Ascending choir | 5:1:0 | ×1 | 2 bars | 2 bars | Eligible\"]; Acknowledge visible without scrolling at 1366/980/680 px and after scrolling (sticky footer, no horizontal overflow); keyboard {\"label\":\"Changes · last acknowledged and current saved revision\",\"inReview\":true,\"focusVisible\":true,\"outline\":\"solid\"}"
+    },
+    {
+      "step": "24–26",
+      "result": "pass",
+      "evidence": "Confirmed in place ({\"visible\":true,\"focused\":\"Confirm acknowledgement\"}): “Acknowledged revision 24e206c9badc for 2 clips. Compile again before playback or export; Undo reverts this in one step.”, one history entry; Undo restored 2 pending placements and the banner; Redo acknowledged them again"
+    },
+    {
+      "step": "27–33",
+      "result": "pass",
+      "evidence": "Compiled (“Compiled · matches this unsaved draft”); export summary {\"File\":\"Standard MIDI File · Type 1 · 960 PPQ\",\"Tempo and meter\":\"120 BPM · 4/4\",\"MIDI tracks\":\"3: 1 tempo and meter track + 2 lane tracks\",\"Lanes\":\"2 of 2 lanes contain notes\",\"Notes\":\"43\",\"Length\":\"32 bars · 1:04.0 · ends at 33:1:0 (bar:beat:tick)\",\"Last note ends\":\"7:1:0\",\"Channels\":\"Choir: channel 1 · assigned automatically · 27 notesPulse: channel 2 · assigned automatically · 16 notes\"} matches the independent parse ({\"sha256\":\"83d8f48b239c00199822bdb889df9d9d1555c92c975d99200a35f485a2855707\",\"status\":0,\"format\":1,\"ppq\":960,\"trackCount\":3,\"endTicks\":[122880],\"noteOns\":43,\"channels\":[1,2],\"lastNoteOff\":23040,\"summaryMatches\":true}); REAPER guidance collapsed by default, steps [\"Insert the exported file into a REAPER project as media. REAPER asks how to import it in a “MIDI File Import” dialog.\",\"Tick “Expand 2 MIDI tracks to new REAPER tracks”. Without it, every lane is merged into one item on a single track.\",\"Tick “Import MIDI tempo map to project tempo map”. Without it, REAPER keeps its own project tempo and meter, so the notes no longer line up with its bars and beats.\",\"Check the imported project against this export: 120 BPM, 4/4, 2 lane tracks, last note ending at 7:1:0.\"]; ending explained; two exports byte-identical; golden fixture 85c8ecf39936… unchanged"
+    },
+    {
+      "step": "33b",
+      "result": "pass",
+      "evidence": "Same saved composition exported by the 4G build (a351b2f96d7a…) and the 4H build (a9ac6f4f52d4…) in one Obsidian process: both 83d8f48b239c0019… (byte-identical)"
+    },
+    {
+      "step": "34–36",
+      "result": "pass",
+      "evidence": "External description edit while a marker was unsaved → protected conflict; Save refused (“Not saved: The note changed elsewhere. Read the latest record or save a recovery copy.”), compile status “Compile failed · see diagnostics” with the explanation “The composition note on disk no longer matches the saved state this draft was based on, so an export could mix two versions. Resolve the external change in CANVAS (reload the note or keep your draft and save it), then compile again.”; disk note kept; recovery copy MNEMOBARD/Recovery/452c1f43-d87c-4197-a07b-693f4b5040ad/65309054-b82e-461d-9745-a520414e377e.json holds the unsaved cue"
+    },
+    {
+      "step": "39",
+      "result": "pass",
+      "evidence": "Light theme (Moonstone) captured for MOTIF, the source review and the export dialog with the same layout checks; MOTIF at 1366/980/680 px: no horizontal overflow, every toolbar control reachable, roll {\"680\":{\"width\":601,\"height\":382},\"980\":{\"width\":901,\"height\":382},\"1366\":{\"width\":1287,\"height\":382}}"
+    },
+    {
+      "step": "40",
+      "result": "pass",
+      "evidence": "Renderer exceptions during this phase: 0"
+    },
+    {
+      "step": "37–38",
+      "result": "pass",
+      "evidence": "After a cold Obsidian restart: recovery copy listed and intact (unsaved cue present); composition note intact with the external edit and every source still acknowledged; MOTIF edit (velocity 101) and the 10,000-note save intact (notes SHA-256 458b21900205… as saved); compiles"
+    },
+    {
+      "step": "40",
+      "result": "pass",
+      "evidence": "Renderer exceptions during this phase: 0"
+    }
+  ],
+  "screenshots": [
+    "01-motif-editor-dark.png",
+    "02-motif-toolbar-refined.png",
+    "03-motif-large-document.png",
+    "04-motif-note-selection.png",
+    "05-canvas-source-review-summary.png",
+    "06-canvas-source-review-details.png",
+    "07-canvas-source-review-placements.png",
+    "08-canvas-source-review-confirmation.png",
+    "09-midi-export-summary.png",
+    "10-reaper-import-guidance.png",
+    "11-canvas-export-ready.png",
+    "12-canvas-conflict-protection.png",
+    "12b-conflict-export-diagnostic.png",
+    "13-narrow-980.png",
+    "14-narrow-680.png",
+    "15-light-theme.png",
+    "15b-light-source-review.png",
+    "15c-light-export-summary.png",
+    "16-recovery-after-restart.png"
+  ],
+  "rendererExceptions": {
+    "part1": 0,
+    "restart": 0
+  },
+  "editLatency10000": {
+    "nativeCommitOnlyMedianMs": 32.3,
+    "samples": [
+      55.7,
+      30.1,
+      31,
+      32.3,
+      31.8,
+      38.7,
+      29.3,
+      34.8
+    ]
+  },
+  "midi": {
+    "exportSha256": "83d8f48b239c00199822bdb889df9d9d1555c92c975d99200a35f485a2855707",
+    "baseline4gBuildSha256": "83d8f48b239c00199822bdb889df9d9d1555c92c975d99200a35f485a2855707",
+    "byteIdenticalAcrossBuilds": true,
+    "deterministic": true,
+    "goldenSha256": "85c8ecf39936d1de7612f65d17d3df2f4599472cda8027096bced1c93bb3ab77",
+    "independent": {
+      "sha256": "83d8f48b239c00199822bdb889df9d9d1555c92c975d99200a35f485a2855707",
+      "status": 0,
+      "format": 1,
+      "ppq": 960,
+      "trackCount": 3,
+      "endTicks": [
+        122880
+      ],
+      "noteOns": 43,
+      "channels": [
+        1,
+        2
+      ],
+      "lastNoteOff": 23040,
+      "summaryMatches": true
+    }
+  },
+  "regressions": {
+    "4E CANVAS": "18 + 2",
+    "MOTIF": "7 + 12",
+    "MOTIF-MIDI": "11 + 5",
+    "PATCHBOOK assets": "6 + 6",
+    "Foundation": "11"
+  },
+  "evidence": "output/mnemobard/milestone-4h/"
+}

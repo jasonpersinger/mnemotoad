@@ -173,7 +173,18 @@ See [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md) for exact workloads/results
 
 | DAW import defaults (4G) | REAPER 7.84 merges all MIDI tracks onto one track and ignores the file's tempo map unless the user ticks "Expand MIDI tracks to new REAPER tracks" and "Import MIDI tempo map". Not a file defect (verified). | Document for users; candidate export-dialog hint. |
 | DAW item length (4G) | REAPER sizes imported items to the last note: the composition's trailing silence/final boundary is not represented in REAPER although the file's end-of-track is correct. MIDI output unchanged by design. | Product decision pending. |
-| Large-motif edit commits (4G) | Drag/resize commit ~49 ms at 5,000 notes, ~93 ms at 10,000 (whole-draft validation, history snapshot, dirty canonicalisation). | Candidate next milestone. |
+| Large-motif edit commits (4G; 4H update: resolved) | Drag/resize commit ~49 ms at 5,000 notes, ~93 ms at 10,000 (4G). 4H: 10,000-note drag 93.9 → 45.5 ms, resize 94.3 → 41.0 ms, undo/redo 39.5 → 7 ms (4G benchmark method, same process); native commit-only median 32.3 ms. Frozen shared snapshots + sealed command results (H01–H06). | Resolved; see 4H residual risks. |
 | Duplicate-key acceptance relaxation (4G) | Valid duplicate-free JSON rejected only by YAML-specific rules is now accepted (Z09). | Accepted; documented. |
 | Batch review strictness (4G) | Blocked during an external composition conflict or with an unsaved MOTIF draft of the motif (Z03, Z05). | By design; single-clip review unchanged. |
 | Benchmark residue (4G) | Benchmark runs leave recovery checkpoints of synthetic drafts in the dev vault (recovery files are never deleted). | Accepted (disposable vault). |
+
+## Milestone 4H residual risks
+
+| Risk | Evidence and mitigation | Remaining work / approval |
+| --- | --- | --- |
+| Frozen drafts and snapshots (4H) | Any code that writes to `session.snapshot`, a history entry or a sealed command result now throws instead of silently corrupting shared state. Audited: no in-repo writer; tests assert the throw. A future caller needing an editable value must use `draft` or the default (unsealed) command path. | Documented in CLAUDE.md invariants. |
+| Undo depth at 10,000 notes (pre-existing, 4H measured) | The unchanged 16 MiB estimate (2 × serialised before+after per entry) keeps about three undo steps at 10,000 notes, although shared frozen snapshots use far less memory. | Deferred (H07): changing the estimate changes established undo behaviour. |
+| Large multi-note commits (4H) | 100-note move at 10,000 notes: 45–53 ms median across runs under the conservative harness boundary (includes a harness draft copy); p95 up to ~85 ms with occasional long tasks. | Non-blocking; candidate for profiling if users edit 10,000-note motifs routinely. |
+| `jsonEqual` equivalence (4H) | Exact for plain JSON data (6,000-pair property test); anything else falls back to the canonical strings. | Accepted. |
+| REAPER guidance drift (4H) | Labels quoted from REAPER 7.84 on Linux; other versions may differ (the guidance says so). The menu path to insert media was not captured and is not named. | Re-verify when another DAW/version is evidenced. |
+| Composition end in DAWs (4G/4H) | Explained in the export dialog with exact positions; the file is unchanged (no dummy events). | Product decision on an explicit opt-in end marker remains open. |

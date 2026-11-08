@@ -327,11 +327,56 @@
 .mnemobard-review-compare thead th, .mnemobard-review-clips thead th { color: var(--mnemobard-quiet); font-weight: 600; }
 .mnemobard-review-compare tbody th { color: var(--mnemobard-quiet); font-weight: 500; white-space: nowrap; }
 .mnemobard-review-clips tr[data-eligible="false"] td:last-child { color: var(--text-warning); }
-.mnemobard-review-placements > summary, .mnemobard-review-raw > summary, .mnemobard-source-review .mnemobard-ref-id > summary { cursor: pointer; }
-.mnemobard-review-raw pre { max-height: 12em; overflow: auto; font-size: var(--font-smallest); }
+.mnemobard-source-review details > summary { cursor: pointer; }
+.mnemobard-review-advanced pre { max-height: 12em; overflow: auto; font-size: var(--font-smallest); }
 .mnemobard-review-blockers { color: var(--text-warning); }
 [data-timing="incompatible"] { color: var(--text-warning); }
 .mnemobard-review-actions { display: flex; flex-wrap: wrap; gap: 6px var(--mnemobard-gap); align-items: baseline; margin-top: var(--mnemobard-gap); }
 .mnemobard-review-actions .mnemobard-confirm { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; margin: 0; border-radius: var(--mnemobard-radius); }
 .mnemobard-review-actions .mnemobard-confirm > p { flex: 1 1 100%; margin: 0; }
 @media (max-width: 700px) { .mnemobard-review-clips thead { display: none; } .mnemobard-review-clips tr { display: grid; grid-template-columns: 1fr 1fr; border-bottom: var(--mnemobard-rule); } .mnemobard-review-clips td { border: 0; } }
+/* ── Milestone 4H: source-review hierarchy, sticky review actions, export summary and DAW guidance. Host theme variables only (light and dark). ── */
+.mnemobard-arrangement-export, .mnemobard-midi-dialog {
+  --mnemobard-gap: var(--size-4-2, 8px); --mnemobard-gap-l: var(--size-4-3, 12px); --mnemobard-rule: 1px solid var(--background-modifier-border);
+  --mnemobard-radius: var(--radius-s, 4px); --mnemobard-quiet: var(--text-muted); --mnemobard-panel: var(--background-secondary); --mnemobard-accent: var(--interactive-accent);
+}
+.mnemobard-review-summary > h3 { margin-block: 0 4px; overflow-wrap: anywhere; }
+.mnemobard-review-summary dl, .mnemobard-export-summary dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px var(--mnemobard-gap-l); margin: 0 0 var(--mnemobard-gap); font-size: var(--font-ui-small); }
+.mnemobard-review-summary dt, .mnemobard-export-summary dt { color: var(--mnemobard-quiet); }
+.mnemobard-review-summary dd, .mnemobard-export-summary dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.mnemobard-review-summary dd[data-status="blocked"] { color: var(--text-warning); }
+.mnemobard-review-summary dd[data-status="eligible"] { font-weight: 600; }
+.mnemobard-review-detail > details { border-top: var(--mnemobard-rule); padding-block: 6px; }
+.mnemobard-review-detail > details > summary, .mnemobard-daw-guidance > summary, .mnemobard-export-advanced > summary { cursor: pointer; color: var(--mnemobard-quiet); font-size: var(--font-ui-small); font-weight: 600; }
+.mnemobard-review-detail > details[open] > summary { margin-bottom: 4px; }
+/* The action row stays reachable at the bottom of the scrolling modal. Sticky keeps it in normal flow, so it never covers content. */
+/* .modal scrolls with padding (--size-4-4); sticking that far below the padding edge lets the footer cover the strip
+   where scrolled content would otherwise show beneath it. Its own bottom padding compensates, so nothing is hidden at rest. */
+.mnemobard-source-review > .mnemobard-review-actions { position: sticky; bottom: calc(-1 * var(--size-4-4, 16px)); z-index: 1; padding-block: var(--mnemobard-gap) calc(var(--mnemobard-gap) + var(--size-4-4, 16px)); margin-bottom: calc(-1 * var(--size-4-4, 16px)); background: var(--modal-background, var(--background-primary)); border-top: var(--mnemobard-rule); }
+/* Scoped to MNEMOBARD's own review and export dialogs (class on their modalEl); Obsidian sizes modals from --dialog-width. */
+.modal.mnemobard-wide-modal { --dialog-width: 880px; }
+.mnemobard-review-clips thead th, .mnemobard-review-compare thead th { overflow-wrap: normal; }
+.mnemobard-source-review > .mnemobard-review-actions > p { flex: 1 1 100%; margin: 0; }
+.mnemobard-export-summary { margin-block: var(--mnemobard-gap); padding: var(--mnemobard-gap) var(--mnemobard-gap-l); border: var(--mnemobard-rule); border-radius: var(--mnemobard-radius); background: var(--mnemobard-panel); }
+.mnemobard-export-summary > h3 { margin: 0 0 6px; font-size: var(--font-ui-medium); }
+.mnemobard-export-summary ul { margin: 0; padding-inline-start: 1.1em; }
+.mnemobard-export-summary > p { margin: 0; }
+.mnemobard-daw-guidance, .mnemobard-export-advanced { margin-block: var(--mnemobard-gap); }
+.mnemobard-daw-guidance ol { margin-block: 6px; padding-inline-start: 1.4em; }
+.mnemobard-daw-guidance li { margin-block: 3px; }
+.mnemobard-arrangement-export > .mnemobard-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.mnemobard-daw-guidance > summary:focus-visible, .mnemobard-export-advanced > summary:focus-visible { outline: 2px solid var(--mnemobard-accent); outline-offset: 2px; }
+[data-compile-diagnostic] > small { display: block; }
+.mnemobard-diagnostic-help { color: var(--text-muted); }
+@media (max-width: 520px) { .mnemobard-review-summary dl, .mnemobard-export-summary dl { grid-template-columns: minmax(0, 1fr); } .mnemobard-review-summary dd, .mnemobard-export-summary dd { margin-bottom: 4px; } }
+/* 4H MOTIF toolbar: labelled groups on one wrapping row; an opened disclosure takes the full width below the groups. */
+.mnemobard-motif-toolbar { row-gap: 6px; }
+.mnemobard-tool-group { display: flex; flex-wrap: wrap; align-items: end; gap: 6px; padding-inline-end: var(--size-4-2, 8px); border-inline-end: 1px solid var(--background-modifier-border); min-width: 0; }
+.mnemobard-tool-group > .mnemobard-selection-tools { align-self: center; }
+.mnemobard-motif-toolbar > details { align-self: center; }
+.mnemobard-motif-toolbar > details > summary, .mnemobard-tool-group > details > summary { cursor: pointer; font-size: var(--font-ui-small); color: var(--text-muted); white-space: nowrap; }
+.mnemobard-motif-toolbar > details[open] { flex: 1 1 100%; }
+.mnemobard-motif-toolbar > .mnemobard-transforms { border-block-start: 0; padding-block: 0; }
+.mnemobard-roll-gestures > p { margin: 6px 0 0; }
+@media (max-width: 700px) { .mnemobard-tool-group { border-inline-end: 0; padding-inline-end: 0; flex: 1 1 100%; } }
+@media (max-width: 700px) { .mnemobard-review-clips td::before { content: attr(data-label) ' · '; color: var(--text-muted); } }

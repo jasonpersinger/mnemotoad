@@ -1,4 +1,5 @@
 import { Modal, TFile, type App } from 'obsidian';
+import { reaperGuidance } from '../../ui/daw-guidance';
 import { element, button } from '../../ui/dom';
 import { messageOf } from '../../domain/errors';
 import { inspectMidiIsolated } from '../../midi/job';
@@ -61,6 +62,8 @@ export class MidiExportDialog extends Modal {
     if(this.session.base)element(mode,'option','Saved vault record (fresh read)').value='saved';element(mode,'option','Current working draft (unsaved snapshot)').value='draft';
     const label=element(root,'label');element(label,'span','New vault MIDI destination');const path=element(label,'input');path.setAttribute('aria-label','New vault MIDI destination');path.value=`${this.defaultRoot}/Exports/motif-${this.session.draft.id.slice(0,8)}-${Date.now()}.mid`;
     for(const warning of exportWarnings(this.session.draft))element(root,'p',warning,'mnemobard-hint');
+    // 4H: DAW import guidance (collapsed); the motif file keeps its full length, which a DAW may display as ending at the last note.
+    reaperGuidance(root,{multitrack:false});element(root,'p','The file keeps the motif’s full length, including any silence after the last note. Some DAWs, REAPER among them, show the imported item ending at its last note.','mnemobard-hint');
     const status=element(root,'p');status.setAttribute('role','status');
     const submit=button(root,'Create MIDI file',()=>{void(async()=>{submit.disabled=true;try{const snapshot=mode.value==='saved'?await this.saved():this.session.draft;if(this.lifetime.signal.aborted)return;const bytes=exportMidi(snapshot);const target=await this.library.midiFiles.create(path.value,bytes,this.lifetime.signal);if(!this.lifetime.signal.aborted)status.textContent=`Export created: ${target}. Musical record unchanged.`;}catch(error){if(!this.lifetime.signal.aborted)status.textContent=messageOf(error);}finally{if(!this.lifetime.signal.aborted)submit.disabled=false;}})();},'mod-cta');button(root,'Close export',()=>this.close());
   }

@@ -8,7 +8,7 @@ import { element, button } from '../../ui/dom';
 import { RecoveryInspector } from '../../ui/recovery-inspector';
 import { compileSequence } from '../../music/compiler';
 import { TempoMap } from '../../music/timing';
-import { addNote, deleteNotes, duplicateNotes, editableMotif, gridTicks, moveNotes, type Grid } from './commands';
+import { addNote, deleteNotes, duplicateNotes, editableMotif, gridTicks, moveNotes, sealedMotif, type Grid } from './commands';
 import type { MotifSession } from './session';
 import { PianoRoll } from './piano-roll';
 import { NoteInspector } from './inspector';
@@ -77,7 +77,7 @@ export class MotifView extends ModuleView {
       for (const [key, ticks, pitch] of [['ArrowLeft', -1, 0], ['ArrowRight', 1, 0], ['ArrowUp', 0, 1], ['ArrowDown', 0, -1]] as const) register([], key, () => {
         if (!this.noteContext() || !this.session || !this.roll) return true;
         if (this.contentEl.ownerDocument.activeElement !== this.roll.canvas) this.navigateNote(key === 'ArrowUp' || key === 'ArrowLeft' ? -1 : 1);
-        else this.act(() => this.session?.edit('Nudge notes', motif => moveNotes(motif, this.session?.selected ?? new Set(), ticks * gridTicks(motif.data.ppq, this.roll?.grid ?? 'off'), pitch)));
+        else this.act(() => this.session?.edit('Nudge notes', motif => moveNotes(motif, this.session?.selected ?? new Set(), ticks * gridTicks(motif.data.ppq, this.roll?.grid ?? 'off'), pitch, sealedMotif)));
         return false;
       });
     }
@@ -122,7 +122,7 @@ export class MotifView extends ModuleView {
     // 4G: one draft snapshot per publish, shared by every panel; musical change is detected by the session's change version
     // (incremented on every edit, undo, redo and reload) instead of serialising the whole draft on each publish.
     let lastVersion = session.changeVersion;
-    this.unsubscribeSession = session.subscribe(() => { if (this.active) { const draft=session.draft; if (session.changeVersion !== lastVersion) { this.available?.musical.stop(this); lastVersion = session.changeVersion; } this.updateStatus(draft); this.renderDrafts(); this.inspector?.refresh(draft); this.patchAssociation?.refresh(draft); this.links?.refresh(draft); this.tickMap = new TempoMap(draft.data.ppq, [{ tick: 0, microsecondsPerQuarter: draft.data.tempoMicrosecondsPerQuarter }]); } });
+    this.unsubscribeSession = session.subscribe(() => { if (this.active) { const draft=session.snapshot; if (session.changeVersion !== lastVersion) { this.available?.musical.stop(this); lastVersion = session.changeVersion; } this.updateStatus(draft); this.renderDrafts(); this.inspector?.refresh(draft); this.patchAssociation?.refresh(draft); this.links?.refresh(draft); this.tickMap = new TempoMap(draft.data.ppq, [{ tick: 0, microsecondsPerQuarter: draft.data.tempoMicrosecondsPerQuarter }]); } });
     if (this.browserDetails) this.browserDetails.open = false; this.renderEditor(); this.renderDrafts(); this.say(''); this.remember();
   }
   private act(action: () => void): boolean { try { this.available?.musical.stop(this); action(); this.selectionChanged(); this.say(''); return true; } catch (error) { this.fail(error); return false; } }
@@ -150,24 +150,27 @@ export class MotifView extends ModuleView {
     this.position = element(transport, 'span', 'Stopped · 0:00'); this.position.setAttribute('aria-label', 'Musical playback position');
     element(transport, 'small', 'SINE / audition only · no patch hosting');
     this.musicalSettings(root, session, motif);
+    // 4H: one toolbar with labelled groups (was three rows plus an instruction paragraph); same controls, labels and shortcuts.
     const toolbar = element(root, 'div', undefined, 'mnemobard-motif-toolbar'); toolbar.setAttribute('aria-label', 'Note editing toolbar');
-    const grid = this.selectControl(toolbar, 'Editing grid', [['quarter', '1/4'], ['eighth', '1/8'], ['sixteenth', '1/16'], ['triplet', '1/8 triplet'], ['off', 'Snap off']], 'sixteenth', value => { if (this.roll) this.roll.grid = value as Grid; this.roll?.request(); });
-    const mode = this.selectControl(toolbar, 'Editing mode', [['draw', 'Draw'], ['select', 'Select']], 'draw', value => { if (this.roll) this.roll.mode = value === 'draw' ? 'draw' : 'select'; });
-    const duration = this.selectControl(toolbar, 'New note duration', [['.25','1/16'], ['.5','1/8'], ['1','1/4'], ['2','1/2'], ['4','Whole']], '.5', value => { if (this.roll) this.roll.durationQuarters = Number(value); });
-    button(toolbar, 'Add note', () => this.act(() => {
-      const current = session.draft, selected = current.data.notes.find(note => session.selected.has(note.id)), tick = selected ? selected.startTick + selected.durationTicks : 0;
-      let id = ''; session.edit('Add note', value => { const next = addNote(value, { pitch: selected?.pitch ?? 60, startTick: tick, durationTicks: value.data.ppq * Number(duration.value), velocity: 96 }); id = next.data.notes.at(-1)?.id ?? ''; return next; }); session.select([id]);
+    const group = (label: string): HTMLElement => { const g = element(toolbar, 'div', undefined, 'mnemobard-tool-group'); g.setAttribute('role', 'group'); g.setAttribute('aria-label', label); return g; };
+    const drawing = group('Grid and drawing'), editing = group('Note editing'), view = group('Zoom and navigation');
+    const grid = this.selectControl(drawing, 'Editing grid', [['quarter', '1/4'], ['eighth', '1/8'], ['sixteenth', '1/16'], ['triplet', '1/8 triplet'], ['off', 'Snap off']], 'sixteenth', value => { if (this.roll) this.roll.grid = value as Grid; this.roll?.request(); });
+    const mode = this.selectControl(drawing, 'Editing mode', [['draw', 'Draw'], ['select', 'Select']], 'draw', value => { if (this.roll) this.roll.mode = value === 'draw' ? 'draw' : 'select'; });
+    const duration = this.selectControl(drawing, 'New note duration', [['.25','1/16'], ['.5','1/8'], ['1','1/4'], ['2','1/2'], ['4','Whole']], '.5', value => { if (this.roll) this.roll.durationQuarters = Number(value); });
+    button(editing, 'Add note', () => this.act(() => {
+      const current = session.snapshot, selected = current.data.notes.find(note => session.selected.has(note.id)), tick = selected ? selected.startTick + selected.durationTicks : 0;
+      let id = ''; session.edit('Add note', value => { const next = addNote(value, { pitch: selected?.pitch ?? 60, startTick: tick, durationTicks: value.data.ppq * Number(duration.value), velocity: 96 }, sealedMotif); id = next.data.notes.at(-1)?.id ?? ''; return next; }); session.select([id]);
     }));
-    this.undoButton = button(toolbar, 'Undo', () => this.act(() => session.undo())); this.redoButton = button(toolbar, 'Redo', () => this.act(() => session.redo()));
-    const selectionTools=element(toolbar,'details',undefined,'mnemobard-selection-tools');element(selectionTools,'summary','Selection actions');
-    button(selectionTools, 'Duplicate selected', () => this.act(() => { const copy = duplicateNotes(session.draft, session.selected); session.edit('Duplicate notes', () => copy.motif); session.select(copy.ids); }));
-    button(toolbar, 'Delete selected', () => this.removeNotes());
+    this.undoButton = button(editing, 'Undo', () => this.act(() => session.undo())); this.redoButton = button(editing, 'Redo', () => this.act(() => session.redo()));
+    button(editing, 'Delete selected', () => this.removeNotes());
+    const selectionTools=element(editing,'details',undefined,'mnemobard-selection-tools');element(selectionTools,'summary','Selection actions');
+    button(selectionTools, 'Duplicate selected', () => this.act(() => { const copy = duplicateNotes(session.snapshot, session.selected, sealedMotif); session.edit('Duplicate notes', () => copy.motif); session.select(copy.ids); }));
     button(selectionTools, 'Clear selection', () => { session.select([]); this.selectionChanged(); });
-    transformPanel(root,session,action=>this.act(action));
-    const zoom = element(root, 'div', undefined, 'mnemobard-actions');
-    button(zoom, 'Time −', () => this.roll?.zoom(1 / 1.25)); button(zoom, 'Time +', () => this.roll?.zoom(1.25)); button(zoom, 'Pitch −', () => this.roll?.zoomPitch(1 / 1.15)); button(zoom, 'Pitch +', () => this.roll?.zoomPitch(1.15));
-    button(zoom, 'Previous note', () => this.navigateNote(-1)); button(zoom, 'Next note', () => this.navigateNote(1));
-    element(root, 'p', 'Click empty grid to draw. Drag notes; pull the right edge to resize. Shift-click selects a group. Shift-wheel scrolls time; Ctrl-wheel zooms. Exact ticks stay unchanged when the grid changes.', 'mnemobard-roll-instructions');
+    button(view, 'Time −', () => this.roll?.zoom(1 / 1.25)); button(view, 'Time +', () => this.roll?.zoom(1.25)); button(view, 'Pitch −', () => this.roll?.zoomPitch(1 / 1.15)); button(view, 'Pitch +', () => this.roll?.zoomPitch(1.15));
+    button(view, 'Previous note', () => this.navigateNote(-1)); button(view, 'Next note', () => this.navigateNote(1));
+    transformPanel(toolbar,session,action=>this.act(action));
+    const gestures = element(toolbar, 'details', undefined, 'mnemobard-roll-gestures'); element(gestures, 'summary', 'Roll gestures and keys');
+    element(gestures, 'p', 'Click empty grid to draw. Drag notes; pull the right edge to resize. Shift-click selects a group. Shift-wheel scrolls time; Ctrl-wheel zooms. Exact ticks stay unchanged when the grid changes.', 'mnemobard-roll-instructions');
     const surface = element(root, 'div', undefined, 'mnemobard-roll-surface');
     this.tickMap = new TempoMap(motif.data.ppq, [{ tick: 0, microsecondsPerQuarter: motif.data.tempoMicrosecondsPerQuarter }]);
     this.roll = new PianoRoll(surface, session, motif, () => this.selectionChanged(), message => this.say(message), () => services.musical.ownedBy(this) && services.musical.state === 'playing' ? this.tickMap?.secondsToTicks(services.musical.position, this.roll?.viewport.ppq ?? motif.data.ppq) : undefined);
@@ -212,7 +215,7 @@ export class MotifView extends ModuleView {
     })); if (applied) { delete form.dataset.pending; pending.textContent = ''; this.updateStatus(undefined, true); } });
     element(details, 'p', 'Apply settings explicitly. Tempo changes elapsed playback time; meter changes labels only. Existing note ticks never move. Shortening past a note is rejected. PPQ is editable only while empty.', 'mnemobard-hint');
   }
-  private removeNotes(): void { const session = this.session; if (!session) return; this.act(() => session.edit('Delete notes', motif => deleteNotes(motif, session.selected))); this.roll?.canvas.focus(); }
+  private removeNotes(): void { const session = this.session; if (!session) return; this.act(() => session.edit('Delete notes', motif => deleteNotes(motif, session.selected, sealedMotif))); this.roll?.canvas.focus(); }
   /** 4G: notes in musical order, cached per draft change (sorting 5,000+ notes on every step dominated navigation). */
   private orderedNotes(session: MotifSession): Motif['data']['notes'] {
     if (this.noteOrder?.session !== session || this.noteOrder.version !== session.changeVersion) this.noteOrder = { session, version: session.changeVersion, notes: session.draft.data.notes.slice().sort((a, b) => a.startTick - b.startTick || a.pitch - b.pitch) };

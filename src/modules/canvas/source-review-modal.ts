@@ -25,7 +25,7 @@ export class SourceReviewModal extends Modal {
     super(app); this.selected = preselect?.toLowerCase();
   }
   override onOpen(): void {
-    this.active = true; this.contentEl.classList.add('mnemobard-source-review');
+    this.active = true; this.contentEl.classList.add('mnemobard-source-review'); this.modalEl.classList.add('mnemobard-wide-modal'); // 4H: room for the placement table
     const later = () => { if (!this.active || this.scheduled) return; this.scheduled = true; queueMicrotask(() => { this.scheduled = false; if (this.active) this.render(); }); };
     this.cleanups.push(this.library.index.subscribe(later), this.session.subscribe(later));
     this.render();
@@ -41,12 +41,12 @@ export class SourceReviewModal extends Modal {
     this.selected = item?.motifId.toLowerCase();
     // A confirmation is only valid for exactly the state that was reviewed.
     if (this.confirming && !this.working) { let now: ReviewToken | undefined; try { now = item ? this.library.reviewToken(this.session, item) : undefined; } catch { now = undefined; } if (!sameToken(now, this.confirming)) { this.confirming = undefined; this.say('The review changed while it was open (the motif, its placements or the composition changed). Check it again before acknowledging.', 'alert'); } }
-    element(root, 'p', 'Clips refer to saved motifs by stable identity and remember which saved revision you last acknowledged. Acknowledging records the current saved revision on the clips. It never changes the motif, its notes, clip positions, repetitions or routing, and it does not save the composition.', 'mnemobard-hint');
+    element(root, 'p', 'Acknowledging records the current saved revision of one motif on its clips. It never changes the motif, notes, positions, repetitions or routing, and it does not save the composition.', 'mnemobard-hint');
     const status = element(root, 'p', this.notice, 'mnemobard-review-notice'); status.setAttribute('role', this.noticeKind); status.hidden = !this.notice;
     const pending = items.filter(i => i.placements.length);
     if (!pending.length) {
       element(root, 'p', 'No changed sources. Every clip acknowledges the current saved revision of its motif. Compile the arrangement when you are ready.', 'mnemobard-review-empty');
-      button(root, 'Close review', () => this.close(), 'mod-cta'); return;
+      const actions = element(root, 'div', undefined, 'mnemobard-review-actions'); button(actions, 'Close review', () => this.close(), 'mod-cta'); return;
     }
     const list = element(root, 'div', undefined, 'mnemobard-review-sources'); list.setAttribute('role', 'group'); list.setAttribute('aria-label', 'Changed sources');
     element(list, 'p', `${pending.length} changed source${pending.length === 1 ? '' : 's'} · choose one to review`, 'mnemobard-region-label');
@@ -57,62 +57,82 @@ export class SourceReviewModal extends Modal {
     if (item) this.detail(root, item, meter, c.data.lengthTicks);
     if (focus) [...root.querySelectorAll<HTMLElement>('button,summary')].find(e => e.getAttribute('aria-label') === focus || e.textContent === focus)?.focus();
   }
+  /**
+   * 4H hierarchy: Summary (what changed, how many clips, can it be acknowledged) → Changes (recorded before/after, collapsed)
+   * → Affected placements → Technical details (identity, full revisions, raw ticks, collapsed). The action footer stays
+   * visible at the bottom of the scrolling modal (position: sticky, in normal flow, so it never covers content).
+   */
   private detail(root: HTMLElement, item: SourceReviewItem, meter: { numerator: number; denominator: number }, length: number): void {
     const box = element(root, 'section', undefined, 'mnemobard-review-detail'); box.setAttribute('aria-label', `Review of ${item.title}`); box.dataset.reviewStatus = item.eligible ? 'eligible' : 'blocked';
-    element(box, 'h3', item.title);
-    const identity = element(box, 'details', undefined, 'mnemobard-ref-id'); element(identity, 'summary', 'Stable source identity');
-    element(identity, 'p', `Motif UUID ${item.motifId}${item.paths.length ? ` · ${item.paths.join(', ')}` : ''}`);
-    // Before/after: only what is actually recorded. The previous revision's notes were never stored.
     const source = item.source, previousPeriods = [...new Set(item.placements.map(p => p.previousPeriodTicks))], previousTitles = [...new Set(item.placements.map(p => p.previousTitle).filter(Boolean))], previousPaths = [...new Set(item.placements.map(p => p.previousPath).filter(Boolean))];
     const dur = (ticks?: number) => ticks === undefined ? 'not recorded' : musicalDuration(ticks, 960, meter);
+    const lanes = [...new Set(item.placements.map(p => p.laneName))], count = item.placements.length, currentPeriod = item.placements[0]?.periodTicks;
+    const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+    // Summary
+    const summary = element(box, 'div', undefined, 'mnemobard-review-summary'); summary.setAttribute('role', 'group'); summary.setAttribute('aria-label', 'Summary');
+    element(summary, 'h3', item.title);
+    const facts = element(summary, 'dl'), fact = (term: string, value: string): HTMLElement => { element(facts, 'dt', term); return element(facts, 'dd', value); };
+    const acknowledged = item.previousRevisions.filter((r): r is string => !!r);
+    fact('Revision', acknowledged.length ? `Changed since it was last acknowledged · ${[...new Set(acknowledged.map(short))].join(', ')} → ${short(source?.revision)}` : `Never acknowledged · current ${short(source?.revision)}`);
+    fact('Affected clips', `${plural(count, 'clip')} on ${lanes.length === 1 ? 'lane' : 'lanes'} ${lanes.join(', ')}`);
+    const periodsBefore = previousPeriods.map(dur).join(', '), periodNow = currentPeriod === undefined ? 'not calculable' : dur(currentPeriod);
+    fact('Length per repetition', periodsBefore === periodNow ? `${periodNow} (unchanged)` : `${periodsBefore} → ${periodNow}`);
+    const blocked = item.placements.filter(p => !p.eligible).length;
+    fact('Status', item.eligible ? 'Ready to acknowledge' : blocked ? `Blocked · ${plural(blocked, 'clip')} cannot be acknowledged` : 'Blocked').dataset.status = item.eligible ? 'eligible' : 'blocked';
+    if (item.blockers.length) { const blockers = element(summary, 'ul', undefined, 'mnemobard-review-blockers'); blockers.setAttribute('role', 'alert'); for (const b of item.blockers) element(blockers, 'li', b); }
+    button(summary, 'Open motif in MOTIF', () => { this.close(); this.openMotif(item.motifId); });
+    // Changes: only what is actually recorded. The previous revision's notes were never stored.
+    const changes = element(box, 'details', undefined, 'mnemobard-review-changes'); element(changes, 'summary', 'Changes · last acknowledged and current saved revision');
     let extent: { first: number; last: number } | undefined;
     if (source) { const cached = this.extents.get(source.id); if (cached?.revision === source.revision) extent = cached.extent; else { const state = this.library.index.resolve(source.id); extent = state.status === 'ready' && state.entity.kind === 'motif' ? noteExtent(state.entity.data.notes) : undefined; this.extents.set(source.id, { revision: source.revision, extent }); } }
     const sourcePosition = (tick: number) => source ? musicalPosition(tick, source.ppq, source.meter) : String(tick);
-    const table = element(box, 'table', undefined, 'mnemobard-review-compare'); table.setAttribute('aria-label', 'Acknowledged and current saved revision');
+    const table = element(changes, 'table', undefined, 'mnemobard-review-compare'); table.setAttribute('aria-label', 'Acknowledged and current saved revision');
     const head = element(element(table, 'thead'), 'tr'); for (const h of ['', 'Last acknowledged', 'Current saved']) element(head, 'th', h);
     const body = element(table, 'tbody');
     const row = (label: string, before: string, after: string, raw?: string) => { const tr = element(body, 'tr'); element(tr, 'th', label); element(tr, 'td', before); element(tr, 'td', after); if (raw) tr.title = raw; };
     row('Revision', item.previousRevisions.map(short).join(', '), short(source?.revision), `Full SHA-256: ${item.previousRevisions.map(r => r ?? 'never reviewed').join(', ')} → ${source?.revision ?? 'unavailable'}`);
     row('Name', previousTitles.join(', ') || 'not recorded', source?.title ?? 'unavailable');
     row('Note location', previousPaths.join(', ') || 'not recorded', source?.path ?? (item.paths.join(', ') || 'unavailable'));
-    row('Length per repetition', previousPeriods.map(dur).join(', '), item.placements[0]?.periodTicks === undefined ? 'not calculable' : dur(item.placements[0].periodTicks), `Arrangement ticks: ${previousPeriods.map(p => p ?? '?').join(', ')} → ${item.placements[0]?.periodTicks ?? '?'}`);
+    row('Length per repetition', periodsBefore, periodNow, `Arrangement ticks: ${previousPeriods.map(p => p ?? '?').join(', ')} → ${currentPeriod ?? '?'}`);
     row('Notes', 'not recorded', source ? `${source.noteCount}` : 'unavailable');
     row('PPQ', 'not recorded', source ? `${source.ppq}${source.ppq === 960 ? '' : ' (converted exactly to 960)'}` : 'unavailable');
     row('Tempo · meter', 'not recorded', source ? `${(60000000 / source.tempo).toFixed(1)} BPM · ${source.meter.numerator}/${source.meter.denominator}` : 'unavailable');
     row('Note range', 'not recorded', extent ? `${sourcePosition(extent.first)} – ${sourcePosition(extent.last)} (source bar:beat:tick)` : source ? 'no notes (the full length is a rest)' : 'unavailable');
-    element(box, 'p', 'Only the previous revision’s fingerprint, name, location and length per repetition are kept. Its notes were never stored, so a note-by-note comparison is not possible. Open the motif to inspect its current notes.', 'mnemobard-hint');
-    button(box, 'Open motif in MOTIF', () => { this.close(); this.openMotif(item.motifId); });
-    const timing = element(box, 'p', `Timing: ${item.timing.message}`); timing.dataset.timing = item.timing.ok ? 'compatible' : 'incompatible';
-    if (source && (source.tempo !== this.session.draft.data.tempoMicrosecondsPerQuarter)) element(box, 'p', 'The motif’s own tempo differs from the composition; the composition tempo interprets its ticks (unchanged by acknowledgement).', 'mnemobard-hint');
-    if (item.blockers.length) { const blockers = element(box, 'ul', undefined, 'mnemobard-review-blockers'); blockers.setAttribute('role', 'alert'); for (const b of item.blockers) element(blockers, 'li', b); }
-    // Affected placements: musical positions and durations first; raw ticks in titles and the advanced list.
-    const placements = element(box, 'details', undefined, 'mnemobard-review-placements'); placements.open = item.placements.length <= 24;
-    element(placements, 'summary', `Affected placements · ${item.placements.length}${item.placements.some(p => !p.eligible) ? ` · ${item.placements.filter(p => !p.eligible).length} blocked` : ''}`);
+    element(changes, 'p', 'Only the previous revision’s fingerprint, name, location and length per repetition are kept. Its notes were never stored, so a note-by-note comparison is not possible. Open the motif to inspect its current notes.', 'mnemobard-hint');
+    const timing = element(changes, 'p', `Timing: ${item.timing.message}`); timing.dataset.timing = item.timing.ok ? 'compatible' : 'incompatible';
+    if (source && (source.tempo !== this.session.draft.data.tempoMicrosecondsPerQuarter)) element(changes, 'p', 'The motif’s own tempo differs from the composition; the composition tempo interprets its ticks (unchanged by acknowledgement).', 'mnemobard-hint');
+    // Affected placements: musical positions and durations; raw ticks in row titles and the technical details.
+    const placements = element(box, 'details', undefined, 'mnemobard-review-placements'); placements.open = count <= 8;
+    element(placements, 'summary', `Affected placements · ${count}${blocked ? ` · ${blocked} blocked` : ''}`);
     const grid = element(placements, 'table', undefined, 'mnemobard-review-clips'); grid.setAttribute('aria-label', 'Affected placements');
-    const gh = element(element(grid, 'thead'), 'tr'); for (const h of ['Lane', 'Clip', 'Position', 'Repeats', 'Before', 'After', 'Status']) element(gh, 'th', h);
+    const headers = ['Lane', 'Clip', 'Position', 'Repetitions', 'Duration before', 'Duration now', 'Eligibility'] as const;
+    const gh = element(element(grid, 'thead'), 'tr'); for (const h of headers) element(gh, 'th', h);
     const gb = element(grid, 'tbody');
     for (const p of item.placements.slice(0, MAX_ROWS)) {
       const tr = element(gb, 'tr'); tr.dataset.clipId = p.clipId; tr.dataset.eligible = String(p.eligible);
-      element(tr, 'td', `${p.laneIndex + 1}. ${p.laneName}`); element(tr, 'td', p.label); element(tr, 'td', musicalPosition(p.startTick, 960, meter)); element(tr, 'td', `×${p.repeatCount}`);
-      element(tr, 'td', dur(p.previousDurationTicks)); element(tr, 'td', p.durationTicks === undefined ? 'not calculable' : dur(p.durationTicks));
-      element(tr, 'td', p.eligible ? 'Eligible' : `Blocked · ${p.reason ?? ''}`);
+      // data-label names each cell where narrow layouts hide the header row (CSS ::before).
+      [`${p.laneIndex + 1}. ${p.laneName}`, p.label, musicalPosition(p.startTick, 960, meter), `×${p.repeatCount}`, dur(p.previousDurationTicks), p.durationTicks === undefined ? 'not calculable' : dur(p.durationTicks), p.eligible ? 'Eligible' : `Blocked · ${p.reason ?? ''}`]
+        .forEach((text, i) => { element(tr, 'td', text).dataset.label = headers[i]; });
       tr.title = `Start ${p.startTick} · before ${p.previousDurationTicks ?? '?'} · after ${p.durationTicks ?? '?'} ticks${p.endTick !== undefined ? ` · ends ${p.endTick} of ${length}` : ''}`;
     }
-    if (item.placements.length > MAX_ROWS) element(placements, 'p', `${item.placements.length - MAX_ROWS} more placements are not listed; acknowledgement covers all ${item.placements.length}.`, 'mnemobard-hint');
-    const raw = element(placements, 'details', undefined, 'mnemobard-review-raw'); element(raw, 'summary', 'Raw ticks (advanced)');
-    element(raw, 'pre', item.placements.slice(0, MAX_ROWS).map(p => `${p.clipId}  start ${p.startTick}  ×${p.repeatCount}  period ${p.previousPeriodTicks ?? '?'} → ${p.periodTicks ?? '?'}  end ${p.endTick ?? '?'}`).join('\n'));
-    // Explicit two-step action.
-    const actions = element(box, 'div', undefined, 'mnemobard-review-actions');
+    if (count > MAX_ROWS) element(placements, 'p', `${count - MAX_ROWS} more placements are not listed; acknowledgement covers all ${count}.`, 'mnemobard-hint');
+    // Technical details: stable identity, full revisions and raw ticks.
+    const advanced = element(box, 'details', undefined, 'mnemobard-review-advanced'); element(advanced, 'summary', 'Technical details');
+    element(advanced, 'p', `Motif UUID ${item.motifId}${item.paths.length ? ` · ${item.paths.join(', ')}` : ''}`);
+    element(advanced, 'p', `Revisions (SHA-256): ${item.previousRevisions.map(r => r ?? 'never reviewed').join(', ')} → ${source?.revision ?? 'unavailable'}`);
+    element(advanced, 'pre', item.placements.slice(0, MAX_ROWS).map(p => `${p.clipId}  start ${p.startTick}  ×${p.repeatCount}  period ${p.previousPeriodTicks ?? '?'} → ${p.periodTicks ?? '?'}  end ${p.endTick ?? '?'}`).join('\n'));
+    // Explicit two-step action in a footer that stays reachable without scrolling back.
+    const actions = element(root, 'div', undefined, 'mnemobard-review-actions'); actions.setAttribute('role', 'group'); actions.setAttribute('aria-label', 'Review actions');
     if (!this.confirming || this.confirming.motifId.toLowerCase() !== item.motifId.toLowerCase()) {
-      const go = button(actions, `Acknowledge this source for all ${item.placements.length} eligible clip${item.placements.length === 1 ? '' : 's'}`, () => this.prepare(item), 'mod-cta');
+      const go = button(actions, `Acknowledge this source for all ${count} eligible clip${count === 1 ? '' : 's'}`, () => this.prepare(item), 'mod-cta');
       go.disabled = !item.eligible || this.working;
-      if (!item.eligible) element(actions, 'p', item.blockers.length ? 'Blocked: resolve the conditions above first.' : 'Blocked: every affected placement must be eligible; nothing is acknowledged partially. Fix the blocked clips, or review eligible clips one at a time in the clip inspector.', 'mnemobard-hint');
+      button(actions, 'Close review', () => this.close());
+      if (!item.eligible) element(actions, 'p', item.blockers.length ? 'Blocked: resolve the conditions in the summary first.' : 'Blocked: every affected placement must be eligible; nothing is acknowledged partially. Fix the blocked clips, or review eligible clips one at a time in the clip inspector.', 'mnemobard-hint');
       else element(actions, 'p', 'Single clips can still be acknowledged one at a time in the clip inspector.', 'mnemobard-hint');
       return;
     }
-    const lanes = [...new Set(item.placements.map(p => p.laneName))];
     const confirm = element(actions, 'div', undefined, 'mnemobard-confirm'); confirm.setAttribute('role', 'alertdialog'); confirm.setAttribute('aria-label', 'Confirm acknowledgement');
-    element(confirm, 'p', `Record revision ${short(item.source?.revision)} of “${item.title}” for ${item.placements.length} clip${item.placements.length === 1 ? '' : 's'} on ${lanes.length === 1 ? 'lane' : 'lanes'} ${lanes.join(', ')}?`);
+    element(confirm, 'p', `Record revision ${short(item.source?.revision)} of “${item.title}” for ${plural(count, 'clip')} on ${lanes.length === 1 ? 'lane' : 'lanes'} ${lanes.join(', ')}?`);
     element(confirm, 'p', 'Notes, positions, repetitions, lanes and routing do not change. The composition is not saved. Undo reverts all of them in one step. The saved motif is checked again before anything is recorded.', 'mnemobard-hint');
     const yes = button(confirm, 'Confirm acknowledgement', () => { void this.commit(); }, 'mod-cta'); yes.disabled = this.working;
     button(confirm, 'Back to review', () => { this.confirming = undefined; this.say(''); this.render(); });

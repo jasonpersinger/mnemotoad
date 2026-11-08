@@ -183,3 +183,10 @@ Implemented on the signed 4E baseline `295005f`: PATCHBOOK ↔ MOTIF ↔ CANVAS 
 Implemented on the signed 4F baseline `3fb5113`: batch "Review changed sources" (one motif at a time, all eligible placements, one undo step, revalidated against the motif note on disk), musical duration labels and a readiness-aware compilation status, PATCHBOOK edit-mode association summary, large-MOTIF profiling and optimizations (5,000-note open 279.8 → 70 ms, save 1,335 → 280 ms), machine-local performance budgets with a regression comparison, and REAPER 7.84 interoperability verified in an isolated configuration (notes identical to an independent parser; tempo/meter incl. a 96 BPM 6/8 probe). See `docs/MILESTONE_4G_REPORT.md`.
 
 **Stop gate:** human review of 4G is required. Proposed next (not started): large-document editing (edit-commit cost at 5,000–10,000 notes without weakening atomic validation), a product decision on carrying the arrangement end into DAWs, and whether multi-motif batch review is wanted.
+
+## Milestone 4H — large-document editing performance and export usability
+
+Implemented on the signed 4G baseline `a473533`: frozen session drafts with ownership transfer, history that shares frozen snapshots, one serialisation per edit, structural dirty comparison and sealed MOTIF command results (10,000-note drag 93.9 → 45.5 ms, resize 94.3 → 41.0 ms, undo/redo 39.5 → 7 ms; native commit-only 32 ms); a CANVAS export summary read from the compiler result and file header, collapsed REAPER import guidance and a composition-end explanation (serializer unchanged); a summary-first source-review dialog with a sticky action footer; a grouped MOTIF toolbar.
+
+**Stop gate:** human review of 4H is required. Proposed next (not started): see `docs/MILESTONE_4H_REPORT.md` §L.
+

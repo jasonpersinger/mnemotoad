@@ -1,6 +1,6 @@
 import type { Motif, Note } from '../../domain/entities';
 import { messageOf } from '../../domain/errors';
-import { addNote, gridTicks, moveNotes, resizeNotes, snapped, type Grid } from './commands';
+import { addNote, gridTicks, moveNotes, resizeNotes, sealedMotif, snapped, type Grid } from './commands';
 import { NoteIndex, anchoredStart, backingSize, gridPoint, noteHit, noteRect, PITCH_GUTTER, RULER_HEIGHT, type NoteRect, type RollViewport } from './geometry';
 import { renderRoll, rollColors } from './renderer';
 import type { MotifSession } from './session';
@@ -9,7 +9,7 @@ export class PianoRoll {
   readonly canvas: HTMLCanvasElement;
   readonly scroller: HTMLElement;
   grid: Grid = 'sixteenth'; mode: 'draw' | 'select' = 'draw'; durationQuarters = .5;
-  private model: Motif; private index: NoteIndex; private rectangles: NoteRect[] = []; private gesture?: Gesture;
+  private model: Readonly<Motif>; private index: NoteIndex; private rectangles: NoteRect[] = []; private gesture?: Gesture;
   private preview: NoteRect[] = []; private context: CanvasRenderingContext2D | null;
   private frame?: number; private active = true; private pixels = 80; private rowHeight = 20;
   private readonly spacer: HTMLElement; private readonly lifetime = new AbortController(); private readonly cleanups: (() => void)[] = [];
@@ -37,7 +37,8 @@ export class PianoRoll {
     this.canvas.ownerDocument.defaultView?.addEventListener('resize', () => this.resize(), { signal: this.lifetime.signal });
     const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(() => this.resize()); observer?.observe(this.scroller); if (observer) this.cleanups.push(() => observer.disconnect());
     const theme = typeof MutationObserver === 'undefined' ? undefined : new MutationObserver(() => this.request()); theme?.observe(doc.body, { attributes: true, attributeFilter: ['class', 'style'] }); if (theme) this.cleanups.push(() => theme.disconnect());
-    this.cleanups.push(session.subscribe(() => { this.cancelGesture(); this.model = session.draft; this.index = new NoteIndex(this.model.data.notes); this.resize(); }));
+    this.cleanups.push(session.subscribe(() => { this.cancelGesture(); this.model = session.snapshot; // 4H: frozen draft, no copy
+    this.index = new NoteIndex(this.model.data.notes); this.resize(); }));
     if (!this.context) this.status('Canvas is unavailable; use the numeric note list.');
     this.request();
   }
@@ -85,7 +86,7 @@ export class PianoRoll {
       if (this.mode === 'select') { if (!modifier) this.session.select([]); this.selectionChanged(); this.request(); return; }
       try {
         const point = gridPoint(x, y, this.view), tick = snapped(point.tick, this.model.data.ppq, this.grid), duration = this.model.data.ppq * this.durationQuarters;
-        let id = ''; this.session.edit('Add note', motif => { const next = addNote(motif, { pitch: point.pitch, startTick: tick, durationTicks: duration, velocity: 96 }); id = next.data.notes.at(-1)?.id ?? ''; return next; });
+        let id = ''; this.session.edit('Add note', motif => { const next = addNote(motif, { pitch: point.pitch, startTick: tick, durationTicks: duration, velocity: 96 }, sealedMotif); id = next.data.notes.at(-1)?.id ?? ''; return next; });
         this.session.select([id]); this.selectionChanged(); this.request();
       } catch (error) { this.status(messageOf(error)); }
       return;
@@ -113,7 +114,7 @@ export class PianoRoll {
     const gesture = this.gesture; if (!gesture || gesture.pointerId !== event.pointerId) return;
     this.gesture = undefined; this.preview = [];
     try {
-      if (gesture.moved) this.session.edit(gesture.resize ? 'Resize notes' : 'Move notes', motif => gesture.resize ? resizeNotes(motif, gesture.ids, gesture.deltaTick) : moveNotes(motif, gesture.ids, gesture.deltaTick, gesture.deltaPitch));
+      if (gesture.moved) this.session.edit(gesture.resize ? 'Resize notes' : 'Move notes', motif => gesture.resize ? resizeNotes(motif, gesture.ids, gesture.deltaTick, sealedMotif) : moveNotes(motif, gesture.ids, gesture.deltaTick, gesture.deltaPitch, sealedMotif));
       this.selectionChanged();
     } catch (error) { this.status(messageOf(error)); }
     if (this.canvas.hasPointerCapture(event.pointerId)) this.canvas.releasePointerCapture(event.pointerId); this.request();

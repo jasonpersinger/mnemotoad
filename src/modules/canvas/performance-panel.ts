@@ -11,6 +11,21 @@ import type { CanvasSession } from './session';
 import { ArrangementExportDialog } from './export-dialog';
 
 /** Editor-owned controls and ephemeral state. No authoritative musical writes. */
+/**
+ * 4H (§6.5): what an export-blocking compile diagnostic means and what resolves it. The compiler's own message names the
+ * problem and the source; these lines add why export cannot proceed and the next step. Nothing here changes musical data.
+ */
+export const COMPILE_HELP: Partial<Record<string, string>> = {
+  'source-changed': 'Export uses only the saved motif revision each clip acknowledged, so changed notes are never placed silently. Review the changed source and acknowledge it, then compile again.',
+  'source-unreviewed': 'This clip has not acknowledged any saved revision of its motif yet. Review the source and acknowledge it, then compile again.',
+  'missing-source': 'There are no saved notes to place: the motif note is missing, unreadable or ambiguous. Restore the note (its UUID is unchanged) or remove the clip, then compile again.',
+  'inexact-timing': 'Export never rounds ticks or cuts repetitions short. Extend the composition, reduce the repetitions or use a source whose length fits exactly, then compile again.',
+  'archived-source': 'Archived motifs are left out of compilation. Unarchive the motif or remove its clips, then compile again.',
+  'unsupported-source': 'The source uses timing data that cannot be compiled without changing it. Open its note to inspect it; nothing was modified.',
+  'composition-conflict': 'The composition note on disk no longer matches the saved state this draft was based on, so an export could mix two versions. Resolve the external change in CANVAS (reload the note or keep your draft and save it), then compile again.',
+};
+/** The same conflict detected while verifying an export arrives as a failed operation (preparation.ts); recognised by its message. */
+const CONFLICT_HELP = COMPILE_HELP['composition-conflict'];
 export class CanvasPerformancePanel {
   readonly preparation: ArrangementPreparation;
   private active = true; private lifetime = new AbortController(); private cleanups: (() => void)[] = []; private animation?: number; private dialog?: ArrangementExportDialog;
@@ -118,6 +133,10 @@ export class CanvasPerformancePanel {
     }
     for (const d of this.preparation.diagnostics.slice(0, 100)) {
       const p = element(this.diagnostics, 'p', `${d.severity.toUpperCase()}: ${d.message}`); p.dataset.compileDiagnostic = d.code;
+      const clip = d.clipId ? this.model.data.lanes.flatMap(lane => lane.clips.map(c => ({ lane, c }))).find(x => x.c.id === d.clipId) : undefined;
+      if (clip) element(p, 'small', `Clip in ${clip.lane.name} at ${musicalPosition(clip.c.startTick, 960, this.model.data.meter)} (bar:beat:tick)`);
+      const help = COMPILE_HELP[d.code] ?? (d.code === 'operation-failed' && d.message.includes('changed externally') ? CONFLICT_HELP : undefined);
+      if (help) element(p, 'small', help, 'mnemobard-diagnostic-help');
       if (d.laneId) button(p, 'Show affected clip/lane', () => this.navigate(d.laneId ?? '', d.clipId));
       if ((d.code === 'source-changed' || d.code === 'source-unreviewed') && this.reviewSources) { const motif = d.motifId; button(p, 'Review changed sources', () => this.reviewSources?.(motif)); }
       if(d.startTick!==undefined&&d.endTick!==undefined)element(p,'small',`Position ${musicalPosition(d.startTick,960,this.model.data.meter)}–${musicalPosition(d.endTick,960,this.model.data.meter)} · repetition ${(d.conflict?.repetition??0)+1} conflict${d.conflict?' with '+d.conflict.laneName:''}`);

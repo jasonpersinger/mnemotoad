@@ -1,5 +1,5 @@
 import { button, element } from '../../ui/dom';
-import { changeNotes, noteName } from './commands';
+import { changeNotes, noteName, sealedMotif } from './commands';
 import { musicalPosition, positionTick } from './positions';
 import type { MotifSession } from './session';
 import type { Motif, Note } from '../../domain/entities';
@@ -36,7 +36,7 @@ export class NoteInspector {
         event.preventDefault(); try {
           const values = Object.fromEntries([...controls].map(([key, control]) => [key, Number(control.value)]));
           if(positionEdited)values.startTick=positionTick(position.value,motif.data.ppq,motif.data.meter);
-          this.session.edit('Edit note properties', motif => changeNotes(motif, new Set([selected.id]), note => ({ ...note, ...values })));
+          this.session.edit('Edit note properties', motif => changeNotes(motif, new Set([selected.id]), note => ({ ...note, ...values }), sealedMotif));
           delete form.dataset.pending; pending.textContent = ''; this.changed();
         } catch (error) { this.fail(error); }
       });

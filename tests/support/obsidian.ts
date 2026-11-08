@@ -9,6 +9,7 @@ export class TFolder { constructor(public path: string) {} }
 export const normalizePath = (path: string): string => path;
 export class Notice { static messages: string[] = []; constructor(text: string) { Notice.messages.push(text); } }
 export class Modal {
+  modalEl = document.createElement('div');
   contentEl = document.createElement('div');
   constructor(public app: unknown) {}
   onOpen(): void {}

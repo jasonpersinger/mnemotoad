@@ -299,3 +299,17 @@ node scripts/reaper-isolated-check.mjs MNEMOBARD/Exports/<file>.mid --expand --l
 - Benchmarks compare only runs from the same machine and method (build the older commit in a scratch `git worktree`, copy its `main.js`/`styles.css` into the dev vault, disable/enable the plugin, run; then the current build). Never part of `pnpm check`.
 - The REAPER check launches REAPER only with `-newinst -cfgfile <repo>/output/…/isolated-config/reaper.ini`, refuses when any REAPER process runs, and compares a metadata-only digest of `~/.config/REAPER` before/after. `--expand` ticks REAPER's "Expand MIDI tracks" and "Import MIDI tempo map" import options (defaults merge tracks). Window capture/keys use `scripts/x11-window-tool.py` (ctypes, system libX11/libXtst) on the isolated `:1` display.
 - Regression suites accept output overrides: `MNEMOBARD_4E_DIR` (seed `partial.json` from `output/canvas/milestone-4e`), `MNEMOBARD_MOTIF_REVIEW_DIR`, `MNEMOBARD_MIDI_REVIEW_DIR`, `MNEMOBARD_ASSET_REVIEW_DIR`, `MNEMOBARD_FOUNDATION_REVIEW_DIR`.
+
+## Milestone 4H validation and edit profiling
+
+```sh
+node scripts/mnemobard-4h-edit-profile.mjs <label> [16,500,5000,10000]   # per-phase commit attribution → output/mnemobard/milestone-4h/edit-profile-<label>.json
+MNEMOBARD_BENCH_DIR=output/mnemobard/milestone-4h node scripts/mnemobard-4g-benchmark.mjs <label>
+node scripts/mnemobard-4h-native.mjs --baseline-build <dir with an older main.js/styles.css>   # steps 1–36, 39–40 (+ same-process export A/B)
+node scripts/mnemobard-4h-native.mjs --verify-restart                                          # after a cold restart: steps 37–38, 40
+```
+
+- The edit profile runs every operation twice: uninstrumented (the cost) and instrumented (wrappers on the session instance and on `structuredClone`/`JSON.stringify` attribute time and counts to phases). Phases overlap; the overhead is reported, never subtracted. Use even sample counts so alternating edits return to the starting state.
+- `freezeDeep` makes drafts immutable: in harness code read `session.snapshot` (no copy) or `session.draft` (editable copy), never write to a snapshot. Restore instrumented instance fields by assignment (`validate` is an own field), never by `delete`.
+- Both benchmark builds must be measured in the same Obsidian process (build the older commit in a scratch `git worktree`, copy its `main.js`/`styles.css`, disable/enable the plugin).
+

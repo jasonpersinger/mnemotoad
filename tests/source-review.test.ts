@@ -189,6 +189,30 @@ it('review modal: lists sources, shows only recorded history, confirms explicitl
   modal.close();
 });
 
+it('review modal (4H): summary first, recorded changes and technical details collapsed, actions in one footer with an explicit cancel', async () => {
+  const { library, session, a } = await fixture(); const done = vi.fn();
+  const modal = new SourceReviewModal({} as never, library, session, undefined, () => undefined, () => {}, done); modal.open();
+  const root = modal.contentEl, detail = root.querySelector('.mnemobard-review-detail');
+  expect(modal.modalEl.classList.contains('mnemobard-wide-modal')).toBe(true);
+  // Order: summary → changes → affected placements → technical details; the action footer follows the detail.
+  expect([...(detail?.children ?? [])].map(e => e.className)).toEqual(['mnemobard-review-summary', 'mnemobard-review-changes', 'mnemobard-review-placements', 'mnemobard-review-advanced']);
+  expect(detail?.nextElementSibling?.className).toBe('mnemobard-review-actions');
+  const facts = Object.fromEntries([...root.querySelectorAll('.mnemobard-review-summary dt')].map(dt => [dt.textContent, dt.nextElementSibling?.textContent]));
+  expect(facts).toMatchObject({ 'Affected clips': '5 clips on lanes Lane A, Lane B', 'Status': 'Ready to acknowledge' });
+  expect(facts['Revision']).toMatch(/^Changed since it was last acknowledged · [0-9a-f]{12} → [0-9a-f]{12}$/);
+  const open = (cls: string) => root.querySelector<HTMLDetailsElement>(`details.${cls}`)?.open;
+  expect(open('mnemobard-review-changes')).toBe(false); expect(open('mnemobard-review-placements')).toBe(true); expect(open('mnemobard-review-advanced')).toBe(false);
+  expect(root.querySelector('.mnemobard-review-advanced')?.textContent).toContain(a.entity.id); // stable UUID kept, collapsed
+  expect([...root.querySelectorAll('.mnemobard-review-clips tbody tr:first-child td')].map(td => (td as HTMLElement).dataset.label)).toEqual(['Lane', 'Clip', 'Position', 'Repetitions', 'Duration before', 'Duration now', 'Eligibility']);
+  const actions = [...root.querySelectorAll<HTMLButtonElement>('.mnemobard-review-actions button')].map(b => b.textContent);
+  expect(actions).toEqual(['Acknowledge this source for all 5 eligible clips', 'Close review']);
+  // Every control is a real button/summary (keyboard reachable) and nothing has a negative tab index.
+  expect(root.querySelectorAll('[tabindex="-1"]')).toHaveLength(0);
+  // Cancel: Close review acknowledges nothing and adds no history.
+  const history = session.historySize; const close = [...root.querySelectorAll<HTMLButtonElement>('.mnemobard-review-actions button')].find(b => b.textContent === 'Close review'); close?.click();
+  expect(session.historySize).toBe(history); expect(item(library, session, a.entity.id)?.placements).toHaveLength(5); expect(done).not.toHaveBeenCalled();
+});
+
 it('formats exact musical durations for 4/4, 3/4 and 6/8 without rounding', () => {
   const m = (n: number, d: number) => ({ numerator: n, denominator: d });
   expect(musicalDuration(7680, 960, m(4, 4))).toBe('2 bars');

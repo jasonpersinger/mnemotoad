@@ -1,6 +1,7 @@
 import type { Entity } from '../domain/entities';
 import { FoundationError, messageOf } from '../domain/errors';
 import type { EntityRecord } from '../storage/repository';
+import { freezeDeep } from './freeze';
 
 export interface DocumentSessionPort<T extends Entity> {
   save(base: EntityRecord | undefined, draft: T, signal: AbortSignal): Promise<EntityRecord>;
@@ -22,10 +23,16 @@ export class DocumentSession<T extends Entity> {
   recoveryPath?: string;
   base?: EntityRecord;
   constructor(draft: T, base: EntityRecord | undefined, private readonly port: DocumentSessionPort<T>, private readonly checkpointDelay = 500, private readonly accepts: (entity: Entity) => entity is T) {
-    this.value = structuredClone(draft); this.base = base ? structuredClone(base) : undefined;
+    this.value = freezeDeep(structuredClone(draft)); this.base = base ? structuredClone(base) : undefined;
   }
   protected get revisionNumber(): number { return this.revision; }
+  /** An editable copy of the draft (every read copies the whole document). */
   get draft(): T { return structuredClone(this.value); }
+  /**
+   * 4H: the current draft itself, deeply frozen (no copy). Read-only by construction: writing to it throws. Use it for
+   * rendering and derived state; use `draft` when an editable copy is needed. A later edit replaces it, never changes it.
+   */
+  get snapshot(): Readonly<T> { return this.value; }
   /** 4G: the live draft for subclasses' read-only derived state (e.g. selection validity). Never mutate or expose it. */
   protected peek(): Readonly<T> { return this.value; }
   /** 4G: scalar title for draft lists (reading `draft` clones every note of a large motif). */
@@ -38,10 +45,15 @@ export class DocumentSession<T extends Entity> {
     if (!this.dirty) return 'Saved';
     return this.checkpointRevision === this.revision ? 'Unsaved changes · recovery copy stored' : 'Unsaved changes';
   }
-  update(next: T): void {
+  update(next: T): void { this.adopt(structuredClone(next)); }
+  /**
+   * 4H: install `next` as the draft WITHOUT copying it. The caller transfers ownership: `next` must be a value nobody else
+   * can mutate (a fresh validated copy, or a frozen history snapshot). It is deep-frozen here.
+   */
+  protected adopt(next: T): void {
     this.active();
     if (next.id !== this.value.id || next.kind !== this.value.kind) throw new FoundationError('invalid', 'Draft identity cannot change');
-    this.value = structuredClone(next); this.revision++; this.error = '';
+    this.value = freezeDeep(next); this.revision++; this.error = '';
     if (this.timer) clearTimeout(this.timer);
     this.timer = setTimeout(() => { this.timer = undefined; void this.checkpoint().catch(error => { if (!this.closed) { this.error = `Recovery copy failed: ${messageOf(error)}`; this.publish(); } }); }, this.checkpointDelay);
     this.publish();
@@ -57,7 +69,7 @@ export class DocumentSession<T extends Entity> {
       if (!this.accepts(record.entity) || record.entity.id !== this.value.id || record.entity.kind !== this.value.kind) throw new FoundationError('invalid', 'The saved record does not match this document draft. Inspect the note before retrying.');
       if (!this.closed) {
         this.base = structuredClone(record); this.savedRevision = revision;
-        if (this.revision === revision) this.value = structuredClone(record.entity);
+        if (this.revision === revision) this.value = freezeDeep(structuredClone(record.entity));
       }
       return record;
     } catch (error) {
@@ -85,7 +97,7 @@ export class DocumentSession<T extends Entity> {
   reload(record: EntityRecord): void {
     this.active();
     if (this.busy || this.dirty || !this.accepts(record.entity) || record.entity.id !== this.value.id || record.entity.kind !== this.value.kind) throw new FoundationError('conflict', 'Save or explicitly discard pending edits before reloading this record.');
-    this.base = structuredClone(record); this.value = structuredClone(record.entity);
+    this.base = structuredClone(record); this.value = freezeDeep(structuredClone(record.entity));
     this.revision++; this.savedRevision = this.revision; this.error = ''; this.publish();
   }
   /**

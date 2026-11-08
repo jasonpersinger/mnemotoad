@@ -13,7 +13,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { cpus, totalmem, release, platform } from 'node:os';
 import { connect } from './obsidian-cdp.mjs';
 
-const label = process.argv[2] ?? 'run', directory = 'output/mnemobard/milestone-4g', c = await connect(), stamp = String(Date.now());
+// 4H: MNEMOBARD_BENCH_DIR redirects output (4H evidence must not overwrite the 4G files); the method is unchanged.
+const label = process.argv[2] ?? 'run', directory = process.env.MNEMOBARD_BENCH_DIR ?? 'output/mnemobard/milestone-4g', c = await connect(), stamp = String(Date.now());
 await mkdir(directory, { recursive: true });
 const prefix = `const plugin=app.plugins.getPlugin('mnemobard'),services=plugin.services,r=services.repository,leaf=t=>app.workspace.getLeavesOfType('mnemobard-'+t)[0],u=()=>crypto.randomUUID(),assert=(v,m)=>{if(!v)throw Error(m);},tick=()=>new Promise(res=>setTimeout(res,0)),frame=()=>new Promise(res=>requestAnimationFrame(()=>res()));
 const stats=out=>{const s=[...out].sort((a,b)=>a-b);return{samples:out.length,median:+s[Math.floor(s.length/2)].toFixed(2),p95:+s[Math.min(s.length-1,Math.ceil(s.length*0.95)-1)].toFixed(2),max:+s.at(-1).toFixed(2),raw:out.map(v=>+v.toFixed(2))};};
