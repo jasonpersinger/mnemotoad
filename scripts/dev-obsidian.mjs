@@ -27,8 +27,12 @@ if(existing) {
   await writeFile(registry,JSON.stringify({vaults:{[id]:{path:vault,ts:Date.now(),open:true}}},null,2),{flag:'wx'});
 }
 // 4E: electron43 43.8.7 auto-selects Wayland, whose socket is not in the isolated XDG_RUNTIME_DIR; pin X11 (XWayland) per launch.
+// Audio: the private XDG_RUNTIME_DIR hides the user's sound-server socket, so Web Audio played into nothing. Point only
+// PulseAudio clients (PipeWire's pulse server included) at the real socket; profile, config and cache stay isolated.
+const realRuntime=process.env.XDG_RUNTIME_DIR??`/run/user/${process.getuid()}`, pulseSocket=join(realRuntime,'pulse/native');
+let pulseServer;try{if((await lstat(pulseSocket)).isSocket())pulseServer=`unix:${pulseSocket}`;}catch{/* no sound server: run silent */}
 const child=spawn('obsidian',['--ozone-platform=x11',`--user-data-dir=${profile}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=9227','--disable-gpu','--no-first-run'],{
-  stdio:'inherit',env:{...process.env,XDG_CONFIG_HOME:join(root,runtimeName,'config'),XDG_CACHE_HOME:join(root,runtimeName,'cache'),XDG_DATA_HOME:join(root,runtimeName,'data'),XDG_RUNTIME_DIR:join(root,runtimeName,'run'),GSETTINGS_BACKEND:'memory'},
+  stdio:'inherit',env:{...process.env,XDG_CONFIG_HOME:join(root,runtimeName,'config'),XDG_CACHE_HOME:join(root,runtimeName,'cache'),XDG_DATA_HOME:join(root,runtimeName,'data'),XDG_RUNTIME_DIR:join(root,runtimeName,'run'),GSETTINGS_BACKEND:'memory',...(pulseServer?{PULSE_SERVER:pulseServer}:{})},
 });
 child.on('error',error=>{console.error(`Cannot launch the isolated Obsidian desktop: ${error.message}`);process.exitCode=1;});
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{child.kill(signal);});
