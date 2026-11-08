@@ -196,3 +196,8 @@ Implemented on the signed 4H baseline `c3fbfab`: a searchable, filterable, sorta
 
 **Stop gate:** human review of 4I is required. Proposed next (not started): see `docs/MILESTONE_4I_REPORT.md` §M.
 
+## Milestone 4J — unified interface and composition workflow refinement
+
+Implemented on the signed 4I baseline `a847c3e`: a shared page structure (compact module header, one primary action, *Record actions* disclosures), a CANVAS toolbar with a *Go to* disclosure and a worded transport state chip, piano roll and timeline taking the remaining height (MOTIF roll from 525 px to 357 px down and 382 → 523 px tall at 1366×900), a clearer note inspector with inline validation, an essentials-first export dialog, and a recovery register with an inline narrow-pane inspector. No musical, persistence, recovery-format or MIDI change.
+
+**Stop gate:** human review of 4J is required before Milestone 5 (integration and release preparation).

@@ -12,7 +12,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { connect } from './obsidian-cdp.mjs';
 
-const label = process.argv[2] ?? 'run', directory = 'output/mnemobard/milestone-4i', c = await connect();
+// 4J: MNEMOBARD_RECOVERY_DIR redirects output (later milestones must not overwrite 4I evidence); the method is unchanged.
+const label = process.argv[2] ?? 'run', directory = process.env.MNEMOBARD_RECOVERY_DIR ?? 'output/mnemobard/milestone-4i', c = await connect();
 await mkdir(directory, { recursive: true });
 const prefix = `const services=app.plugins.getPlugin('mnemobard').services,cv=()=>app.workspace.getLeavesOfType('mnemobard-canvas')[0].view,p=()=>cv().recoveryPanel,tick=()=>new Promise(r=>setTimeout(r,0)),assert=(v,m)=>{if(!v)throw Error(m);};
 const stats=a=>{const s=[...a].sort((x,y)=>x-y);return{samples:a.length,median:+s[Math.floor(s.length/2)].toFixed(2),p95:+s[Math.min(s.length-1,Math.ceil(s.length*.95)-1)].toFixed(2)};};

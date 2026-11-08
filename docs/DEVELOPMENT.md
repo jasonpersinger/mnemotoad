@@ -326,3 +326,14 @@ MNEMOBARD_PROFILE_DIR=output/mnemobard/milestone-4i node scripts/mnemobard-4h-ed
 - Never write synthetic checkpoints into a Recovery folder to benchmark: recovery files are never deleted. The register benchmark builds tier-1 entries in the renderer through the catalog's real code instead.
 - The native workflow snapshots path/size/mtime of every `dev-vault/MNEMOBARD` file around browsing and inspection; a MOTIF edit's autosave (500 ms) or a save's pre-save backup legitimately adds checkpoints outside that window.
 
+## Milestone 4J validation
+
+```sh
+node scripts/mnemobard-4j-audit.mjs <label>           # layout metrics + screenshots of all three modules at 1366/680 px
+node scripts/mnemobard-4j-native.mjs                  # workflows A–E, responsive, keyboard/dialog checks, screenshots 01–20
+node scripts/mnemobard-4j-native.mjs --verify-restart # after a cold restart
+MNEMOBARD_RECOVERY_DIR=output/mnemobard/milestone-4j node scripts/mnemobard-4i-recovery-benchmark.mjs <label>
+```
+
+- Buttons inside closed `<details>` disclosures are still clickable programmatically; native scripts keep clicking by label.
+- The CANVAS motif picker lists a bounded set of motifs: search before choosing a new one.

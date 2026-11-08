@@ -413,3 +413,56 @@ button.mnemobard-recovery-row:focus-visible, .mnemobard-recovery-register :is(bu
 .mnemobard-recovery-technical textarea { width: 100%; font-family: var(--font-monospace); font-size: var(--font-smallest); }
 @media (max-width: 520px) { .mnemobard-recovery-summary, .mnemobard-recovery-preview, .mnemobard-recovery-technical dl { grid-template-columns: minmax(0, 1fr); } .mnemobard-recovery-controls select { max-width: 100%; } }
 .mnemobard-history-depth { align-self: center; font-size: var(--font-ui-smaller); color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* ── Milestone 4J: unified interface layer (all modules). Host theme variables only; dark-first, light-compatible. ── */
+.mnemobard-module, .modal.mnemobard-wide-modal {
+  --mb-gap: var(--size-4-2, 8px); --mb-gap-l: var(--size-4-3, 12px); --mb-rule: 1px solid var(--background-modifier-border);
+  --mb-radius: var(--radius-s, 4px); --mb-panel: var(--background-secondary); --mb-quiet: var(--text-muted); --mb-accent: var(--interactive-accent);
+}
+/* Page header: module identity left, module actions right, one row when wide. */
+.mnemobard-module > .mnemobard-module-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; margin: 0 0 var(--mb-gap-l); padding: 0 0 var(--mb-gap); border-bottom: var(--mb-rule); }
+.mnemobard-module .mnemobard-module-identity { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; min-width: 0; }
+.mnemobard-module .mnemobard-module-identity .mnemobard-eyebrow { flex-basis: 100%; margin: 0; }
+.mnemobard-module .mnemobard-module-header h2 { margin: 0; font-size: 1.45em; font-weight: 600; letter-spacing: .06em; }
+.mnemobard-module .mnemobard-module-identity > p:not(.mnemobard-eyebrow) { margin: 0; color: var(--mb-quiet); font-size: var(--font-ui-small); }
+.mnemobard-module .mnemobard-module-actions { margin: 0; }
+/* Secondary actions: an inline disclosure (expands in place; never floats over content). */
+.mnemobard-module .mnemobard-record-actions, .mnemobard-module .mnemobard-canvas-goto { align-self: center; }
+.mnemobard-module :is(.mnemobard-record-actions, .mnemobard-canvas-goto) > summary { cursor: pointer; list-style: none; display: inline-block; padding: 4px 10px; border: var(--mb-rule); border-radius: var(--mb-radius); color: var(--mb-quiet); font-size: var(--font-ui-small); white-space: nowrap; }
+.mnemobard-module :is(.mnemobard-record-actions, .mnemobard-canvas-goto) > summary::-webkit-details-marker { display: none; }
+.mnemobard-module :is(.mnemobard-record-actions, .mnemobard-canvas-goto) > summary::after { content: ' ▾'; }
+.mnemobard-module :is(.mnemobard-record-actions, .mnemobard-canvas-goto)[open] { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.mnemobard-module :is(.mnemobard-record-actions, .mnemobard-canvas-goto)[open] > summary::after { content: ' ▴'; }
+.mnemobard-module button.mnemobard-destructive { color: var(--text-error); }
+/* One focus ring everywhere. */
+.mnemobard-module :is(button, summary, input, select, textarea, [tabindex]):focus-visible, .modal.mnemobard-wide-modal :is(button, summary, input, select):focus-visible { outline: 2px solid var(--mb-accent); outline-offset: 2px; }
+/* Sentence-case section labels (no decorative all-caps). */
+.mnemobard-module :is(.mnemobard-note-inspector-heading h3, .mnemobard-context-header, .mnemobard-region-label) { text-transform: none; letter-spacing: .02em; }
+/* MOTIF: name · status · actions on one row when wide; a slimmer transport; the piano roll takes the remaining height. */
+.mnemobard-module .mnemobard-score-heading { grid-template-columns: minmax(180px, 1fr) auto auto; align-items: center; }
+.mnemobard-module .mnemobard-score-heading .mnemobard-actions { grid-column: auto; margin: 0; }
+.mnemobard-module .mnemobard-motif-transport { padding: 4px 10px; gap: 8px; border-left-width: 2px; }
+.mnemobard-module :is(.mnemobard-motif-transport, .mnemobard-canvas-transport) button.mod-cta:not(:disabled) { background: transparent; color: var(--text-accent); box-shadow: inset 0 0 0 1px var(--mb-accent); }
+.mnemobard-module .mnemobard-roll-scroll { height: clamp(360px, calc(100vh - 380px), 760px); }
+.mnemobard-note-identity { margin: 0 0 6px; font-weight: 600; flex-basis: 100%; }
+.mnemobard-field-readout { display: block; color: var(--mb-quiet); font-size: var(--font-ui-smaller); min-height: 1.2em; }
+.mnemobard-field-problem { color: var(--text-error); flex-basis: 100%; margin: 4px 0 0; }
+.mnemobard-field-problem:empty { display: none; }
+/* CANVAS transport state chip (the text always states the condition). */
+.mnemobard-module .mnemobard-arrangement-state[data-tone] { display: inline-flex; align-items: center; padding: 2px 10px; border: var(--mb-rule); border-radius: 999px; background: var(--mb-panel); color: var(--text-normal); }
+.mnemobard-module .mnemobard-arrangement-state[data-tone="attention"] { border-color: var(--text-warning); color: var(--text-warning); }
+.mnemobard-module .mnemobard-arrangement-state[data-tone="ready"] { border-color: var(--mb-accent); color: var(--text-accent); }
+.mnemobard-module .mnemobard-arrangement-state[data-tone="active"] { border-color: var(--mb-accent); background: var(--mb-accent); color: var(--text-on-accent); }
+/* Recovery register: filters set apart from results, compact rows, an unmistakable selection, inline inspector when narrow. */
+.mnemobard-recovery-register .mnemobard-recovery-controls { padding: 8px 10px; border: var(--mb-rule, 1px solid var(--background-modifier-border)); border-radius: var(--radius-s, 4px); background: var(--background-secondary); }
+.mnemobard-recovery-register button.mnemobard-recovery-row { padding: 4px 10px; }
+.mnemobard-recovery-register .mnemobard-recovery-list { gap: 2px; }
+.mnemobard-recovery-register button.mnemobard-recovery-row[aria-current="true"] strong { color: var(--text-accent); }
+.mnemobard-recovery-list > li > .mnemobard-recovery-detail { position: static; max-height: none; margin: 4px 0 8px 12px; }
+@media (max-width: 900px) { .mnemobard-module .mnemobard-score-heading { grid-template-columns: minmax(0, 1fr) auto; } .mnemobard-module .mnemobard-score-heading .mnemobard-actions { grid-column: 1 / -1; } }
+@media (prefers-reduced-motion: reduce) { .mnemobard-module *, .mnemobard-module *::before, .mnemobard-module *::after, .modal.mnemobard-wide-modal * { transition-duration: 0s !important; animation-duration: 0s !important; scroll-behavior: auto !important; } }
+/* 4J: empty status/draft containers take no space; collapsed libraries are one quiet line; the timeline takes the remaining height. */
+.mnemobard-module > .mnemobard-feedback:empty { min-height: 0; margin: 0; } /* stays rendered: it is a live region */
+.mnemobard-module > .mnemobard-drafts:empty { display: none; }
+.mnemobard-module :is(.mnemobard-motif-library, .mnemobard-canvas-library):not([open]) { border: 0; padding: 0; margin: 0 0 var(--mb-gap); background: none; }
+.mnemobard-module :is(.mnemobard-motif-library, .mnemobard-canvas-library):not([open]) > summary { color: var(--mb-quiet); font-size: var(--font-ui-small); }
+.mnemobard-module .mnemobard-arrangement-scroll, .mnemobard-module .mnemobard-canvas-editor .mnemobard-arrangement-scroll { height: clamp(320px, calc(100vh - 420px), 720px); }

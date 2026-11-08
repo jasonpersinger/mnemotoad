@@ -14,6 +14,7 @@ import { element, button, renderLibraryForm } from './form';
 import { AssetPanel } from './asset-panel';
 import { RecoveryPanel } from './recovery-panel';
 import { openModuleRecovery } from '../../ui/recovery-inspector';
+import { moduleHeader, recordActions } from '../../ui/page';
 import { AssetInspector } from '../../ui/asset-inspector';
 
 const LABELS: Record<LibraryKind, string> = { instrument: 'Instruments', patch: 'Patches', 'effects-chain': 'Effects chains' };
@@ -67,10 +68,8 @@ export class PatchbookView extends ModuleView {
     const root = this.contentEl; root.replaceChildren(); root.classList.add('mnemobard-module', 'mnemobard-patchbook');
     const services = this.available;
     if (!services) { element(root, 'p', 'PATCHBOOK is disabled. Your vault records are retained.'); return; }
-    const header = element(root, 'header', undefined, 'mnemobard-library-heading');
-    element(header, 'p', 'MNEMOBARD / SOUND ARCHIVE', 'mnemobard-eyebrow');
-    element(header, 'h2', 'PATCHBOOK'); element(header, 'p', 'Keep the sound. Remember the setting.', 'mnemobard-library-caption');
-    this.counters = element(header, 'p', undefined, 'mnemobard-register-counts');
+    const { identity } = moduleHeader(root, { className: 'mnemobard-library-heading', eyebrow: 'MNEMOBARD / SOUND ARCHIVE', title: 'PATCHBOOK', tagline: 'Keep the sound. Remember the setting.', taglineClass: 'mnemobard-library-caption' });
+    this.counters = element(identity, 'p', undefined, 'mnemobard-register-counts');
     this.tabs = element(root, 'nav', undefined, 'mnemobard-registers'); this.tabs.setAttribute('aria-label', 'Library registers');
     for (const kind of ['instrument', 'patch', 'effects-chain'] as const) {
       const tab = button(this.tabs, LABELS[kind], () => { void this.switchRegister(kind).catch(error => this.fail(error)); }); tab.dataset.kind = kind;
@@ -268,12 +267,13 @@ export class PatchbookView extends ModuleView {
       return;
     }
     const actions = element(root, 'div', undefined, 'mnemobard-actions');
-    button(actions, session.dirty ? 'Continue editing draft' : 'Edit record', () => { this.editing = true; this.renderDetail(); this.detail?.querySelector<HTMLInputElement>('input')?.focus(); }).disabled = services.settings.readOnly;
+    button(actions, session.dirty ? 'Continue editing draft' : 'Edit record', () => { this.editing = true; this.renderDetail(); this.detail?.querySelector<HTMLInputElement>('input')?.focus(); }, 'mod-cta').disabled = services.settings.readOnly;
+    const more = recordActions(actions); // 4J: secondary actions one click away
     const state = services.index.resolve(e.id), path = state.status === 'ready' ? state.path : session.base?.path;
-    if (path) button(actions, 'Open Markdown record', () => this.openNote(path));
-    if (session.base && !session.dirty && !services.settings.readOnly) button(actions, e.archived ? 'Restore to library' : 'Archive record', () => this.archiveControls(root, session));
+    if (path) button(more, 'Open Markdown record', () => this.openNote(path));
+    if (session.base && !session.dirty && !services.settings.readOnly) button(more, e.archived ? 'Restore to library' : 'Archive record', () => { more.open = false; this.archiveControls(root, session); });
     if (services.settings.diagnostic) element(root, 'p', services.settings.diagnostic.message, 'mnemobard-library-issues');
-    if (session.base) button(actions, 'Reload from note', () => { void this.reload(session).catch(error => this.fail(error)); });
+    if (session.base) button(more, 'Reload from note', () => { void this.reload(session).catch(error => this.fail(error)); });
     if (session.dirty) {
       try { validateEntity(e); }
       catch (error) {

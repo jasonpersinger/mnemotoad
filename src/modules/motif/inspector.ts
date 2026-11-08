@@ -1,6 +1,7 @@
 import { button, element } from '../../ui/dom';
 import { changeNotes, noteName, sealedMotif } from './commands';
 import { musicalPosition, positionTick } from './positions';
+import { musicalDuration } from '../../music/durations';
 import type { MotifSession } from './session';
 import type { Motif, Note } from '../../domain/entities';
 export class NoteInspector {
@@ -22,14 +23,31 @@ export class NoteInspector {
     const header = element(this.root, 'div', undefined, 'mnemobard-note-inspector-heading'); element(header, 'h3', 'Note register'); element(header, 'span', `${motif.data.notes.length} notes / ${chosen.length} selected`);
     if (selected) {
       const form = element(this.root, 'form', undefined, 'mnemobard-note-properties'); form.setAttribute('aria-label', 'Selected note properties');
-      const controls = new Map<string, HTMLInputElement>();
+      // 4J: which note is being edited, and that other selected notes stay unchanged.
+      element(form, 'p', `${noteName(selected.pitch)} at ${musicalPosition(selected.startTick, motif.data.ppq, motif.data.meter)}${chosen.length > 1 ? ` · ${chosen.length} notes selected — only this primary note changes` : ''}`, 'mnemobard-note-identity').setAttribute('aria-live', 'polite');
+      const controls = new Map<string, HTMLInputElement>(), readouts = new Map<string, HTMLElement>();
       for (const [label, key, min, max] of [['Pitch', 'pitch', 0, 127], ['Start tick', 'startTick', 0, motif.data.lengthTicks - 1], ['Duration ticks', 'durationTicks', 1, motif.data.lengthTicks], ['Velocity', 'velocity', 1, 127]] as const) {
         const wrapper = element(form, 'label'); element(wrapper, 'span', label); const input = element(wrapper, 'input'); input.type = 'number'; input.step = '1'; input.min = String(min); input.max = String(max); input.required = true; input.value = String(selected[key]); input.setAttribute('aria-label', label); controls.set(key, input);
+        if (key === 'pitch' || key === 'durationTicks') readouts.set(key, element(wrapper, 'small', '', 'mnemobard-field-readout'));
       }
       const positionLabel=element(form,'label');element(positionLabel,'span','Position (bar:beat:tick)');const position=element(positionLabel,'input');position.value=musicalPosition(selected.startTick,motif.data.ppq,motif.data.meter);position.setAttribute('aria-label','Position (bar:beat:tick)');let positionEdited=false;
+      form.querySelector('.mnemobard-note-identity')?.after(positionLabel); // 4J: musical position first; exact ticks stay editable below
       const apply = element(form, 'button', 'Apply to primary note'); apply.type = 'submit'; apply.setAttribute('aria-label', 'Apply to primary note');
       const pending = element(form, 'p'); pending.setAttribute('role', 'status');
+      const problem = element(form, 'p', '', 'mnemobard-field-problem'); problem.setAttribute('role', 'alert');
+      /** 4J: read-outs and validation in words; Apply stays disabled while a value cannot be applied (nothing commits while typing). */
+      const check = (): void => {
+        const pitch = Number(controls.get('pitch')?.value), duration = Number(controls.get('durationTicks')?.value);
+        const pitchOut = readouts.get('pitch'), durationOut = readouts.get('durationTicks');
+        if (pitchOut) pitchOut.textContent = Number.isSafeInteger(pitch) && pitch >= 0 && pitch <= 127 ? noteName(pitch) : '';
+        if (durationOut) { try { durationOut.textContent = Number.isSafeInteger(duration) && duration >= 1 ? musicalDuration(duration, motif.data.ppq, motif.data.meter) : ''; } catch { durationOut.textContent = ''; } }
+        let message = '';
+        for (const [key, control] of controls) if (!control.validity.valid) { const label = control.getAttribute('aria-label') ?? key; message = `${label}: enter a whole number from ${control.min} to ${control.max}.`; break; }
+        if (!message && positionEdited) { try { positionTick(position.value, motif.data.ppq, motif.data.meter); } catch (error) { message = `Position (bar:beat:tick): ${error instanceof Error ? error.message : String(error)}`; } }
+        problem.textContent = message; apply.disabled = !!message;
+      };
       form.addEventListener('input', event => {form.dataset.pending = 'true';pending.textContent = 'Unapplied note properties';if(event.target===position)positionEdited=true;else if(event.target===controls.get('startTick')){positionEdited=false;const tick=Number(controls.get('startTick')?.value);if(Number.isSafeInteger(tick)&&tick>=0&&tick<=1e9)position.value=musicalPosition(tick,motif.data.ppq,motif.data.meter);} });
+      form.addEventListener('input', check); check();
       button(form, 'Discard note changes', () => { this.signature = ''; this.refresh(); });
       element(form, 'p', `Primary: ${noteName(selected.pitch)}. Exact source ticks; applying does not snap. Other selected notes remain unchanged.`, 'mnemobard-hint');
       form.addEventListener('submit', event => {

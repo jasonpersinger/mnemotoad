@@ -83,3 +83,14 @@ describe('4H DAW guidance and diagnostic help', () => {
     for (const code of ['source-changed', 'source-unreviewed', 'missing-source', 'inexact-timing', 'archived-source', 'unsupported-source', 'composition-conflict']) expect(COMPILE_HELP[code]).toMatch(/\. .*(compile again|nothing was modified)/);
   });
 });
+
+describe('4J export dialog order', () => {
+  it('puts the essentials first: summary, destination and Create before DAW guidance and technical details', () => {
+    const m = motif(), root = dialog(compiled(composition([m]), [m]));
+    const summary = root.querySelector('section[aria-label="Export summary"]'), destination = root.querySelector('input[aria-label="New arrangement MIDI destination"]');
+    const create = [...root.querySelectorAll('button')].find(b => b.textContent === 'Create arrangement MIDI'), guidance = root.querySelector('details.mnemobard-daw-guidance'), advanced = root.querySelector('details.mnemobard-export-advanced');
+    if (!summary || !destination || !create || !guidance || !advanced) throw Error('missing part');
+    const before = (a: Node, b: Node): boolean => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(before(summary, destination) && before(destination, create) && before(create, guidance) && before(guidance, advanced)).toBe(true);
+  });
+});

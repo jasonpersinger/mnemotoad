@@ -200,3 +200,11 @@ See [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md) for exact workloads/results
 | Unread checkpoint metadata (4I) | Until read, a checkpoint of a document absent from the vault has no name and is positioned by file time; type filters and name searches say how many unread checkpoints they cannot judge. | Accepted; *Read all checkpoint details* (≈0.9 s for 898 files / 490 MB here). |
 | Recovery growth (4I) | No pruning or deletion exists (append-only); the dev vault holds 900+ checkpoints, one of them a disposable malformed fixture from the 4I workflow. | Retention policy is a separate product decision. |
 
+## Milestone 4J residual risks
+
+| Risk | Evidence and mitigation | Remaining work / approval |
+| --- | --- | --- |
+| Moved controls (4J) | Secondary actions now sit in disclosures; every label and handler is unchanged, all scripts and suites that click by label still pass (they reach buttons inside closed disclosures). Users need one extra click for Open Markdown/Reload/Discard/Archive. | Accepted (J02). |
+| Canvas-drawn labels (4J) | Timeline lane-area labels (SECTIONS, MARKERS, LANE / SOURCE) and clip text are drawn on canvas and keep their 4D presentation. | Deferred: would touch timeline rendering. |
+| Viewport-relative surfaces (4J) | Roll/timeline heights follow the window height (bounded); on very short windows the minimum height applies and the page scrolls. | Accepted. |
+| Screen-reader certification (pre-existing) | Labels, live regions, focus and keyboard paths verified natively; no assistive-technology certification run. | Deferred. |

@@ -155,3 +155,12 @@ it('provides its key scope before the host activates or opens the view', () => {
   const view = new PatchbookView({} as WorkspaceLeaf, () => undefined);
   expect(view.scope).toBeInstanceOf(MockScope); view.release();
 });
+it('4J: shared header, Edit record is the primary action and secondary record actions sit in one disclosure', async () => {
+  const { view, repository } = await fixture(); const { entity } = await repository.create(createEntity('instrument', 'Header instrument'));
+  await settle(); await view.setState({ kind: 'instrument', selectedId: entity.id }); await settle();
+  const root = view.contentEl; expect(root.querySelector('header.mnemobard-module-header h2')?.textContent).toBe('PATCHBOOK');
+  expect(root.querySelector('.mnemobard-module-identity .mnemobard-register-counts')).not.toBeNull();
+  const edit = [...root.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === 'Edit record'); expect(edit?.classList.contains('mod-cta')).toBe(true);
+  const more = root.querySelector<HTMLDetailsElement>('.mnemobard-library-detail details.mnemobard-record-actions'); expect(more?.open).toBe(false);
+  expect([...(more?.querySelectorAll('button') ?? [])].map(b => b.textContent)).toEqual(['Open Markdown record', 'Archive record', 'Reload from note']);
+});

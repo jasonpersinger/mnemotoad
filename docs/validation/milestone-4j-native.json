@@ -1,0 +1,210 @@
+{
+  "milestone": "4J",
+  "date": "2026-11-08",
+  "checks": [
+    {
+      "step": "A1–10",
+      "result": "pass",
+      "evidence": "New motif “4J Lantern phrase 1794138841230”: 96 BPM 3/4 applied; 4 notes added; primary note edited {\"pitch\":67,\"startTick\":1920,\"durationTicks\":480,\"velocity\":90} (G4 at 1:3:0); undo/redo exact; played (“playing · 0:00.00”) and stopped; saved; reopened identical; exported and independently verified ({\"status\":0,\"tracks\":2,\"ppq\":960,\"noteOns\":4}); export dialog focus inside: true; Escape closed it"
+    },
+    {
+      "step": "B1–7",
+      "result": "pass",
+      "evidence": "“Night choir” found (instrument Modular voice, chain Tape and plate); editor opened and closed; “4J Lantern phrase 1794138841230” associated and saved; PATCHBOOK lists it under “Motifs using this patch”; navigated PATCHBOOK → MOTIF (“4J Lantern phrase 1794138841230”) and MOTIF → PATCHBOOK; association persisted in the saved records"
+    },
+    {
+      "step": "C1–11",
+      "result": "pass",
+      "evidence": "New composition “4J Lantern arrangement 1794138841230” with 2 lanes; placed “4J Lantern phrase 1794138841230” ×2 and “Ascending choir”; moved the second clip to 3:1:0 and set ×3 ({\"startTick\":7680,\"expected\":7680,\"repeatCount\":3}); added section “Opening” and marker “Turn”; compiled (“Compiled · matches this unsaved draft”); played (“Playing compiled arrangement”); saved and reopened identical; exported and independently verified ({\"status\":0,\"tracks\":3,\"ppq\":960,\"noteOns\":35}); export dialog focus inside: true"
+    },
+    {
+      "step": "D1–7",
+      "result": "pass",
+      "evidence": "Changed and saved “4J Lantern phrase 1794138841230”; CANVAS showed “Stale · Source review required · 1 motif”; review summary {\"Revision\":\"Changed since it was last acknowledged · 4ad4b4489365 → 69607102cbd4\",\"Affected clips\":\"1 clip on lane Lane 1\",\"Length per repetition\":\"4 bars (unchanged)\",\"Status\":\"Ready to acknowledge\"} with 1 placement and an “Open motif in MOTIF” route; acknowledged explicitly; recompiled (“Compiled · matches this unsaved draft”); placements identical, motif note and composition note byte-identical until the explicit Save (draft dirty: true); then saved"
+    },
+    {
+      "step": "E1–7",
+      "result": "pass",
+      "evidence": "Register search + CANVAS + “Unsaved draft of a saved record”: Showing 1–1 of 1 checkpoint (filtered from 999); inspected ({\"Composition\":\"4J Lantern arrangement 1794138841230\",\"Lanes\":\"2\",\"Clips\":\"2\",\"Referenced motifs\":\"2\",\"Length\":\"64 bars\",\"Tempo\":\"120 BPM\",\"Time signature\":\"4/4\",\"PPQ\":\"960\",\"Unresolved references\":\"None\"}); changed-source conflict shown (“CONFLICT: authoritative source changed after this checkpoint. Compare all versions before loading.”); Load disabled until the consent box is ticked, disabled again when unticked (nothing loaded); inline inspector under its row at 680 px; every vault file identical before and after browsing"
+    },
+    {
+      "step": "G/H",
+      "result": "pass",
+      "evidence": "No horizontal overflow and no control outside the view in PATCHBOOK, MOTIF and CANVAS at 1366/980/680 px; keyboard Tab focus visible ({\"label\":\"Save motif\",\"visible\":true,\"outline\":\"solid\"}); 10,000-note motif opened; dark and light overviews captured"
+    },
+    {
+      "step": "exceptions",
+      "result": "pass",
+      "evidence": "Renderer exceptions during this phase: 0"
+    },
+    {
+      "step": "E8",
+      "result": "pass",
+      "evidence": "After a cold restart: Showing 1–4 of 4 checkpoints (filtered from 999) · 370 checkpoints of documents that are not in the vault were matched by ID, path and date only (names not read yet); use Read all checkpoint details. for “4J Lantern arrangement 1794138841230”; the motif's PATCHBOOK association and the composition's 2 clips are intact"
+    },
+    {
+      "step": "exceptions",
+      "result": "pass",
+      "evidence": "Renderer exceptions during this phase: 0"
+    }
+  ],
+  "screenshots": [
+    "01-patchbook-library.png",
+    "02-patchbook-record-editor.png",
+    "03-patchbook-associations.png",
+    "04-motif-workspace.png",
+    "05-motif-selected-note.png",
+    "06-motif-transformations.png",
+    "07-motif-10000-notes.png",
+    "08-canvas-arrangement.png",
+    "09-canvas-selected-clip.png",
+    "10-canvas-transport-active.png",
+    "11-canvas-source-review.png",
+    "12-canvas-midi-export.png",
+    "13-recovery-wide.png",
+    "14-recovery-selected.png",
+    "15-recovery-narrow.png",
+    "16-motif-narrow.png",
+    "17-canvas-narrow.png",
+    "18-patchbook-narrow.png",
+    "19-dark-overview.png",
+    "20-light-overview.png"
+  ],
+  "rendererExceptions": {
+    "part1": 0,
+    "restart": 0
+  },
+  "layoutBefore": {
+    "patchbook-1366": {
+      "surfaceTop": 377,
+      "surfaceHeight": 763,
+      "controlsAbove": 12,
+      "overflowX": 0
+    },
+    "motif-1366": {
+      "surfaceTop": 525,
+      "surfaceHeight": 382,
+      "controlsAbove": 51,
+      "overflowX": 0
+    },
+    "canvas-1366": {
+      "surfaceTop": 375,
+      "surfaceHeight": 368,
+      "controlsAbove": 41,
+      "overflowX": 0
+    },
+    "patchbook-680": {
+      "surfaceTop": 561,
+      "surfaceHeight": 763,
+      "controlsAbove": 13,
+      "overflowX": 0
+    },
+    "motif-680": {
+      "surfaceTop": 623,
+      "surfaceHeight": 382,
+      "controlsAbove": 56,
+      "overflowX": 0
+    },
+    "canvas-680": {
+      "surfaceTop": 551,
+      "surfaceHeight": 368,
+      "controlsAbove": 54,
+      "overflowX": 0
+    }
+  },
+  "layoutAfter": {
+    "patchbook-1366": {
+      "surfaceTop": 252,
+      "surfaceHeight": 1017,
+      "controlsAbove": 12,
+      "overflowX": 0
+    },
+    "motif-1366": {
+      "surfaceTop": 357,
+      "surfaceHeight": 523,
+      "controlsAbove": 48,
+      "overflowX": 0
+    },
+    "canvas-1366": {
+      "surfaceTop": 347,
+      "surfaceHeight": 525,
+      "controlsAbove": 38,
+      "overflowX": 0
+    },
+    "patchbook-680": {
+      "surfaceTop": 460,
+      "surfaceHeight": 1017,
+      "controlsAbove": 13,
+      "overflowX": 0
+    },
+    "motif-680": {
+      "surfaceTop": 491,
+      "surfaceHeight": 523,
+      "controlsAbove": 55,
+      "overflowX": 0
+    },
+    "canvas-680": {
+      "surfaceTop": 529,
+      "surfaceHeight": 525,
+      "controlsAbove": 46,
+      "overflowX": 0
+    }
+  },
+  "responsive": {
+    "680": {
+      "patchbook": {
+        "overflowX": 0,
+        "outside": []
+      },
+      "motif": {
+        "overflowX": 0,
+        "outside": []
+      },
+      "canvas": {
+        "overflowX": 0,
+        "outside": []
+      }
+    },
+    "980": {
+      "patchbook": {
+        "overflowX": 0,
+        "outside": []
+      },
+      "motif": {
+        "overflowX": 0,
+        "outside": []
+      },
+      "canvas": {
+        "overflowX": 0,
+        "outside": []
+      }
+    },
+    "1366": {
+      "patchbook": {
+        "overflowX": 0,
+        "outside": []
+      },
+      "motif": {
+        "overflowX": 0,
+        "outside": []
+      },
+      "canvas": {
+        "overflowX": 0,
+        "outside": []
+      }
+    }
+  },
+  "keyboard": {
+    "label": "Save motif",
+    "visible": true,
+    "outline": "solid"
+  },
+  "regressions": {
+    "4E CANVAS": "18 + 2",
+    "MOTIF": "7 + 12",
+    "MOTIF-MIDI": "11 + 5",
+    "PATCHBOOK assets": "6 + 6",
+    "Foundation": "11"
+  },
+  "evidence": "output/mnemobard/milestone-4j/"
+}

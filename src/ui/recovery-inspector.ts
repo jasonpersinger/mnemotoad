@@ -37,7 +37,14 @@ export class RecoveryInspector<T extends Entity, S> {
   private query: CatalogQuery = { search: '', module: 'all', type: 'all', document: 'all', sort: 'newest', page: 0, pageSize: 25 };
   private selected?: string;
   private readonly status: HTMLElement; private readonly progress: HTMLElement; private readonly list: HTMLElement; private readonly pager: HTMLElement;
-  private readonly detail: HTMLElement; private readonly documents: HTMLSelectElement;
+  private readonly detail: HTMLElement; private readonly documents: HTMLSelectElement; private readonly panes: HTMLElement;
+  /** Stacked layout: the panes are too narrow for list and inspector side by side (see the CSS grid minimum). */
+  private narrow(): boolean { return this.panes.clientWidth > 0 && this.panes.clientWidth < 2 * 360 + 12; }
+  private placeDetail(): void {
+    const row = this.selected ? rowOf(this.list, this.selected)?.closest('li') : undefined;
+    if (this.narrow() && row && this.detail.childElementCount) { if (this.detail.parentElement !== row) row.append(this.detail); }
+    else if (this.detail.parentElement !== this.panes) this.panes.append(this.detail);
+  }
   constructor(private readonly root: HTMLElement, private readonly services: RecoveryRegisterServices<T, S>,
     private readonly loaded: (session: S) => void, private readonly open: (path: string) => void, initialPath?: string) {
     root.classList.add('mnemobard-recovery-register');
@@ -66,6 +73,9 @@ export class RecoveryInspector<T extends Entity, S> {
     this.list = element(listPane, 'ol', undefined, 'mnemobard-recovery-list'); this.list.setAttribute('aria-label', 'Checkpoints');
     this.pager = element(listPane, 'nav', undefined, 'mnemobard-recovery-pager'); this.pager.setAttribute('aria-label', 'Checkpoint pages');
     this.detail = element(panes, 'section', undefined, 'mnemobard-recovery-detail'); this.detail.setAttribute('aria-label', 'Checkpoint inspector');
+    this.panes = panes;
+    // 4J: on narrow panes the inspector opens directly under its row (the place in the list is kept); beside it when wide.
+    if (typeof ResizeObserver !== 'undefined') { const observer = new ResizeObserver(() => this.placeDetail()); observer.observe(panes); this.lifetime.signal.addEventListener('abort', () => observer.disconnect()); }
     this.refresh();
     if (initialPath) void this.inspect(initialPath);
   }
@@ -88,8 +98,10 @@ export class RecoveryInspector<T extends Entity, S> {
       : `Showing ${result.first}–${result.last} of ${plural(result.total, 'checkpoint')}${result.total === total ? '' : ` (filtered from ${total})`}`;
     if (result.unnamedUnmatched) this.status.textContent += ` · ${plural(result.unnamedUnmatched, 'checkpoint')} of documents that are not in the vault ${result.unnamedUnmatched === 1 ? 'was' : 'were'} matched by ID, path and date only (names not read yet); use Read all checkpoint details.`;
     if (result.unreadExcluded) this.status.textContent += ` · ${plural(result.unreadExcluded, 'checkpoint')} not read yet ${result.unreadExcluded === 1 ? 'is' : 'are'} not included by the type filter; use Read all checkpoint details.`;
+    if (this.detail.parentElement !== this.panes) this.panes.append(this.detail);
     this.list.replaceChildren();
     for (const entry of result.rows) this.row(entry);
+    this.placeDetail();
     if (total && !result.total) button(this.list, 'Clear search and filters', () => { this.root.querySelectorAll<HTMLInputElement | HTMLSelectElement>('.mnemobard-recovery-controls input, .mnemobard-recovery-controls select').forEach(e => { e.value = e.getAttribute('aria-label') === 'Sort' ? 'newest' : e.getAttribute('aria-label') === 'Page size' ? String(this.query.pageSize) : e instanceof HTMLSelectElement ? 'all' : ''; }); this.query = { ...this.query, search: '', module: 'all', type: 'all', document: 'all', from: undefined, to: undefined, page: 0 }; this.render(); });
     this.pager.replaceChildren();
     if (result.pages > 1) {
@@ -103,7 +115,8 @@ export class RecoveryInspector<T extends Entity, S> {
   }
   private rerenderRows(rows: CatalogEntry[]): void {
     const focused = this.root.ownerDocument.activeElement?.closest('[data-path]')?.getAttribute('data-path');
-    this.list.replaceChildren(); for (const entry of rows) this.row(entry);
+    if (this.detail.parentElement !== this.panes) this.panes.append(this.detail); // keep the inspector while rows re-render
+    this.list.replaceChildren(); for (const entry of rows) this.row(entry); this.placeDetail();
     if (focused) rowOf(this.list, focused)?.focus();
   }
   private row(entry: CatalogEntry): void {
@@ -138,7 +151,7 @@ export class RecoveryInspector<T extends Entity, S> {
       const details = await this.catalog.details(entry, this.lifetime.signal), module = moduleOf(entry.documentKind ?? details.kind);
       const inspection = details.integrity === 'Too large to inspect' ? undefined : await this.owner(module).inspect(path, this.lifetime.signal);
       if (this.lifetime.signal.aborted || generation !== this.generation) return;
-      this.renderDetail(entry, module, inspection);
+      this.renderDetail(entry, module, inspection); this.placeDetail();
       this.detail.scrollIntoView?.({ block: 'nearest' }); // stacked (narrow) layouts: bring the inspector into view
     } catch (error) { if (!this.lifetime.signal.aborted) { this.detail.replaceChildren(); element(this.detail, 'p', messageOf(error), 'mnemobard-library-issues'); } }
   }
@@ -174,7 +187,7 @@ export class RecoveryInspector<T extends Entity, S> {
     const original = inspection?.current?.path ?? (entry.availability === 'ready' ? entry.documentPath : undefined);
     if (original) button(actions, 'Open original document', () => this.open(original));
     button(actions, 'Open checkpoint file', () => this.open(entry.path));
-    button(actions, 'Close inspector', () => { root.replaceChildren(); this.selected = undefined; const row = rowOf(this.list, entry.path); row?.removeAttribute('aria-current'); row?.focus(); });
+    button(actions, 'Close inspector', () => { root.replaceChildren(); this.selected = undefined; this.placeDetail(); const row = rowOf(this.list, entry.path); row?.removeAttribute('aria-current'); row?.focus(); });
     // Technical details: identifiers, exact timestamps and the stored texts.
     const technical = element(root, 'details', undefined, 'mnemobard-recovery-technical'); element(technical, 'summary', 'Technical details');
     const tech = element(technical, 'dl'); const t = (term: string, value?: string): void => { if (value) { element(tech, 'dt', term); element(tech, 'dd', value); } };

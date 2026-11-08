@@ -103,3 +103,23 @@ it('4H toolbar: every editing operation stays available in labelled groups, and 
  click(view.contentEl,'Undo');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch);expect(depth()).toBe('1 undo · 1 redo');click(view.contentEl,'Redo');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch+12);expect(depth()).toBe('2 undo · 0 redo');
  expect(Object.isFrozen(session.snapshot.data.notes[0])).toBe(true);
 });
+it('4J: shared header, one primary document action, secondary actions in Record actions, destructive confirmation beside the header',async()=>{
+ const{view,repository}=await fixture();const saved=await repository.create(createEntity('motif','Header phrase'));await settle();await view.setState({selectedId:saved.entity.id});await settle();
+ const root=view.contentEl;expect(root.querySelector('header.mnemobard-module-header .mnemobard-module-identity h2')?.textContent).toBe('MOTIF');
+ const doc=root.querySelector('.mnemobard-score-heading');if(!doc)throw Error('doc row');
+ expect([...doc.querySelectorAll(':scope > .mnemobard-actions > button')].map(b=>b.textContent)).toEqual(['Save motif','Export MIDI']);expect(doc.querySelectorAll('.mod-cta')).toHaveLength(1);
+ const more=doc.querySelector<HTMLDetailsElement>('details.mnemobard-record-actions');if(!more)throw Error('more');expect(more.open).toBe(false);
+ expect([...more.querySelectorAll('button')].map(b=>b.textContent)).toEqual(['Open Markdown record','Reload saved motif','Discard draft…']);expect(more.querySelector('.mnemobard-destructive')?.textContent).toBe('Discard draft…');
+ more.open=true;click(root,'Discard draft…');expect(doc.nextElementSibling?.classList.contains('mnemobard-confirm')).toBe(true);expect(more.open).toBe(false);click(root,'Keep editing');expect(root.querySelector('.mnemobard-confirm')).toBeNull();
+});
+it('4J note inspector: primary-note identity, musical read-outs, validation in words and nothing committed while typing',async()=>{
+ const{view,services}=await fixture();const root=view.contentEl;click(root,'New motif');await settle();click(root,'Add note');click(root,'Add note');
+ const session=services.motifs.drafts()[0];if(!session)throw Error('draft');session.select(session.snapshot.data.notes.map(n=>n.id));(view as unknown as{selectionChanged():void}).selectionChanged();
+ const identity=root.querySelector('.mnemobard-note-identity')?.textContent??'';expect(identity).toMatch(/^[A-G]♯?-?\d+ at \d+:\d+:\d+ · 2 notes selected — only this primary note changes$/);
+ const form=root.querySelector<HTMLFormElement>('form.mnemobard-note-properties');if(!form)throw Error('form');expect(form.querySelector('label')?.textContent).toContain('Position (bar:beat:tick)');
+ const readouts=[...form.querySelectorAll('.mnemobard-field-readout')].map(e=>e.textContent);expect(readouts[0]).toMatch(/^[A-G]/);expect(readouts[1]).not.toBe('');
+ const version=session.changeVersion,apply=[...form.querySelectorAll('button')].find(b=>b.textContent==='Apply to primary note');
+ input(root,'Velocity','200');expect(form.querySelector('.mnemobard-field-problem')?.textContent).toBe('Velocity: enter a whole number from 1 to 127.');expect(apply?.disabled).toBe(true);expect(session.changeVersion).toBe(version);
+ input(root,'Velocity','100');expect(form.querySelector('.mnemobard-field-problem')?.textContent).toBe('');expect(apply?.disabled).toBe(false);expect(session.changeVersion).toBe(version);
+ click(root,'Apply to primary note');expect(session.changeVersion).not.toBe(version);expect(session.snapshot.data.notes.some(n=>n.velocity===100)).toBe(true);
+});

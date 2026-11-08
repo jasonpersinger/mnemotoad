@@ -308,3 +308,12 @@ Limits, conservative channel sharing, remaining post-write race, benchmark metho
 - **History.** `application/history-memory.ts#RetainedSize` (refcounted DAG estimate). `HistorySession`: `retained.retain/release` on push, grouped replacement, redo invalidation, eviction and reset; `historyBytes`, `redoSize`; `HISTORY_LIMITS` (100 entries / 16 MiB); `shareTransformInput` (protected, MOTIF only); no-op via `application/json-equal.ts#sameJson`. `domain/validation.ts#checkEntity` = the rules of `validateEntity` without its final copy.
 - **MOTIF.** `MotifSession.shareTransformInput = true`; `commands.ts#sealedMotif` = `checkEntity` + motif rules + freeze + registration (takes ownership of its argument). The view shows the retained undo/redo depth.
 - **Harness.** `scripts/mnemobard-4i-undo-depth.mjs`, `scripts/mnemobard-4i-recovery-benchmark.mjs`, `scripts/mnemobard-4i-native.mjs`; `mnemobard-4h-edit-profile.mjs` gained `MNEMOBARD_PROFILE_DIR`.
+
+## Milestone 4J — shared page structure
+
+- `ui/page.ts`: `moduleHeader()` and `recordActions()`, used by `PatchbookView`, `MotifView` and `CanvasView` (no new framework; plain DOM helpers like `ui/dom.ts`).
+- MOTIF: document actions regrouped (`recordActions`), discard confirmation placed after the document header; `NoteInspector` adds the identity line, read-outs and inline validation (same `changeNotes(..., sealedMotif)` commit).
+- CANVAS: `Go to` disclosure for navigation buttons; `CanvasPerformancePanel` sets `data-tone` on the state element.
+- `ArrangementExportDialog`: essentials-first order. `RecoveryInspector`: `placeDetail()` moves the inspector next to its row on narrow panes (ResizeObserver).
+- Styles: the 4J layer at the end of `styles.css` (tokens, header, disclosures, focus, reduced motion, surface heights).
+- Harness: `scripts/mnemobard-4j-audit.mjs` (layout metrics + screenshots), `scripts/mnemobard-4j-native.mjs` (workflows A–E); `mnemobard-4i-recovery-benchmark.mjs` gained `MNEMOBARD_RECOVERY_DIR`.

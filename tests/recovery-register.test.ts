@@ -185,3 +185,21 @@ describe('4I register UI and read-only inspector', () => {
     expect(loaded).toHaveLength(1); expect((loaded[0] as { draft: Motif }).draft.title).toBe('Keep me (draft)'); expect(new Map(f.vault.files)).toEqual(files);
   });
 });
+
+describe('4J register layout', () => {
+  it('opens the inspector inline under its row on narrow panes and beside the list on wide ones, keeping the place', async () => {
+    const f = await fixture(); for (let i = 0; i < 30; i++) envelope(f.vault, uid(i + 1), `n${i}`, new Date(Date.UTC(2026, 9, 1, 0, i)).toISOString(), { kind: 'motif', title: `Narrow-${i}` });
+    const { root } = register(f); await settle();
+    const panes = root.querySelector<HTMLElement>('.mnemobard-recovery-panes'); if (!panes) throw Error('panes');
+    let width = 500; Object.defineProperty(panes, 'clientWidth', { configurable: true, get: () => width });
+    const row = rows(root)[7]; if (!row) throw Error('row'); row.click(); await settle();
+    const detail = root.querySelector<HTMLElement>('.mnemobard-recovery-detail'); expect(detail?.parentElement).toBe(row.closest('li'));
+    expect(row.closest('li')?.firstElementChild).toBe(row); // the row stays where it was, the inspector follows it
+    set(root, 'Search checkpoints', 'narrow'); await settle(); // re-rendered rows keep the inspector with the selected row
+    expect(root.querySelector('.mnemobard-recovery-detail')?.parentElement?.querySelector('button.mnemobard-recovery-row')?.getAttribute('aria-current')).toBe('true');
+    width = 1200; set(root, 'Search checkpoints', ''); await settle(); expect(root.querySelector('.mnemobard-recovery-detail')?.parentElement).toBe(panes);
+    width = 500; set(root, 'Page size', '25'); await settle();
+    const d = root.querySelector<HTMLElement>('.mnemobard-recovery-detail'); if (!d) throw Error('detail'); press(d, 'Close inspector');
+    expect(root.querySelector('.mnemobard-recovery-detail')?.parentElement).toBe(panes); expect((document.activeElement as HTMLElement | null)?.dataset.path).toBe(row.dataset.path);
+  });
+});

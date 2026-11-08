@@ -152,7 +152,9 @@ export class CanvasPerformancePanel {
     this.compileButton.disabled = busy || this.services.settings.readOnly; this.playButton.disabled = !ready || !!this.auditionIssue; this.pauseButton.disabled = !owned || player.state !== 'playing'; this.resumeButton.disabled = !owned || player.state !== 'paused' || !ready; this.exportButton.disabled = !ready;
     this.position.textContent = `${musicalPosition(this.tick, 960, this.model.data.meter)} · ${(60000000 / this.model.data.tempoMicrosecondsPerQuarter).toFixed(1)} BPM`;
     const diagnostic=player.diagnosticFor(this.owner),raw=owned ? player.state : this.preparation.state,state = `${this.describe(raw, owned)}${diagnostic ? ' · ' + diagnostic : ''}`; if (this.status.textContent !== state) this.status.textContent = state;
-    this.status.dataset.state = raw; this.status.title = 'Playback and MIDI export use exactly this compilation. Musical edits make it stale; sections, markers, notes and recordings do not.';
+    this.status.dataset.state = raw;
+    // 4J: a tone for the state chip; the text above always states the condition in words (never colour alone).
+    this.status.dataset.tone = /required|changed elsewhere|Not ready|failed|Stale/.test(state) ? 'attention' : owned && ['playing', 'paused', 'starting'].includes(raw) ? 'active' : raw === 'ready' ? 'ready' : 'neutral'; this.status.title = 'Playback and MIDI export use exactly this compilation. Musical edits make it stale; sections, markers, notes and recordings do not.';
     this.playhead(this.tick);
     if (owned && player.state === 'playing' && this.animation === undefined) this.animation = requestAnimationFrame(() => { this.animation = undefined; this.statusUpdate(); });
     else if ((!owned || player.state !== 'playing') && this.animation !== undefined) { cancelAnimationFrame(this.animation); this.animation = undefined; }

@@ -11,6 +11,7 @@ import type { FoundationServices } from '../../application/services';
 import type { Composition } from '../../domain/entities';
 import { messageOf } from '../../domain/errors';
 import { RecoveryInspector, openModuleRecovery, recoveryLinks } from '../../ui/recovery-inspector';
+import { moduleHeader, recordActions } from '../../ui/page';
 import { diagnosticText, type ArrangementPlan } from '../../arrangement/preflight';
 import { musicalPosition } from '../../music/positions';
 import type { Meter } from '../../domain/entities';
@@ -119,10 +120,7 @@ export class CanvasView extends ModuleView {
             element(root, 'p', 'CANVAS is disabled. Composition records remain in the vault.');
             return;
         }
-        const top = element(root, 'header', undefined, 'mnemobard-canvas-heading');
-        element(top, 'p', 'MNEMOBARD / ARRANGEMENT REGISTER', 'mnemobard-eyebrow');
-        element(top, 'h2', 'CANVAS');
-        const actions = element(top, 'div', undefined, 'mnemobard-actions');
+        const { actions } = moduleHeader(root, { className: 'mnemobard-canvas-heading', eyebrow: 'MNEMOBARD / ARRANGEMENT REGISTER', title: 'CANVAS', tagline: 'Where saved motifs become a piece.' });
         const create = button(actions, 'New composition', () => { void this.create().catch(e => this.fail(e)); }, 'mod-cta');
         create.disabled = true;
         button(actions, 'Browse compositions', () => { const details = this.browser?.closest('details'); if (details)
@@ -297,8 +295,7 @@ export class CanvasView extends ModuleView {
         button(editBar, 'Place motif', () => this.chooseMotif());
         this.undoButton = button(editBar, 'Undo', () => this.act(() => session.undo()));
         this.redoButton = button(editBar, 'Redo', () => this.act(() => session.redo()));
-        const more = element(bar, 'details', undefined, 'mnemobard-canvas-more');
-        element(more, 'summary', 'Record actions');
+        const more = recordActions(bar, 'Record actions', 'mnemobard-canvas-more');
         if (session.base)
             button(more, 'Open composition Markdown', () => { const state = s.index.resolve(session.draft.id); if (state.status === 'ready')
                 this.openMarkdown(state.path); });
@@ -329,12 +326,14 @@ export class CanvasView extends ModuleView {
             this.timeline.grid = grid.value as Grid; });
         button(tools, 'Time −', () => this.timeline?.zoom(1 / 1.25));
         button(tools, 'Time +', () => this.timeline?.zoom(1.25));
-        button(tools, 'Previous clip', () => this.nextClip(-1));
-        button(tools, 'Next clip', () => this.nextClip(1));
-        button(tools, 'Previous section', () => this.structurePanel?.step('section', -1));
-        button(tools, 'Next section', () => this.structurePanel?.step('section', 1));
-        button(tools, 'Previous marker', () => this.structurePanel?.step('marker', -1));
-        button(tools, 'Next marker', () => this.structurePanel?.step('marker', 1));
+        // 4J: previous/next navigation (also [ ] , . keys) in one disclosure; zoom and grid stay visible.
+        const goTo = element(tools, 'details', undefined, 'mnemobard-canvas-goto'); element(goTo, 'summary', 'Go to · [ ] , .'); goTo.querySelector('summary')?.setAttribute('aria-label', 'Go to clip, section or marker');
+        button(goTo, 'Previous clip', () => this.nextClip(-1));
+        button(goTo, 'Next clip', () => this.nextClip(1));
+        button(goTo, 'Previous section', () => this.structurePanel?.step('section', -1));
+        button(goTo, 'Next section', () => this.structurePanel?.step('section', 1));
+        button(goTo, 'Previous marker', () => this.structurePanel?.step('marker', -1));
+        button(goTo, 'Next marker', () => this.structurePanel?.step('marker', 1));
         const planDraft = session.draft;
         this.plan = s.canvas.plan(planDraft);
         this.planMeter = planDraft.data.meter;

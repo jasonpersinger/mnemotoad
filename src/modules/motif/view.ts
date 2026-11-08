@@ -5,6 +5,7 @@ import type { Motif } from '../../domain/entities';
 import { FoundationError, messageOf } from '../../domain/errors';
 import { ModuleView } from '../../ui/module-view';
 import { element, button } from '../../ui/dom';
+import { moduleHeader, recordActions } from '../../ui/page';
 import { RecoveryInspector, openModuleRecovery, recoveryLinks } from '../../ui/recovery-inspector';
 import { compileSequence } from '../../music/compiler';
 import { TempoMap } from '../../music/timing';
@@ -39,9 +40,7 @@ export class MotifView extends ModuleView {
   private async openView(): Promise<void> {
     this.release(); this.active = true; this.lifetime = new AbortController(); const root = this.contentEl; root.replaceChildren(); root.classList.add('mnemobard-module', 'mnemobard-motif');
     const services = this.available; if (!services) { element(root, 'p', 'MOTIF is disabled. Musical notes remain in the vault.'); return; }
-    const heading = element(root, 'header', undefined, 'mnemobard-motif-heading');
-    element(heading, 'p', 'MNEMOBARD / COMPOSITION APPARATUS', 'mnemobard-eyebrow'); element(heading, 'h2', 'MOTIF'); element(heading, 'p', 'A place for the phrase before the piece.', 'mnemobard-hint');
-    const actions = element(heading, 'div', undefined, 'mnemobard-actions');
+    const { actions } = moduleHeader(root, { className: 'mnemobard-motif-heading', eyebrow: 'MNEMOBARD / COMPOSITION APPARATUS', title: 'MOTIF', tagline: 'A place for the phrase before the piece.' });
     const create = button(actions, 'New motif', () => { void this.newMotif().catch(error => this.fail(error)); }, 'mod-cta'); create.disabled = true;
     button(actions, 'Browse motifs', () => { if (this.browserDetails) this.browserDetails.open = !this.browserDetails.open; });
     button(actions, 'Motif recovery', () => this.recovery());
@@ -140,11 +139,13 @@ export class MotifView extends ModuleView {
     const actions = element(header, 'div', undefined, 'mnemobard-actions');
     button(actions, 'Save motif', () => { void this.save(); }, 'mod-cta');
     button(actions,'Export MIDI',()=>{if(this.editor?.querySelector('form[data-pending="true"]')){this.say('Apply or discard pending properties before choosing an export snapshot.');return;}this.midiDialog?.close();this.midiDialog=new MidiExportDialog(this.app,services.motifs,session,async()=>{const record=await services.repository.read(session.draft.id);if(record.entity.kind!=='motif')throw Error('Expected a saved motif.');return record.entity;},services.settings.current.creationRoot);openModal(this.contentEl,this.midiDialog,t=>this.say(t));});
-    if (session.base) { button(actions, 'Open Markdown record', () => { const state = services.index.resolve(motif.id); if (state.status === 'ready') this.openNote(state.path); }); button(actions, 'Reload saved motif', () => { if (session.dirty) this.say('Save or explicitly discard this draft before reloading. Recovery is retained.'); else void this.select(motif.id).catch(error => this.fail(error)); }); }
-    button(actions, 'Discard draft…', () => {
-      const confirm = element(root, 'div', undefined, 'mnemobard-confirm'); element(confirm, 'p', 'Discard the working draft and its undo history? Saved notes and checkpoints are retained.');
+    // 4J: secondary and destructive document actions in one disclosure (labels and handlers unchanged).
+    const more = recordActions(actions);
+    if (session.base) { button(more, 'Open Markdown record', () => { const state = services.index.resolve(motif.id); if (state.status === 'ready') this.openNote(state.path); }); button(more, 'Reload saved motif', () => { if (session.dirty) this.say('Save or explicitly discard this draft before reloading. Recovery is retained.'); else void this.select(motif.id).catch(error => this.fail(error)); }); }
+    const discard = button(more, 'Discard draft…', () => {
+      const confirm = element(root, 'div', undefined, 'mnemobard-confirm'); header.after(confirm); more.open = false; element(confirm, 'p', 'Discard the working draft and its undo history? Saved notes and checkpoints are retained.'); // 4J: shown where the action was chosen
       button(confirm, 'Keep editing', () => confirm.remove()); button(confirm, 'Confirm discard', () => { services.musical.stop(this); services.motifs.discard(session); this.unsubscribeSession?.(); this.session = undefined; this.renderEditor(); this.renderDrafts(); if (session.base) void this.select(motif.id).catch(error => this.fail(error)); });
-    });
+    }); discard.classList.add('mnemobard-destructive');
     const transport = element(root, 'div', undefined, 'mnemobard-motif-transport');
     button(transport, 'Play motif', () => { void this.play(); }, 'mod-cta'); button(transport, 'Stop motif', () => services.musical.stop(this));
     this.position = element(transport, 'span', 'Stopped · 0:00'); this.position.setAttribute('aria-label', 'Musical playback position');

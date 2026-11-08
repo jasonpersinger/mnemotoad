@@ -315,3 +315,13 @@ it('4G: changed sources point to one batch review (banner, diagnostics, inspecto
     click(view.contentEl, 'Redo'); await settle(); expect(banner()?.hidden).toBe(true);
     expect(session.draft.data.lanes[0]?.clips.map(c => [c.startTick, c.repeatCount])).toEqual([[0, 1], [7680, 2]]); // positions/repeats untouched
 });
+it('4J: shared header, navigation buttons in one Go to disclosure, transport state chip in words with a tone', async () => {
+    const { view } = await fixture(); const root = view.contentEl; click(root, 'New composition'); await settle();
+    expect(root.querySelector('header.mnemobard-module-header h2')?.textContent).toBe('CANVAS');
+    const goTo = root.querySelector<HTMLDetailsElement>('details.mnemobard-canvas-goto'); if (!goTo) throw Error('go to');
+    expect(goTo.open).toBe(false); expect(goTo.querySelector('summary')?.getAttribute('aria-label')).toBe('Go to clip, section or marker');
+    expect([...goTo.querySelectorAll('button')].map(b => b.textContent)).toEqual(['Previous clip', 'Next clip', 'Previous section', 'Next section', 'Previous marker', 'Next marker']);
+    expect([...root.querySelectorAll('.mnemobard-canvas-navigation > button')].map(b => b.textContent)).toEqual(['Time −', 'Time +']);
+    const chip = root.querySelector<HTMLElement>('.mnemobard-arrangement-state'); expect(chip?.dataset.tone).toMatch(/^(neutral|attention|ready|active)$/); expect(chip?.textContent?.length).toBeGreaterThan(3);
+    expect(root.querySelector('details.mnemobard-record-actions > summary')?.textContent).toBe('Record actions');
+});
