@@ -1,7 +1,7 @@
 {
   "id": "mnemobard",
   "name": "MNEMOTOAD",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "minAppVersion": "1.15.0",
   "description": "Remember what you've yet to compose. Archive sounds, sketch MIDI motifs and arrange them in your vault.",
   "author": "Jason Persinger",

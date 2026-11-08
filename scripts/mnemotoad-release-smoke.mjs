@@ -38,7 +38,7 @@ const theme0 = await run(`return app.vault.getConfig?.('theme')??'obsidian';`);
 try {
   await c.command('Page.bringToFront'); await size(1366); await run(`app.workspace.leftSplit?.collapse();`);
   const plugin = await run(`const p=app.plugins.getPlugin('mnemobard');return{enabled:app.plugins.enabledPlugins.has('mnemobard'),id:p.manifest.id,name:p.manifest.name,version:p.manifest.version,author:p.manifest.author,exceptionsSoFar:0};`);
-  if (plugin.id !== 'mnemobard' || plugin.name !== 'MNEMOTOAD' || plugin.version !== '0.2.0' || plugin.author !== 'Jason Persinger') throw Error('identity ' + q(plugin));
+  if (plugin.id !== 'mnemobard' || plugin.name !== 'MNEMOTOAD' || plugin.version !== manifest.version || plugin.author !== 'Jason Persinger') throw Error('identity ' + q(plugin));
   if (!restart) {
     await step('1–4', 'Plugin loaded; public name MNEMOTOAD; plugin ID mnemobard', plugin);
     await activate('patchbook');
@@ -101,7 +101,7 @@ try {
     await run(`app.setting.open();`); await pause(1000); await run(`app.setting.openTabById('mnemobard');`); await pause(1000);
     const about = await run(`const a=app.setting.modalEl.querySelector('.mnemotoad-about'),svg=a?.querySelector('svg');return{text:a?.textContent,label:svg?.getAttribute('aria-label'),width:svg?.getAttribute('width'),b2:JSON.stringify(cells(svg))===${q(q(expectedCells))}};`);
     await run(`app.setting.close();`);
-    if (!about.b2 || !about.text.includes('Version 0.2.0 · by Jason Persinger · MIT License') || about.width !== '96') throw Error('about ' + q(about));
+    if (!about.b2 || !about.text.includes(`Version ${manifest.version} · by Jason Persinger · MIT License`) || about.width !== '96') throw Error('about ' + q(about));
     await step('30–32', 'Settings About panel: B2 mascot at 4×, author and version shown', { label: about.label, text: about.text.slice(0, 160) });
     // Rendering: clone the live header mark at 1×/2×/4×/8× on dark and light; compare screenshot pixels to the canonical PNG.
     await activate('patchbook');

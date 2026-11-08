@@ -4,7 +4,7 @@
 
 MNEMOTOAD is a local-first Obsidian plugin for organising instrument patches, composing musical motifs and arranging those motifs into larger compositions. Everything is stored in your vault as ordinary Markdown notes, so your records stay readable without the plugin.
 
-MNEMOTOAD works alongside a DAW; it is not one. It does not host instrument plugins and does not render audio. Version **0.2.0**, by **Jason Persinger**, MIT License.
+MNEMOTOAD works alongside a DAW; it is not one. It does not host instrument plugins and does not render audio. Version **0.2.1**, by **Jason Persinger**, MIT License.
 
 ![CANVAS arranging two saved motifs](docs/screenshots/canvas.png)
 
@@ -127,7 +127,7 @@ pnpm dev:vault      # deploy into the marked disposable dev-vault/
 pnpm dev:obsidian   # isolated Obsidian for native checks
 ```
 
-See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). Brand colours and the mascot: [docs/BRAND.md](docs/BRAND.md). Release notes: [docs/RELEASE_0.2.0.md](docs/RELEASE_0.2.0.md).
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). Brand colours and the mascot: [docs/BRAND.md](docs/BRAND.md). Release notes: [0.2.1](docs/RELEASE_0.2.1.md) · [0.2.0](docs/RELEASE_0.2.0.md).
 
 ## License
 
