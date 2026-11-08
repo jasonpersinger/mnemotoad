@@ -25,7 +25,7 @@ Date: 2026-11-08. Release engineer actions in `~/MNEMOBARD`. Each public action 
 | Remote | `origin` = `https://github.com/jasonpersinger/mnemotoad.git` (added after Gate B; there was no previous remote) |
 | Pushed | `main` (`c95a4de`), `v0.2.0`, `0.2.0`. No force push; history not rewritten. |
 | Working tree | Clean at publication. This report and one test-harness fix (`scripts/mnemotoad-release-smoke.mjs`) were committed locally afterwards; see M. |
-| GitHub signature display | **“Unverified” (`unknown_key`)** for commits and tags, because the owner’s GPG public key is not uploaded to the GitHub account. The signatures are valid (`git verify-commit` / `git verify-tag`). Owner action: upload the public key in GitHub → Settings → SSH and GPG keys. |
+| GitHub signature display | **Verified.** At publication GitHub showed “Unverified” (`unknown_key`) because the owner’s GPG public key was not on the account. *Correction, 2026-11-08:* the owner uploaded key `55AC4CD519321124` (email verified). GitHub now reports `194f873`, `c95a4de`, `v0.2.0` and `0.2.0` as **verified (reason: valid)**, checked through the GitHub API. |
 
 **Artifact provenance.** Rebuilding `main.js`, `styles.css` and `manifest.json` from the signed tag in a clean worktree produced **byte-identical** files to the validated release artifacts. The package therefore corresponds exactly to the signed release.
 
@@ -179,5 +179,10 @@ Removing any of these would require a history rewrite, which was not authorised.
 Owner next steps:
 
 1. Submit at community.obsidian.md with the values in F.
-2. Optionally upload your GPG public key to GitHub, so the signatures show as Verified.
+2. ~~Upload your GPG public key to GitHub~~: done; all signatures now show as Verified.
 3. If the automated review flags the guideline items, authorise a 0.2.1 fix.
+
+## Addendum — 0.2.1 (2026-11-08)
+
+0.2.0 audition played at about −50 dBFS, which is inaudible. **0.2.1** fixes this: about −17.6 dBFS at velocity 96, through a shared limiter. The owner confirmed it by ear. It was published at https://github.com/jasonpersinger/mnemotoad/releases/tag/0.2.1 (signed commit `fc68d56` and tag `0.2.1`, both Verified on GitHub) and is the latest release. Its public assets are byte-identical to the validated package, and `main.js` rebuilds byte-identically from the tag. Notes: `docs/RELEASE_0.2.1.md`. The community-directory submission has still not been confirmed.
+
