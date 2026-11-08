@@ -1,0 +1,20 @@
+{
+  "format": "mnemobard-recovery",
+  "schemaVersion": 1,
+  "entityId": "4f66ff9e-c4ca-40cf-9507-22e8ef8ed755",
+  "sourcePath": "MNEMOBARD/Patches/Foundation smoke patch-4f66ff9e.md",
+  "savedAt": "2026-11-05T19:03:40.250Z",
+  "reason": "before-save",
+  "originalSource": "---\ncustom: keep\nmnemobard_id: 4f66ff9e-c4ca-40cf-9507-22e8ef8ed755\nmnemobard_kind: patch\nmnemobard_schema: 1\ntitle: Foundation smoke patch\ninstrument: Synthetic fixture\n---\n\n# Notes\n\n\nUnrelated **native writing**.\n",
+  "draft": {
+    "id": "4f66ff9e-c4ca-40cf-9507-22e8ef8ed755",
+    "kind": "patch",
+    "schemaVersion": 1,
+    "title": "Foundation smoke saved",
+    "extra": {
+      "custom": "keep"
+    },
+    "instrument": "Synthetic fixture"
+  },
+  "candidateSource": "---\ncustom: keep\nmnemobard_id: 4f66ff9e-c4ca-40cf-9507-22e8ef8ed755\nmnemobard_kind: patch\nmnemobard_schema: 1\ntitle: Foundation smoke saved\ninstrument: Synthetic fixture\n---\n\n# Notes\n\n\nUnrelated **native writing**.\n"
+}

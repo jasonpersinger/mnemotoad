@@ -14,6 +14,7 @@ import { element, button, renderLibraryForm } from './form';
 import { AssetPanel } from './asset-panel';
 import { RecoveryPanel } from './recovery-panel';
 import { openModuleRecovery } from '../../ui/recovery-inspector';
+import { mascotMark } from '../../ui/mascot';
 import { moduleHeader, recordActions } from '../../ui/page';
 import { AssetInspector } from '../../ui/asset-inspector';
 
@@ -68,7 +69,7 @@ export class PatchbookView extends ModuleView {
     const root = this.contentEl; root.replaceChildren(); root.classList.add('mnemobard-module', 'mnemobard-patchbook');
     const services = this.available;
     if (!services) { element(root, 'p', 'PATCHBOOK is disabled. Your vault records are retained.'); return; }
-    const { identity } = moduleHeader(root, { className: 'mnemobard-library-heading', eyebrow: 'MNEMOBARD / SOUND ARCHIVE', title: 'PATCHBOOK', tagline: 'Keep the sound. Remember the setting.', taglineClass: 'mnemobard-library-caption' });
+    const { identity } = moduleHeader(root, { className: 'mnemobard-library-heading', eyebrow: 'MNEMOTOAD / SOUND ARCHIVE', title: 'PATCHBOOK', tagline: 'Keep the sound. Remember the setting.', taglineClass: 'mnemobard-library-caption' });
     this.counters = element(identity, 'p', undefined, 'mnemobard-register-counts');
     this.tabs = element(root, 'nav', undefined, 'mnemobard-registers'); this.tabs.setAttribute('aria-label', 'Library registers');
     for (const kind of ['instrument', 'patch', 'effects-chain'] as const) {
@@ -245,6 +246,7 @@ export class PatchbookView extends ModuleView {
     if (this.loading) { element(root, 'p', 'Opening the sound archive…', 'mnemobard-hint'); return; }
     const session = this.currentSession;
     if (!session) {
+      if (!this.selectedId) mascotMark(root, 2);
       element(root, 'p', this.selectedId ? 'This record is unavailable. Inspect its source or resolve a duplicate ID before editing.' : 'Select a record, or begin a new entry.', 'mnemobard-empty');
       if (!this.selectedId && !services.patchbook.query({ kind: 'instrument' }).length) {
         element(root, 'h3', 'Begin with an instrument'); element(root, 'p', 'Give your sound source a record, then collect the patches and processing chains that belong with it.', 'mnemobard-hint');

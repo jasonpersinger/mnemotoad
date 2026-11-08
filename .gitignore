@@ -4,7 +4,9 @@ main.js.map
 coverage/
 dist/
 .runtime/
+.runtime-*/
 dev-vault/
+dev-vault-*/
 output/
 *.tsbuildinfo
 .DS_Store

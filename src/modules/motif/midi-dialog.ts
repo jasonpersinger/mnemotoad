@@ -28,7 +28,7 @@ export class MidiImportDialog extends Modal {
   private say(value: string): void {if(!this.lifetime.signal.aborted&&this.status)this.status.textContent=value;}
   private async read(name: string,size: number,read:()=>Promise<ArrayBuffer>): Promise<void> {
     const generation=++this.generation;this.job?.abort();this.job=new AbortController();const job=this.job;this.preview=undefined;this.detail?.replaceChildren();this.filename=name;
-    try{if(size>MIDI_LIMITS.bytes)throw Error('MIDI exceeds2MiB. Split it outside MNEMOBARD.');this.say('Inspecting MIDI in an isolated, cancellable worker…');const bytes=await read();if(this.lifetime.signal.aborted||generation!==this.generation)return;const preview=await this.inspect(bytes,job.signal);if(this.lifetime.signal.aborted||generation!==this.generation)return;this.preview=preview;this.render();}
+    try{if(size>MIDI_LIMITS.bytes)throw Error('MIDI exceeds2MiB. Split it outside MNEMOTOAD.');this.say('Inspecting MIDI in an isolated, cancellable worker…');const bytes=await read();if(this.lifetime.signal.aborted||generation!==this.generation)return;const preview=await this.inspect(bytes,job.signal);if(this.lifetime.signal.aborted||generation!==this.generation)return;this.preview=preview;this.render();}
     catch(error){if(generation===this.generation)this.say(messageOf(error));}
   }
   private render(): void {

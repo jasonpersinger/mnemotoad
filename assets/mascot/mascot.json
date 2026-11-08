@@ -1,0 +1,42 @@
+{
+  "id": "b2-curmudgeon",
+  "name": "The Curmudgeon",
+  "status": "approved",
+  "approvedBy": "Jason Persinger",
+  "source": "assets/mascot/refinement/b2-curmudgeon.png (B2 of the Grump refinement, based on Concept B)",
+  "size": 24,
+  "palette": {
+    "K": "#070707",
+    "U": "#28231c",
+    "G": "#317b22",
+    "V": "#801a86",
+    "Y": "#f4e409"
+  },
+  "transparent": ".",
+  "rows": [
+    "........................",
+    "........................",
+    "........................",
+    "........................",
+    "........................",
+    "........................",
+    "........................",
+    "........................",
+    "..GGGGG..........GGGGG..",
+    ".GGGGGGG........GGGGGGG.",
+    ".GGKYKGGGGGGGGGGGGKYKGG.",
+    "GGGKKKKGGGGGGGGGGKKKKGGG",
+    "GGGGGGGGGGGGGGGGGGGGGGGG",
+    "GGGGGKKKKKKKKKKKKGGGGGGG",
+    "GGGGKGGGGGGGGGGGGKKGGGGG",
+    "GGGGGGGGGGGGGGGGGGGGGGGG",
+    "GGGGGUUGGGGGGGGGGGGUGGGG",
+    "GGGGGUUGGGGGUUGGGGGGGGGG",
+    ".GGGGGGGGGGGUUGGGGGGGGG.",
+    "GGG.GGGGGGGGGGGGGGGG.GGG",
+    "G.G..................G.G",
+    "........................",
+    "........................",
+    "........................"
+  ]
+}

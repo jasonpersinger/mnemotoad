@@ -14,7 +14,7 @@ export class ModuleView extends ItemView {
   private closed = true;
   constructor(leaf: WorkspaceLeaf, readonly moduleId: ModuleId, private readonly services: () => FoundationServices | undefined) { super(leaf); }
   getViewType(): string { return VIEW_TYPES[this.moduleId]; }
-  getDisplayText(): string { return `MNEMOBARD · ${MODULE_LABELS[this.moduleId]}`; }
+  getDisplayText(): string { return `MNEMOTOAD · ${MODULE_LABELS[this.moduleId]}`; }
   getIcon(): string { return 'music'; }
   async onOpen(): Promise<void> {
     this.release(); this.closed = false;
@@ -43,7 +43,7 @@ export class ModuleView extends ItemView {
       if (entry.entity) problems.push(...services.references.diagnostics(entry.entity, entry.path).map(d => `${entry.path}: ${d.message}`));
     }
     if (services.settings.diagnostic) problems.unshift(services.settings.diagnostic.message);
-    this.status.setText(`Shared vault index: ${entries.filter(e => e.entity).length} records; ${problems.length} diagnostics. Ordinary notes remain accessible without MNEMOBARD.`);
+    this.status.setText(`Shared vault index: ${entries.filter(e => e.entity).length} records; ${problems.length} diagnostics. Ordinary notes remain accessible without MNEMOTOAD.`);
     for (const message of problems.slice(0, 20)) this.issues.createEl('li', { text: message });
     if (problems.length > 20) this.issues.createEl('li', { text: 'Additional diagnostics are available through the shared index.' });
   }

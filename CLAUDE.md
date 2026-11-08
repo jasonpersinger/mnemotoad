@@ -1,4 +1,6 @@
-# CLAUDE.md — MNEMOBARD
+# CLAUDE.md — MNEMOTOAD (formerly MNEMOBARD)
+
+**Naming (0.2.0):** the product is displayed as **MNEMOTOAD** (author Jason Persinger, MIT); every technical identifier keeps `mnemobard`/`MNEMOBARD` (plugin ID, view types, command IDs, `MNEMOBARD/` content root, `mnemobard_*` YAML, data-block languages, recovery formats, MIDI conductor name, CSS classes) — pinned by `tests/mnemotoad-compat.test.ts`. Never rename them without explicit approval. Mascot: the approved **B2 — The Curmudgeon** (`assets/mascot/mnemotoad-mascot.png` / `mascot.json`, SHA-256 pinned in `tests/mascot.test.ts`); never redraw or substitute it. Brand: [docs/BRAND.md](docs/BRAND.md).
 
 Offline-first Obsidian community plugin (`mnemobard`) for remembering and assembling musical ideas: **PATCHBOOK** (instruments/patches/effects/assets), **MOTIF** (piano roll, MIDI import/export, audition), **CANVAS** (multitrack arrangement of saved motifs, compilation, Type 1 MIDI export, playback). Not a DAW.
 

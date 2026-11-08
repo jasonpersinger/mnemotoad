@@ -1,4 +1,5 @@
 import { element } from './dom';
+import { mascotMark } from './mascot';
 
 /**
  * 4J shared page structure. Every module view starts with the same compact header (module identity on the left, the
@@ -7,6 +8,7 @@ import { element } from './dom';
  */
 export function moduleHeader(root: HTMLElement, options: { className: string; eyebrow: string; title: string; tagline?: string; taglineClass?: string }): { header: HTMLElement; identity: HTMLElement; actions: HTMLElement } {
   const header = element(root, 'header', undefined, `mnemobard-module-header ${options.className}`);
+  mascotMark(header, 2); // decorative product mark (the eyebrow names the product)
   const identity = element(header, 'div', undefined, 'mnemobard-module-identity');
   element(identity, 'p', options.eyebrow, 'mnemobard-eyebrow');
   element(identity, 'h2', options.title);

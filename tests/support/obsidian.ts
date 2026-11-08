@@ -42,7 +42,7 @@ export class Plugin extends Component {
   commands: { id: string; checkCallback: (checking: boolean) => boolean }[] = [];
   tabs: unknown[] = [];
   savedData: unknown = null;
-  constructor(public app: unknown) { super(); }
+  constructor(public app: unknown, public manifest: { id: string; name: string; version: string; author: string } = { id: 'mnemobard', name: 'MNEMOTOAD', version: '0.0.0', author: 'Jason Persinger' }) { super(); } // real Plugin keeps its manifest
   async loadData(): Promise<unknown> { return structuredClone(this.savedData); }
   async saveData(value: unknown): Promise<void> { this.savedData = structuredClone(value); }
   registerView(type: string, factory: (leaf: unknown) => unknown): void {

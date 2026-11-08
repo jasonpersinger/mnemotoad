@@ -11,7 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { connect } from './obsidian-cdp.mjs';
 
-const directory = 'output/mnemobard/milestone-4j', vaultRoot = 'dev-vault';
+const directory = process.env.MNEMOBARD_4J_DIR ?? 'output/mnemobard/milestone-4j', vaultRoot = 'dev-vault';
 await mkdir(directory, { recursive: true });
 const restart = process.argv.includes('--verify-restart'), c = await connect(), pause = ms => new Promise(r => setTimeout(r, ms)), q = JSON.stringify, stamp = String(Date.now());
 let report = { stamp, checks: [], screenshots: [], observations: {} };

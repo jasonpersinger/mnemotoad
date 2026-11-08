@@ -1,16 +1,18 @@
 /** Test-only CDP client. Every evaluation verifies the disposable vault first. */
 import { fileURLToPath } from 'node:url';
-export const expectedVault = fileURLToPath(new URL('../dev-vault', import.meta.url));
+import { devVaultName } from './dev-target.mjs';
+export const expectedVault = fileURLToPath(new URL(`../${devVaultName}`, import.meta.url));
 export async function connect() {
   const pages = await (await fetch('http://127.0.0.1:9227/json/list')).json();
   const target = pages.find(p => p.type === 'page' && p.url === 'app://obsidian.md/index.html');
   if (!target) throw new Error('No isolated Obsidian renderer at localhost:9227.');
-  const socket = new WebSocket(target.webSocketDebuggerUrl), pending = new Map(), exceptions = [];
+  const socket = new WebSocket(target.webSocketDebuggerUrl), pending = new Map(), exceptions = [], consoleMessages = [];
   let id=0;
   await new Promise((resolve,reject) => { socket.addEventListener('open',resolve,{once:true}); socket.addEventListener('error',reject,{once:true}); });
   socket.addEventListener('message', event => {
     const response=JSON.parse(event.data);
     if (response.method === 'Runtime.exceptionThrown') exceptions.push(response.params.exceptionDetails.exception?.description ?? response.params.exceptionDetails.text);
+    if (response.method === 'Runtime.consoleAPICalled') consoleMessages.push({ type: response.params.type, text: response.params.args.map(x => x.value ?? x.description ?? '').join(' ').slice(0, 500) });
     const task=pending.get(response.id); if (!task) return;
     pending.delete(response.id); clearTimeout(task.timer);
     if (response.error) task.reject(new Error(JSON.stringify(response.error))); else task.resolve(response.result);
@@ -30,5 +32,5 @@ export async function connect() {
     return result.result?.value;
   }
   await evaluate('true'); await command('Runtime.enable');
-  return {evaluate,command,exceptions,close:()=>{for(const task of pending.values()){clearTimeout(task.timer);task.reject(new Error('CDP closed'));}pending.clear();socket.close();}};
+  return {evaluate,command,exceptions,consoleMessages,close:()=>{for(const task of pending.values()){clearTimeout(task.timer);task.reject(new Error('CDP closed'));}pending.clear();socket.close();}};
 }

@@ -120,7 +120,7 @@ export class CanvasView extends ModuleView {
             element(root, 'p', 'CANVAS is disabled. Composition records remain in the vault.');
             return;
         }
-        const { actions } = moduleHeader(root, { className: 'mnemobard-canvas-heading', eyebrow: 'MNEMOBARD / ARRANGEMENT REGISTER', title: 'CANVAS', tagline: 'Where saved motifs become a piece.' });
+        const { actions } = moduleHeader(root, { className: 'mnemobard-canvas-heading', eyebrow: 'MNEMOTOAD / ARRANGEMENT REGISTER', title: 'CANVAS', tagline: 'Where saved motifs become a piece.' });
         const create = button(actions, 'New composition', () => { void this.create().catch(e => this.fail(e)); }, 'mod-cta');
         create.disabled = true;
         button(actions, 'Browse compositions', () => { const details = this.browser?.closest('details'); if (details)

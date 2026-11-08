@@ -307,3 +307,18 @@ Audit first (`scripts/mnemobard-4j-audit.mjs`, 1366×900): the MOTIF piano roll 
 | J08 | **Recovery register**: filters in a bordered panel apart from results, compact rows, accent selection; on narrow panes the inspector opens inline under its row (place in the list kept; `ResizeObserver` re-places it), beside the list when wide. No eager reads; all 4I behaviour preserved. | Implemented. |
 | J09 | **Unified 4J CSS layer**: shared tokens on `.mnemobard-module`, one focus ring, sentence-case section labels, reduced-motion rule; host theme variables only (statically tested). Dark-first via the host theme; Obsidian's theme is never forced. | Implemented. |
 | J10 | **Not changed by design**: canvas-drawn timeline/roll content (lane-area labels, clips, ruler), musical timing, compiler, MIDI, persistence, recovery formats, undo policy, shortcuts. | Documented. |
+
+## MNEMOTOAD release candidate (0.2.0)
+
+| ID | Decision | Status |
+| --- | --- | --- |
+| T01 | **Rename MNEMOBARD → MNEMOTOAD for display only.** Plugin ID, view types, command IDs, storage root, YAML keys, data-block languages, recovery formats, the MIDI conductor name and CSS classes are retained (documented in README). Any identifier migration needs separate approval. | Implemented. |
+| T02 | **Default content and asset folders stay `MNEMOBARD/` and `MNEMOBARD/Assets`**, including for fresh installs, so a vault never ends up split across two roots. | Implemented; owner may revisit. |
+| T03 | **Version 0.2.0** (manifest, package, versions.json; minAppVersion unchanged at 1.15.0). Author: Jason Persinger (owner decision, 0.2.0 final). | Implemented. |
+| T04 | **Brand colours by measured contrast**: violet for primary fills (white label 8.7:1) in both themes; focus ring violet in light and yellow in dark; selection bar violet in light and green in dark; never violet text or indicators on dark, never yellow on light; warnings keep host colours. | Implemented. |
+| T05 | *(Superseded by T08 for the choice of mascot.)* **Mascot fidelity follows the reference, measured**: 24×24, no outline, flat fills, four colours, square eyes with one highlight. The provisional favourite is concept A (The Familiar), the most legible at native size. Not final artwork. | Provisional; awaiting owner approval. |
+| T06 | **Mascot placement is conservative**: a 48 px decorative mark in module headers, the PATCHBOOK empty state and a 96 px labelled mark in the settings About panel. No animation, no repetition elsewhere. | Implemented. |
+| T07 | **The reference image stays outside the repository**; review sheets that include it are written only to git-ignored `output/`. | Implemented. |
+| T08 | **Mascot: B2 — The Curmudgeon, approved by the owner** (Grump refinement; 5 pixels differ from Concept B). Installed by byte copy as `assets/mascot/mnemotoad-mascot.png`, with the same grid in `assets/mascot/mascot.json` for runtime; no regeneration. The same placements as the RC; concepts A–C and B1–B3 are kept as unshipped references. | Implemented (0.2.0). |
+| T09 | **MIT License**, Copyright (c) 2026 Jason Persinger (`LICENSE`; `package.json` `license: MIT`, still `private` to prevent accidental npm publication). Bundled third-party code is only `yaml` (ISC) and `midi-file` (MIT), both MIT-compatible. | Implemented (0.2.0). |
+| T10 | **Release 0.2.0 = the RC plus owner decisions only** (mascot, licence, author, documentation). No musical, persistence or recovery code changed; MIDI bytes verified identical to the RC on 72 arrangements and 4 motifs. | Implemented (0.2.0). |

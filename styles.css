@@ -1,3 +1,16 @@
+/* ── MNEMOTOAD brand tokens: the five canonical colours, exact values (docs/BRAND.md). Scoped to MNEMOTOAD's own views,
+   dialogs and settings; Obsidian's global theme variables are never modified. Text, surfaces and disabled states keep
+   using host theme variables; brand colours are applied only where the measured contrast allows (see brand layer). ── */
+:is(.mnemobard-module, .modal.mnemobard-wide-modal, .mnemobard-settings) {
+  --mnemotoad-black: #070707; --mnemotoad-umber: #28231c; --mnemotoad-green: #317b22; --mnemotoad-violet: #801a86; --mnemotoad-yellow: #f4e409;
+  --mnemotoad-on-violet: #ffffff; /* neutral label colour on violet fills (8.7:1); not a brand colour */
+  /* Light themes: violet focus/selection (8.7:1 on white), green for "ready" (5.3:1). */
+  --mnemotoad-focus: var(--mnemotoad-violet); --mnemotoad-select: var(--mnemotoad-violet); --mnemotoad-ready: var(--mnemotoad-green); --mnemotoad-depth: var(--background-secondary); --mnemotoad-edge: var(--background-modifier-border);
+}
+/* Dark themes: violet is only 1.9:1 on dark surfaces, so focus uses sulfur yellow (12.7:1) and selection swamp green (3.2:1, non-text).
+   The mascot plate is near black (green 3.8:1; on umber it would be 2.96:1) with an umber edge. */
+.theme-dark :is(.mnemobard-module, .modal.mnemobard-wide-modal, .mnemobard-settings) { --mnemotoad-focus: var(--mnemotoad-yellow); --mnemotoad-select: var(--mnemotoad-green); --mnemotoad-depth: var(--mnemotoad-black); --mnemotoad-edge: var(--mnemotoad-umber); }
+
 .mnemobard-module { padding: var(--size-4-4); color: var(--text-normal); }
 .mnemobard-module .mnemobard-description { color: var(--text-muted); }
 .mnemobard-module .mnemobard-diagnostics { color: var(--text-warning); overflow-wrap: anywhere; }
@@ -466,3 +479,25 @@ button.mnemobard-recovery-row:focus-visible, .mnemobard-recovery-register :is(bu
 .mnemobard-module :is(.mnemobard-motif-library, .mnemobard-canvas-library):not([open]) { border: 0; padding: 0; margin: 0 0 var(--mb-gap); background: none; }
 .mnemobard-module :is(.mnemobard-motif-library, .mnemobard-canvas-library):not([open]) > summary { color: var(--mb-quiet); font-size: var(--font-ui-small); }
 .mnemobard-module .mnemobard-arrangement-scroll, .mnemobard-module .mnemobard-canvas-editor .mnemobard-arrangement-scroll { height: clamp(320px, calc(100vh - 420px), 720px); }
+
+/* ── MNEMOTOAD brand layer (tokens above; values here are variables only, light and dark). Restrained: violet primary
+   actions, a violet header rule, theme-aware focus and selection, green "ready", a near-black mascot plate with an umber edge
+   in dark themes. Status is always stated in text; colour only reinforces it. ── */
+.mnemobard-module > .mnemobard-module-header { border-bottom-color: var(--mnemotoad-violet); }
+/* Mascot: never clip the SVG viewport — its antialiased clip edge blurred the outer pixel column at near-1 device ratios. */
+.mnemotoad-mark { overflow: visible; }
+.mnemobard-module > .mnemobard-module-header > .mnemotoad-mark { flex: none; align-self: center; }
+.mnemobard-module > .mnemobard-module-header > .mnemobard-module-identity { flex: 1 1 0; min-width: min(100%, 14em); } /* zero basis: identity sits beside the mark instead of wrapping under it */
+:is(.mnemobard-module, .modal.mnemobard-wide-modal) button.mod-cta:not(:disabled) { background: var(--mnemotoad-violet); color: var(--mnemotoad-on-violet); }
+:is(.mnemobard-module, .modal.mnemobard-wide-modal) button.mod-cta:not(:disabled):hover { filter: brightness(1.2); }
+/* 4J J05 kept: transport Play buttons stay outlined so Save remains the only filled primary (the :is() above ties on specificity). */
+.mnemobard-module :is(.mnemobard-motif-transport, .mnemobard-canvas-transport) button.mod-cta:not(:disabled) { background: transparent; color: var(--text-accent); filter: none; }
+.mnemobard-module :is(button, summary, input, select, textarea, [tabindex]):focus-visible, .modal.mnemobard-wide-modal :is(button, summary, input, select):focus-visible { outline-color: var(--mnemotoad-focus); }
+.mnemobard-module :is([aria-pressed="true"], [aria-selected="true"], [aria-current="true"]):not(.mod-cta) { box-shadow: inset 3px 0 0 var(--mnemotoad-select); }
+.mnemobard-module .mnemobard-arrangement-state[data-tone="ready"] { border-color: var(--mnemotoad-ready); color: var(--text-normal); }
+.mnemobard-module .mnemobard-library-detail > .mnemotoad-mark { display: block; margin: var(--mb-gap-l) 0 var(--mb-gap); }
+.mnemobard-settings .mnemotoad-about { display: flex; align-items: center; gap: 16px; margin: 0 0 var(--size-4-4, 16px); padding: 12px 16px; border: 1px solid var(--mnemotoad-edge); border-left: 3px solid var(--mnemotoad-violet); border-radius: var(--radius-s, 4px); background: var(--mnemotoad-depth); }
+.mnemobard-settings .mnemotoad-about > .mnemotoad-mark { flex: none; }
+.mnemobard-settings .mnemotoad-about h2 { margin: 0; padding: 0; letter-spacing: .06em; }
+.mnemobard-settings .mnemotoad-about p { margin: 4px 0 0; }
+.mnemobard-settings .mnemotoad-tagline { color: var(--text-normal); font-style: italic; }

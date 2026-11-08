@@ -1,6 +1,6 @@
 # Third-party notices
 
-The private development build bundles `yaml` 2.9.1 (ISC). Native Obsidian APIs are supplied by the host. All other package dependencies are development tooling, not plugin runtime imports. MNEMOBARD's own distribution license remains unselected (`private: true`, `UNLICENSED`); this notice does not license MNEMOBARD or TROUBADOUR.
+MNEMOTOAD is licensed under the MIT License (see `LICENSE`, Copyright (c) 2026 Jason Persinger). The plugin bundle (`main.js`, including its inlined MIDI worker) contains exactly two third-party packages, verified from the esbuild metafile for 0.2.0: `yaml` 2.9.1 (ISC) and `midi-file` 1.2.4 (MIT). Both are permissive and compatible with MIT distribution; their notices follow and must accompany distribution. Native Obsidian APIs are supplied by the host. All other package dependencies are development tooling, not plugin runtime imports. The mascot artwork is an original project asset. The image used as the mascot's fidelity reference is not part of this repository.
 
 ## yaml
 

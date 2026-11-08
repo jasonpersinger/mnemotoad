@@ -54,7 +54,7 @@ function classify(raw: string): CheckpointDetails {
     kind: typeof draft?.kind === 'string' ? draft.kind as Entity['kind'] : undefined, draftTitle: typeof draft?.title === 'string' && draft.title.trim() ? draft.title : undefined,
     sourcePath: typeof e.sourcePath === 'string' ? e.sourcePath : undefined, invalidFields: typeof e.validationError === 'string' ? true : undefined,
   };
-  if (format !== 'mnemobard-recovery' && format !== 'mnemobard-editor-draft') return { ...base, integrity: 'Unrecognized format', problem: 'Not a MNEMOBARD recovery format; retained for inspection.' };
+  if (format !== 'mnemobard-recovery' && format !== 'mnemobard-editor-draft') return { ...base, integrity: 'Unrecognized format', problem: 'Not a MNEMOTOAD recovery format; retained for inspection.' };
   if (e.schemaVersion !== 1) return { ...base, integrity: 'Unsupported schema', problem: `Recovery schema ${String(e.schemaVersion)} is not supported by this version; nothing was converted.` };
   if (!base.entityId || !base.savedAt || !draft) return { ...base, integrity: 'Malformed', problem: 'Identity, timestamp or draft is missing or malformed.' };
   return { ...base, integrity: 'Readable' };

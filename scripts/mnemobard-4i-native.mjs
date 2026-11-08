@@ -1,7 +1,7 @@
 /**
  * Real-host Milestone 4I workflow (§19) + screenshots (§20). Disposable vault only (the CDP client refuses any other vault).
  * Fixtures: the 4F "Night procession" / "Ascending choir" records, the 4H disposable 5,000- and 10,000-note motifs
- * (output/mnemobard/milestone-4h/fixture.json) and ONE disposable malformed checkpoint created once (no malformed checkpoint
+ * (output/mnemobard/milestone-4h/fixture.json) and ONE disposable malformed checkpoint created once per output directory (found by its folder UUID) (no malformed checkpoint
  * existed; recovery files are never deleted, so it stays; recorded in milestone-4i/fixture.json).
  * Usage: node scripts/mnemobard-4i-native.mjs                  (recovery 1–19, 21; undo 1–15; themes/viewports)
  *        node scripts/mnemobard-4i-native.mjs --verify-restart (recovery 20; undo 16–17, after a cold restart)
@@ -11,7 +11,7 @@ import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { connect } from './obsidian-cdp.mjs';
 
-const directory = 'output/mnemobard/milestone-4i', vaultRoot = 'dev-vault';
+const directory = process.env.MNEMOBARD_4I_DIR ?? 'output/mnemobard/milestone-4i', vaultRoot = 'dev-vault';
 await mkdir(directory, { recursive: true });
 const restart = process.argv.includes('--verify-restart'), c = await connect(), pause = ms => new Promise(r => setTimeout(r, ms)), q = JSON.stringify, stamp = String(Date.now());
 let report = { stamp, checks: [], screenshots: [], observations: {} };
@@ -89,12 +89,14 @@ try {
     await run(`rows(root)[0].click();`); await wait(`!!detail(root).querySelector('.mnemobard-recovery-preview')`);
     report.motifInspector = await run(`const d=detail(root);return{path:rows(root)[0].dataset.path,summary:facts(d,'.mnemobard-recovery-summary'),preview:facts(d,'.mnemobard-recovery-preview'),actions:[...d.querySelectorAll('[aria-label="Checkpoint actions"] button')].map(b=>b.textContent)};`);
     await shot('05-recovery-motif-inspector', `root.querySelector('.mnemobard-recovery-panes')`);
-    await run(`set(root,'Module','all');set(root,'Search checkpoints',${q(fixture.malformed.split('/').pop().replace('.json', ''))});`); await wait(`settled(root)&&rows(root).length===1`);
+    await run(`set(root,'Module','all');set(root,'Search checkpoints',${q(fixture.malformed.split('/').at(-2))});`); await wait(`settled(root)&&rows(root).length===1`);
     await run(`rows(root)[0].click();`); await wait(`!!detail(root).querySelector('.mnemobard-recovery-summary')`);
     report.malformed = await run(`const d=detail(root);return{row:rows(root)[0].textContent,integrity:facts(d,'.mnemobard-recovery-summary').Integrity,meaning:d.querySelector('.mnemobard-recovery-meaning').textContent,canLoad:d.textContent.includes('Load draft')};`);
     await shot('08-recovery-malformed-checkpoint', `root.querySelector('.mnemobard-recovery-panes')`);
     await run(`set(root,'Search checkpoints','');`); await wait(`settled(root)`);
-    await run(`const r=rows(root).find(b=>b.textContent.includes('Original missing')&&b.dataset.integrity==='Readable');assert(r,'no readable missing-source row on page 1');r.click();`); await wait(`!!detail(root).querySelector('.mnemobard-recovery-summary')`);
+    // Page through the register (newest first) like a user until a readable checkpoint of a missing original appears.
+    for (let page = 0; page < 60 && !(await run(`return rows(root).some(b=>b.textContent.includes('Original missing')&&b.dataset.integrity==='Readable');`)); page++) { await run(`click('Next page',root);`); await wait(`settled(root)`); }
+    await run(`const r=rows(root).find(b=>b.textContent.includes('Original missing')&&b.dataset.integrity==='Readable');assert(r,'no readable missing-source row in the first 60 pages');r.click();`); await wait(`!!detail(root).querySelector('.mnemobard-recovery-summary')`);
     report.missing = await run(`const d=detail(root);return{doc:facts(d,'.mnemobard-recovery-summary')['Original document'],meaning:d.querySelector('.mnemobard-recovery-meaning').textContent,canLoad:d.textContent.includes('Load draft'),actions:[...d.querySelectorAll('[aria-label="Checkpoint actions"] button')].map(b=>b.textContent)};`);
     await shot('07-recovery-missing-source', `root.querySelector('.mnemobard-recovery-panes')`);
     if (report.motifInspector.summary.Module !== 'MOTIF' || !report.motifInspector.preview.Notes || !report.motifInspector.actions.includes('Open in MOTIF recovery') || report.motifInspector.actions.includes('Load draft without saving')
@@ -107,11 +109,11 @@ try {
     if (before.digest !== after.digest) throw Error('Files changed during browsing/inspection');
     await check('R14', `Every MNEMOBARD vault file identical (path, size, mtime) before and after browsing and inspecting: ${after.files} files, digest ${after.digest.slice(0, 16)}…`);
 
-    // Narrow layouts and light theme with the inspector open; keyboard
+    // Narrow layouts and light theme with the inspector open; keyboard. "stacked": since 4J the narrow inspector sits inline under its row.
     report.layouts = {};
     for (const width of [1366, 980, 680]) {
       await size(width);
-      report.layouts[width] = await run(`const r=cv.contentEl.getBoundingClientRect(),controls=[...root.querySelectorAll('input,select,button')];return{overflowX:Math.max(0,cv.contentEl.scrollWidth-cv.contentEl.clientWidth),unreachable:controls.filter(e=>{const b=e.getBoundingClientRect();return b.width===0||b.left<r.left-1||b.right>r.right+1;}).map(e=>e.getAttribute('aria-label')??e.textContent),stacked:root.querySelector('.mnemobard-recovery-detail').getBoundingClientRect().top>root.querySelector('.mnemobard-recovery-list').getBoundingClientRect().bottom-1};`);
+      report.layouts[width] = await run(`const r=cv.contentEl.getBoundingClientRect(),controls=[...root.querySelectorAll('input,select,button')];return{overflowX:Math.max(0,cv.contentEl.scrollWidth-cv.contentEl.clientWidth),unreachable:controls.filter(e=>{const b=e.getBoundingClientRect();return b.width===0||b.left<r.left-1||b.right>r.right+1;}).map(e=>e.getAttribute('aria-label')??e.textContent),stacked:!!root.querySelector('li > .mnemobard-recovery-detail')||root.querySelector('.mnemobard-recovery-detail').getBoundingClientRect().top>root.querySelector('.mnemobard-recovery-list').getBoundingClientRect().bottom-1};`);
       if (width === 980) await shot('09-recovery-narrow-980', `root.querySelector('.mnemobard-recovery-controls')`);
       if (width === 680) await shot('10-recovery-narrow-680', `detail(root)`);
     }
@@ -191,7 +193,7 @@ try {
     await theme('obsidian'); const F = report.fixture, disk = await vaultState();
     await activate('canvas'); await run(`click('Composition recovery',cv.contentEl);`); await wait(`!!reg&&settled(root)&&rows(root).length===25`);
     report.restartRegister = { count: await run(`return count(root);`), disk: disk.recovery };
-    await run(`set(root,'Search checkpoints',${q(F.malformed.split('/').pop().replace('.json', ''))});`); await wait(`settled(root)&&rows(root).length===1`);
+    await run(`set(root,'Search checkpoints',${q(F.malformed.split('/').at(-2))});`); await wait(`settled(root)&&rows(root).length===1`);
     report.restartRegister.malformedListed = true; await run(`set(root,'Search checkpoints','');`); await wait(`settled(root)`);
     await shot('14-recovery-after-restart', `root`);
     report.restartData = await run(`const s=(await services.repository.read(${q(F.motifA)})).entity.data.notes,l=(await services.repository.read(${q(F.large10000)})).entity.data.notes;return{small:JSON.stringify(s)===${q(report.small.final)},largeNotes:l.length,largeJson:JSON.stringify(l)};`);

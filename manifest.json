@@ -1,9 +1,9 @@
 {
   "id": "mnemobard",
-  "name": "MNEMOBARD",
-  "version": "0.1.0",
+  "name": "MNEMOTOAD",
+  "version": "0.2.0",
   "minAppVersion": "1.15.0",
-  "description": "Remember sounds, musical fragments, and composition plans in your vault.",
-  "author": "MNEMOBARD",
+  "description": "Remember what you've yet to compose. Archive sounds, sketch MIDI motifs and arrange them in your vault.",
+  "author": "Jason Persinger",
   "isDesktopOnly": true
 }

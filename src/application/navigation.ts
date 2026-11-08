@@ -45,7 +45,7 @@ export class NavigationCoordinator {
     if (this.trace.length > 500) this.trace.splice(0, this.trace.length - 500);
   }
   async navigate(from: ModuleId, to: ModuleId, id: string, steps: NavigationSteps, focus?: string): Promise<NavigationOutcome> {
-    if (this.closed) throw new FoundationError('disposed', 'MNEMOBARD is unloading; navigation was not started.');
+    if (this.closed) throw new FoundationError('disposed', 'MNEMOTOAD is unloading; navigation was not started.');
     const request = ++this.requests, controller = new AbortController(), previous = this.latest.get(to);
     if (previous) { previous.controller.abort(); this.note({ request: previous.request, phase: 'superseded', from: previous.from, to, target: previous.target, detail: `by request ${request}` }); }
     this.latest.set(to, { request, controller, from, target: id });

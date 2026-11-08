@@ -1,9 +1,10 @@
 import { mkdir, readFile, writeFile, copyFile, lstat, realpath } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { devVaultName } from './dev-target.mjs';
 
 const root = await realpath(join(dirname(fileURLToPath(import.meta.url)), '..'));
-const vault = join(root, 'dev-vault');
+const vault = join(root, devVaultName);
 const markerText = 'MNEMOBARD disposable development vault v1\n';
 async function exists(path) {
   try { return await lstat(path); } catch (error) { if (error.code === 'ENOENT') return undefined; throw error; }

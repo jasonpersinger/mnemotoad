@@ -9,6 +9,7 @@ async function fixture() {
   const area=join(process.cwd(),'.runtime','script-fixtures'); await mkdir(area,{recursive:true});
   const root=await mkdtemp(join(area,'dev-vault-')); await mkdir(join(root,'scripts'));
   await copyFile(join(process.cwd(),'scripts/dev-vault.mjs'),join(root,'scripts/dev-vault.mjs'));
+  await copyFile(join(process.cwd(),'scripts/dev-target.mjs'),join(root,'scripts/dev-target.mjs')); // its vault-selection module (RC)
   for(const file of ['main.js','manifest.json','styles.css'])await writeFile(join(root,file),'fixture');
   return {root,run:()=>execute(process.execPath,[join(root,'scripts/dev-vault.mjs')])};
 }

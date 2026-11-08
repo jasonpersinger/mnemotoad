@@ -62,13 +62,13 @@ export default class MnemobardPlugin extends Plugin {
       this.addCommand({ id: `open-${module}`, name: `Open ${MODULE_LABELS[module]}`,
         checkCallback: checking => {
           if (!modules.enabled(module)) return false;
-          if (!checking) void modules.open(module).catch(error => { if (this.active) new Notice(`Could not open MNEMOBARD: ${messageOf(error)}`); });
+          if (!checking) void modules.open(module).catch(error => { if (this.active) new Notice(`Could not open MNEMOTOAD: ${messageOf(error)}`); });
           return true;
         } });
     }
     this.addSettingTab(new MnemobardSettingTab(this.app, this, settings, (id, enabled) => this.setModule(id, enabled)));
     this.app.workspace.onLayoutReady(() => {
-      if (this.active && generation === this.generation) void index.start().catch(error => { if (this.active && generation === this.generation) new Notice(`MNEMOBARD indexing failed: ${messageOf(error)}`); });
+      if (this.active && generation === this.generation) void index.start().catch(error => { if (this.active && generation === this.generation) new Notice(`MNEMOTOAD indexing failed: ${messageOf(error)}`); });
     });
   }
   async setModule(id: ModuleId, enabled: boolean): Promise<void> {

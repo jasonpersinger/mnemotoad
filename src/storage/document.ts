@@ -174,7 +174,7 @@ function retainExtensions(previous: unknown, next: unknown, context = 'data'): u
 export function updateEntityDocument(source: string, expectedSource: string, value: Entity): string {
   if (source !== expectedSource) throw new FoundationError('conflict', 'The note changed elsewhere. Read the latest version or save your draft as a recovery copy.');
   const current = parseEntityDocument(source), fm = frontmatter(source);
-  if (!current || !fm) throw new FoundationError('invalid', 'The source is no longer a supported MNEMOBARD note.');
+  if (!current || !fm) throw new FoundationError('invalid', 'The source is no longer a supported MNEMOTOAD note.');
   let next = validateEntity(value);
   if (next.id !== current.entity.id || next.kind !== current.entity.kind) throw new FoundationError('invalid', 'Entity identity and kind cannot change during an update.');
   if (!isLibraryEntity(next) && !isLibraryEntity(current.entity)) next = validateEntity({ ...next, data: retainExtensions(current.entity.data, next.data) });

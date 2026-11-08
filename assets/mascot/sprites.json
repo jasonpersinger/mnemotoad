@@ -1,0 +1,103 @@
+{
+  "size": 24,
+  "palette": {
+    "K": "#070707",
+    "U": "#28231c",
+    "G": "#317b22",
+    "V": "#801a86",
+    "Y": "#f4e409"
+  },
+  "transparent": ".",
+  "concepts": [
+    {
+      "id": "a-familiar",
+      "name": "The Familiar",
+      "rows": [
+        "........................",
+        "........................",
+        "........................",
+        "........................",
+        "........................",
+        "....GGGG........GGGG....",
+        "...GGGGGG......GGGGGG...",
+        "..GGKKYGGGGGGGGGGKKYGG..",
+        "..GGKKKGGGGGGGGGGKKKGG..",
+        ".GGGKKKGGGGGGGGGGKKKGGG.",
+        ".GGGGGGGGGGGGGGGGGGGGGG.",
+        ".GGGGGGKKKKKKKKKKGGGGGG.",
+        ".GGGGGGGGGGGGGGGGGGGGGG.",
+        "GGGGGGGGGGGGGGGGGGGGGGGG",
+        "GGGGGGUUGGGGGGGGGGUGGGGG",
+        "GGGGGGUUGGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGUUGGGGGGGGG",
+        ".GGGGGGGGGGGGUUGGGGGGGG.",
+        "..GGGGGGGGGGGGGGGGGGGG..",
+        ".GGGG..GGGGGGGGGG..GGGG.",
+        "GG.GG...GGGGGGGG...GG.GG",
+        "GG..G..............G..GG",
+        "........................",
+        "........................"
+      ]
+    },
+    {
+      "id": "b-grump",
+      "name": "The Grump",
+      "rows": [
+        "........................",
+        "........................",
+        "........................",
+        "........................",
+        "........................",
+        "........................",
+        "........................",
+        "........................",
+        "..GGGGG..........GGGGG..",
+        ".GGGGGGG........GGGGGGG.",
+        ".GGKYKGGGGGGGGGGGGKYKGG.",
+        "GGGKKKKGGGGGGGGGGKKKKGGG",
+        "GGGGGGGGGGGGGGGGGGGGGGGG",
+        "GGGGGKKKKKKKKKKKKKKGGGGG",
+        "GGGGKGGGGGGGGGGGGGGGKGGG",
+        "GGGGGGGGGGGGGGGGGGGGGGGG",
+        "GGGGGUUGGGGGGGGGGGGUGGGG",
+        "GGGGGUUGGGGGUUGGGGGGGGGG",
+        ".GGGGGGGGGGGUUGGGGGGGGG.",
+        "GGG.GGGGGGGGGGGGGGGG.GGG",
+        "G.G..................G.G",
+        "........................",
+        "........................",
+        "........................"
+      ]
+    },
+    {
+      "id": "c-watcher",
+      "name": "The Watcher",
+      "rows": [
+        "........................",
+        "........................",
+        "........................",
+        "....GGGGGG....GGGGGG....",
+        "...GGGGGGGG..GGGGGGGG...",
+        "...GGKKKYGG..GGKKKYGG...",
+        "...GGKKKKGGGGGGKKKKGG...",
+        "...GGKKKKGGGGGGKKKKGG...",
+        "...GGKKKKGGGGGGKKKKGG...",
+        "...GGGGGGGGGGGGGGGGGG...",
+        "...GGGGGGGGGGGGGGGGGG...",
+        "...GGGGGGGKKKKGGGGGGG...",
+        "..GGGGGGGGGGGGGGGGGGGG..",
+        "..GGGGGUGGGGGGGGGUUGGG..",
+        "..GGGGGGGGGGGGGGGUUGGG..",
+        "..GGGGGGGGGUUGGGGGGGGG..",
+        "..GGGGGGGGGUUGGGGGGGGG..",
+        "...GGGGGGGGGGGGGGGGGG...",
+        "..GGGG.GGGGGGGGGG.GGGG..",
+        ".GGGG...GGGGGGGG...GGGG.",
+        ".G.GG..GG......GG..GG.G.",
+        "........................",
+        "........................",
+        "........................"
+      ]
+    }
+  ]
+}

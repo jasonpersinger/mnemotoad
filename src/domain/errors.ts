@@ -10,7 +10,7 @@ export class FoundationError extends Error {
 }
 
 export function checkActive(signal?: AbortSignal, disposed = false): void {
-  if (disposed) throw new FoundationError('disposed', 'This service is closed. Reopen MNEMOBARD.');
+  if (disposed) throw new FoundationError('disposed', 'This service is closed. Reopen MNEMOTOAD.');
   if (signal?.aborted) throw new FoundationError('cancelled', 'Operation cancelled; check the file before retrying any submitted write.');
 }
 

@@ -337,3 +337,7 @@ MNEMOBARD_RECOVERY_DIR=output/mnemobard/milestone-4j node scripts/mnemobard-4i-r
 
 - Buttons inside closed `<details>` disclosures are still clickable programmatically; native scripts keep clicking by label.
 - The CANVAS motif picker lists a bounded set of motifs: search before choosing a new one.
+
+## Second disposable vault (MNEMOTOAD RC)
+
+`MNEMOTOAD_DEV_VAULT=dev-vault-<suffix>` makes `dev:vault`, `dev:obsidian`, `obsidian-cdp.mjs` and `stop-dev-obsidian.mjs` target another marked disposable vault inside the repository, with its own isolated profile `.runtime-<suffix>` (both git-ignored). Only one instance can run at a time (CDP port 9227). The RC fresh-install check used `dev-vault-fresh`. Mascot tooling: `node scripts/mascot-generate.mjs`, `node scripts/mascot-verify.mjs [--json out]`, `python3 scripts/mascot-compare.py <reference.png>` (review sheets only, needs Pillow).

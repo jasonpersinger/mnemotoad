@@ -13,7 +13,7 @@ export class AssetInspector extends Modal {
     const file = this.app.vault.getAbstractFileByPath(this.path);
     if (!(file instanceof TFile)) { element(root, 'p', 'File missing. Select a replacement in PATCHBOOK.'); return; }
     element(root, 'p', `${file.name} · ${file.stat.size} bytes · ${file.extension || 'unknown file type'}`);
-    element(root, 'p', 'Preset/configuration files are inert references. MNEMOBARD never executes them or launches an external application. Use the instrument’s own preset loader when needed.');
+    element(root, 'p', 'Preset/configuration files are inert references. MNEMOTOAD never executes them or launches an external application. Use the instrument’s own preset loader when needed.');
     const result = element(root, 'pre', '', 'mnemobard-asset-text');
     const inspect = button(root, 'Inspect as text', () => {
       inspect.disabled = true;

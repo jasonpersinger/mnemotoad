@@ -4,7 +4,7 @@ export class MidiError extends Error { override name = 'MidiError'; }
 export interface RawMidiEvent { tick: number; status: number; channel?: number; metaType?: number; data: Uint8Array }
 export interface MidiStructure { format: 0 | 1; ppq: number; tracks: { events: RawMidiEvent[]; endTick: number }[]; eventCount: number; extendedHeader: boolean }
 export function scanMidi(bytes: Uint8Array): MidiStructure {
-  if (bytes.length > MIDI_LIMITS.bytes) throw new MidiError('MIDI exceeds the2MiB input limit. Split the file outside MNEMOBARD.');
+  if (bytes.length > MIDI_LIMITS.bytes) throw new MidiError('MIDI exceeds the2MiB input limit. Split the file outside MNEMOTOAD.');
   let at = 0, bound = bytes.length, count = 0;
   const fail = (message: string): never => { throw new MidiError(`${message} (byte${at}). No motif was created.`); };
   const byte = (): number => { if (at >= bound) return fail('Truncated MIDI payload'); return bytes[at++] ?? fail('Missing byte'); };

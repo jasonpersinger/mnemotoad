@@ -16,7 +16,7 @@ export class ModuleController {
   constructor(flags: Record<ModuleId, boolean>, private readonly workspace: WorkspacePort) { this.flags = { ...flags }; }
   enabled(id: ModuleId): boolean { return !this.closed && this.flags[id]; }
   open(id: ModuleId): Promise<void> {
-    if (!this.enabled(id)) return Promise.reject(new FoundationError('disposed', 'This module is disabled. Enable its interface in MNEMOBARD settings.'));
+    if (!this.enabled(id)) return Promise.reject(new FoundationError('disposed', 'This module is disabled. Enable its interface in MNEMOTOAD settings.'));
     const existing = this.opening.get(id); if (existing) return existing;
     const generation = this.generations[id];
     const pending = this.workspace.open(VIEW_TYPES[id], () => this.enabled(id) && generation === this.generations[id]);

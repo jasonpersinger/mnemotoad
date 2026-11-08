@@ -5,7 +5,7 @@
     "strict": true, "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true, "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true, "skipLibCheck": true,
-    "noEmit": true, "types": ["node", "vitest/globals"]
+    "noEmit": true, "resolveJsonModule": true, "types": ["node", "vitest/globals"]
   },
   "include": ["src", "experiments", "tests", "benchmarks", "vitest.config.ts"]
 }

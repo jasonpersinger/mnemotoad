@@ -1,0 +1,131 @@
+{
+  "size": "24×24",
+  "scale": 8,
+  "canonical": [
+    "#070707",
+    "#28231c",
+    "#317b22",
+    "#801a86",
+    "#f4e409"
+  ],
+  "concepts": [
+    {
+      "concept": "b1-skeptic",
+      "name": "B1 — The Skeptic",
+      "native": {
+        "path": "output/mascot-refinement/b1-skeptic.png",
+        "width": 24,
+        "height": 24,
+        "transparent": 314,
+        "opaque": 262,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      },
+      "preview": {
+        "path": "output/mascot-refinement/b1-skeptic@8x.png",
+        "width": 192,
+        "height": 192,
+        "transparent": 20096,
+        "opaque": 16768,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      }
+    },
+    {
+      "concept": "b2-curmudgeon",
+      "name": "B2 — The Curmudgeon",
+      "native": {
+        "path": "output/mascot-refinement/b2-curmudgeon.png",
+        "width": 24,
+        "height": 24,
+        "transparent": 314,
+        "opaque": 262,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      },
+      "preview": {
+        "path": "output/mascot-refinement/b2-curmudgeon@8x.png",
+        "width": 192,
+        "height": 192,
+        "transparent": 20096,
+        "opaque": 16768,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      }
+    },
+    {
+      "concept": "b3-weathered",
+      "name": "B3 — The Weathered Grump",
+      "native": {
+        "path": "output/mascot-refinement/b3-weathered.png",
+        "width": 24,
+        "height": 24,
+        "transparent": 314,
+        "opaque": 262,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      },
+      "preview": {
+        "path": "output/mascot-refinement/b3-weathered@8x.png",
+        "width": 192,
+        "height": 192,
+        "transparent": 20096,
+        "opaque": 16768,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      }
+    }
+  ],
+  "sheet": {
+    "path": "output/mascot-refinement/concept-sheet.png",
+    "width": 608,
+    "height": 192,
+    "transparent": 66432,
+    "opaque": 50304,
+    "partialAlpha": 0,
+    "colours": [
+      "#070707",
+      "#28231c",
+      "#317b22",
+      "#f4e409"
+    ],
+    "problems": []
+  },
+  "pass": true
+}

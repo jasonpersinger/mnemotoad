@@ -40,7 +40,7 @@ export class MotifView extends ModuleView {
   private async openView(): Promise<void> {
     this.release(); this.active = true; this.lifetime = new AbortController(); const root = this.contentEl; root.replaceChildren(); root.classList.add('mnemobard-module', 'mnemobard-motif');
     const services = this.available; if (!services) { element(root, 'p', 'MOTIF is disabled. Musical notes remain in the vault.'); return; }
-    const { actions } = moduleHeader(root, { className: 'mnemobard-motif-heading', eyebrow: 'MNEMOBARD / COMPOSITION APPARATUS', title: 'MOTIF', tagline: 'A place for the phrase before the piece.' });
+    const { actions } = moduleHeader(root, { className: 'mnemobard-motif-heading', eyebrow: 'MNEMOTOAD / COMPOSITION APPARATUS', title: 'MOTIF', tagline: 'A place for the phrase before the piece.' });
     const create = button(actions, 'New motif', () => { void this.newMotif().catch(error => this.fail(error)); }, 'mod-cta'); create.disabled = true;
     button(actions, 'Browse motifs', () => { if (this.browserDetails) this.browserDetails.open = !this.browserDetails.open; });
     button(actions, 'Motif recovery', () => this.recovery());

@@ -122,7 +122,9 @@ export class RecoveryInspector<T extends Entity, S> {
   private row(entry: CatalogEntry): void {
     const item = element(this.list, 'li'), d = entry.details, module = entryModule(entry), name = entryTitle(entry) ?? (module === 'Unknown' ? 'Unknown document' : `Unnamed ${module} document`);
     const time = entryTime(entry), type = d ? d.type : 'Type not read yet', integrity = d ? d.integrity : '';
-    const availability = entry.availability === 'ready' ? '' : entry.availability === 'missing' ? 'Original missing' : entry.availability === 'unknown' ? '' : `Original ${entry.availability}`;
+    // A draft of a record that was never saved has no original to be missing (the inspector says "Never saved"); say so.
+    const neverSaved = entry.availability === 'missing' && d?.type === 'Unsaved draft of a new record';
+    const availability = entry.availability === 'ready' ? '' : neverSaved ? 'Never saved' : entry.availability === 'missing' ? 'Original missing' : entry.availability === 'unknown' ? '' : `Original ${entry.availability}`;
     const b = button(item, '', () => { void this.inspect(entry.path); }); b.classList.add('mnemobard-recovery-row'); b.dataset.path = entry.path; b.dataset.module = module;
     if (d) b.dataset.integrity = d.integrity;
     element(b, 'strong', name);

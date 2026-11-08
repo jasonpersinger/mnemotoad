@@ -130,7 +130,7 @@ describe('4I register UI and read-only inspector', () => {
     expect(root.querySelector('.mnemobard-recovery-count')?.textContent).toBe('Showing 1–11 of 11 checkpoints (filtered from 60)'); // page reset to 1
     set(root, 'Search checkpoints', ''); set(root, 'Page size', '50'); await settle(); expect(rows(root)).toHaveLength(50);
     set(root, 'Search checkpoints', 'zzz'); await settle(); expect(root.textContent).toContain('No checkpoints match'); press(root, 'Clear search and filters'); await settle(); expect(rows(root)).toHaveLength(50);
-    const first = rows(root)[0]; expect(first?.getAttribute('aria-label')).toMatch(/^Phrase-59\. MOTIF, checkpoint .+, Unsaved draft of a new record, Readable, Original missing\. Inspect checkpoint\.$/);
+    const first = rows(root)[0]; expect(first?.getAttribute('aria-label')).toMatch(/^Phrase-59\. MOTIF, checkpoint .+, Unsaved draft of a new record, Readable, Never saved\. Inspect checkpoint\.$/); // RC: a never-saved draft has no missing original
   });
   it('shows an empty state for an empty register', async () => {
     const f = await fixture(), { root } = register(f); await settle();

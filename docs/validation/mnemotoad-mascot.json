@@ -1,0 +1,167 @@
+{
+  "size": "24×24",
+  "scale": 8,
+  "canonical": [
+    "#070707",
+    "#28231c",
+    "#317b22",
+    "#801a86",
+    "#f4e409"
+  ],
+  "concepts": [
+    {
+      "concept": "a-familiar",
+      "name": "The Familiar",
+      "native": {
+        "path": "assets/mascot/a-familiar.png",
+        "width": 24,
+        "height": 24,
+        "transparent": 250,
+        "opaque": 326,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      },
+      "preview": {
+        "path": "assets/mascot/a-familiar@8x.png",
+        "width": 192,
+        "height": 192,
+        "transparent": 16000,
+        "opaque": 20864,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      }
+    },
+    {
+      "concept": "b-grump",
+      "name": "The Grump",
+      "native": {
+        "path": "assets/mascot/b-grump.png",
+        "width": 24,
+        "height": 24,
+        "transparent": 314,
+        "opaque": 262,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      },
+      "preview": {
+        "path": "assets/mascot/b-grump@8x.png",
+        "width": 192,
+        "height": 192,
+        "transparent": 20096,
+        "opaque": 16768,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      }
+    },
+    {
+      "concept": "c-watcher",
+      "name": "The Watcher",
+      "native": {
+        "path": "assets/mascot/c-watcher.png",
+        "width": 24,
+        "height": 24,
+        "transparent": 262,
+        "opaque": 314,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      },
+      "preview": {
+        "path": "assets/mascot/c-watcher@8x.png",
+        "width": 192,
+        "height": 192,
+        "transparent": 16768,
+        "opaque": 20096,
+        "partialAlpha": 0,
+        "colours": [
+          "#070707",
+          "#28231c",
+          "#317b22",
+          "#f4e409"
+        ],
+        "problems": []
+      }
+    }
+  ],
+  "sheet": {
+    "path": "assets/mascot/concept-sheet.png",
+    "width": 608,
+    "height": 192,
+    "transparent": 59008,
+    "opaque": 57728,
+    "partialAlpha": 0,
+    "colours": [
+      "#070707",
+      "#28231c",
+      "#317b22",
+      "#f4e409"
+    ],
+    "problems": []
+  },
+  "mascot": {
+    "id": "b2-curmudgeon",
+    "name": "The Curmudgeon",
+    "sha256": "56b47400c0f133d1fc6b6ab3090ae28e14509c055024c914645096d49c0e2bb2",
+    "native": {
+      "path": "assets/mascot/mnemotoad-mascot.png",
+      "width": 24,
+      "height": 24,
+      "transparent": 314,
+      "opaque": 262,
+      "partialAlpha": 0,
+      "colours": [
+        "#070707",
+        "#28231c",
+        "#317b22",
+        "#f4e409"
+      ],
+      "problems": []
+    },
+    "preview": {
+      "path": "assets/mascot/mnemotoad-mascot@8x.png",
+      "width": 192,
+      "height": 192,
+      "transparent": 20096,
+      "opaque": 16768,
+      "partialAlpha": 0,
+      "colours": [
+        "#070707",
+        "#28231c",
+        "#317b22",
+        "#f4e409"
+      ],
+      "problems": []
+    },
+    "problems": []
+  },
+  "pass": true
+}

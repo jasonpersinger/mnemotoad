@@ -3,17 +3,18 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { devVaultName, runtimeName } from './dev-target.mjs';
 
-const root=await realpath(fileURLToPath(new URL('..',import.meta.url))), vault=join(root,'dev-vault');
+const root=await realpath(fileURLToPath(new URL('..',import.meta.url))), vault=join(root,devVaultName);
 if((await lstat(vault)).isSymbolicLink()||(await lstat(join(vault,'.mnemobard-disposable'))).isSymbolicLink())throw new Error('Refusing a symlinked disposable vault/marker.');
 if(await readFile(join(vault,'.mnemobard-disposable'),'utf8')!=='MNEMOBARD disposable development vault v1\n')throw new Error('Prepare the marked dev-vault first.');
-for(const relative of ['.runtime','.runtime/config','.runtime/config/obsidian','.runtime/cache','.runtime/data','.runtime/run']) {
+for(const relative of ['','/config','/config/obsidian','/cache','/data','/run'].map(p=>runtimeName+p)) {
   const path=join(root,relative);let stat;
   try {stat=await lstat(path);}catch(error){if(error.code!=='ENOENT')throw error;}
   if(stat?.isSymbolicLink()||(stat&&!stat.isDirectory()))throw new Error(`Refusing unexpected profile path: ${path}`);
   await mkdir(path,{recursive:true,mode:0o700});
 }
-const profile=join(root,'.runtime/config/obsidian'), registry=join(profile,'obsidian.json');
+const profile=join(root,runtimeName,'config/obsidian'), registry=join(profile,'obsidian.json');
 let existing;
 try {
   if((await lstat(registry)).isSymbolicLink())throw new Error('Refusing registry symlink');
@@ -27,7 +28,7 @@ if(existing) {
 }
 // 4E: electron43 43.8.7 auto-selects Wayland, whose socket is not in the isolated XDG_RUNTIME_DIR; pin X11 (XWayland) per launch.
 const child=spawn('obsidian',['--ozone-platform=x11',`--user-data-dir=${profile}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=9227','--disable-gpu','--no-first-run'],{
-  stdio:'inherit',env:{...process.env,XDG_CONFIG_HOME:join(root,'.runtime/config'),XDG_CACHE_HOME:join(root,'.runtime/cache'),XDG_DATA_HOME:join(root,'.runtime/data'),XDG_RUNTIME_DIR:join(root,'.runtime/run'),GSETTINGS_BACKEND:'memory'},
+  stdio:'inherit',env:{...process.env,XDG_CONFIG_HOME:join(root,runtimeName,'config'),XDG_CACHE_HOME:join(root,runtimeName,'cache'),XDG_DATA_HOME:join(root,runtimeName,'data'),XDG_RUNTIME_DIR:join(root,runtimeName,'run'),GSETTINGS_BACKEND:'memory'},
 });
 child.on('error',error=>{console.error(`Cannot launch the isolated Obsidian desktop: ${error.message}`);process.exitCode=1;});
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{child.kill(signal);});

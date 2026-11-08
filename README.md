@@ -1,58 +1,123 @@
-# MNEMOBARD
+# MNEMOTOAD
 
 *Remember what you’ve yet to compose.*
 
-MNEMOBARD is an offline-first musical workspace under development inside Obsidian for capturing sounds, developing MIDI fragments, and planning compositions. Initial support targets desktop Linux, Windows, and macOS.
+MNEMOTOAD is a local-first Obsidian plugin for organising instrument patches, composing musical motifs and arranging those motifs into larger compositions. Everything is stored in your vault as ordinary Markdown notes, so your records stay readable without the plugin.
 
-The plugin brings together three modules:
+MNEMOTOAD works alongside a DAW; it is not one. It does not host instrument plugins and does not render audio. Version **0.2.0**, by **Jason Persinger**, MIT License.
 
-| Module | Purpose | Planned capability |
-| --- | --- | --- |
-| PATCHBOOK | Remember sounds and their context | Instrument and preset records, parameters, effects chains, tags, screenshots, audio references, and links to musical ideas. |
-| MOTIF | Develop musical fragments | Piano-roll editing, basic synthesis for audition, tempo and meter, MIDI import/export, and musical transformations. |
-| CANVAS | Plan a composition | Motif lanes, repetition, patch associations, sections, recording references, development notes, and arrangement MIDI export. |
+## Features
 
-MNEMOBARD supports the work around a DAW. It does not host VST/AU instruments or provide a full audio production engine. CANVAS is the module’s product name; it does not imply use of Obsidian’s `.canvas` format or private Canvas APIs.
+### PATCHBOOK — sound and patch library
 
-## Product philosophy
+- Three registers: **instruments**, **patches** and **effects chains**.
+- **Instruments** record the manufacturer, type, platform or format, description and tags.
+- **Patches** record their instrument, category, character, parameters and tags, and link to effects chains.
+- **Effects chains** are ordered stages with parameter notes.
+- Search, filter by instrument, category, tag or visibility, and sort. Records can be archived without being deleted.
+- Link existing vault files (audio, screenshots, preset files), or import a confirmed copy of a local file. Preview one audio file at a time. Preset files are only inspected, never executed.
+- Each patch lists the motifs that use it.
 
-Keep musical knowledge in the vault, accessible without the plugin. Prefer Markdown, YAML, documented JSON, and standard MIDI. Preserve original audio, presets, and imported projects. Respect Obsidian’s navigation, themes, commands, and file behavior. Require no account, telemetry, or remote service.
+### MOTIF — musical phrase composition
 
-## Current status
+- A piano roll: draw, move and resize notes, select several, and build chords. Notes can also be edited exactly by number in bar:beat:tick and ticks.
+- Transformations: transpose, quantize starts and set velocity. Undo and redo.
+- Tempo, meter and PPQ per motif (new motifs use 120 BPM, 4/4, 960 PPQ).
+- **Audition** with a simple sine tone, for checking a phrase. It is not a synthesizer.
+- **MIDI import** (choose one track and channel; the source PPQ is kept, and anything that cannot be represented is reported first) and **MIDI export** to a new file.
+- Associate a motif with a PATCHBOOK patch, and jump between the two.
 
-**Milestone4B: CANVAS compiles, exports and auditions multitrack arrangements.** Create lanes/clips, review saved source revisions, configure MIDI routing, compile exact events, export Type1 MIDI and use Play/Pause/Seek/Stop. Existing Markdown, history, conflict protection and recovery remain authoritative. PATCHBOOK and MOTIF remain intact. See the [4B report](docs/MILESTONE_4B_REPORT.md) for verified behavior and limitations.
+### CANVAS — arrangement and composition planning
 
-The instrument/patch/effects-chain registers retain search/filter/sort, stable relationships, Markdown access, explicit Save, conflict protection and reversible archiving. **Manage assets** selects existing vault files, imports a confirmed local copy, repairs a missing reference or removes an association while keeping the file. **Play preview** auditions one recording at a time; no instrument is hosted or synthesized. **Recovery register** discovers checkpoints and loads a reviewed draft without saving it automatically.
+- Lanes of saved motifs, placed by exact bar:beat:tick, with repetitions. Clips can be moved, duplicated, deleted or moved between lanes.
+- Sections, markers and references to recordings in the vault, for organisation only. They never change the MIDI.
+- **Compile** to exact MIDI events, **audition** the arrangement (play, pause, resume, stop; sine tones), and **export multitrack MIDI** (Type 1).
+- **Source-revision protection:** when a saved motif changes, CANVAS asks you to review and acknowledge the change before compiling again. Unsaved MOTIF drafts are never used.
 
-Open **MNEMOBARD: Open PATCHBOOK**, create an instrument and patch, select assets, then **Save record** (or Ctrl/Cmd+S). Preview recording support depends on the host; synthetic WAV/MP3/OGG/FLAC passed Linux Obsidian1.15.0. Import limit100MiB; preview limit250MiB. Unknown/preset files open in inert inspection rather than an external executable. See the [2B report](docs/MILESTONE_2B_REPORT.md) for exact tests, screenshots and limitations.
+## Requirements
 
-Open **MNEMOBARD: Open MOTIF** → New motif. Draw notes/chords, drag or resize, use the note register for precise pitch/start/duration/velocity, then Play and Save motif. Defaults are120BPM,4/4,960PPQ. Existing source ticks remain exact. Different-pitch polyphony works; same-pitch overlaps are explicitly rejected. Recovery checkpoints are separate from saved notes. See the [3A report](docs/MILESTONE_3A_REPORT.md) and [actual screenshots](output/motif/milestone-3a/) for controls, validation and limits. Import selects one supported track/channel with explicit fidelity checks; export creates a new Type1 MIDI file. Transpose/quantize/velocity use existing history. See the [3B report](docs/MILESTONE_3B_REPORT.md) and [actual3B screenshots](output/motif/milestone-3b/). Advanced transforms/maps remain deferred.
+- Obsidian **1.15.0** or later, desktop. The plugin is marked desktop-only.
+- Validated on **Linux** (Obsidian 1.15.0). Windows and macOS have not been validated.
 
-Open **MNEMOBARD: Open CANVAS** → New composition → Add lane → Place motif. Select a clip for precise bar:beat:tick placement, repetition, duplication and source review. Use the lane manager and clip list for keyboard access. Saved motif revisions are live references; unsaved MOTIF notes are excluded. Inexact PPQ conversion blocks placement instead of rounding. See the [4A report](docs/MILESTONE_4A_REPORT.md) and [actual screenshots](output/canvas/milestone-4a/).
+## Installation
 
-Signed commit `3f5c67f` preserves the reviewed4A foundation; `50583e1`/`90eed00` retain3B/3A restoration points. Experiments are unchanged. Stop after4B:4C, legacy copying and publication require separate authorization. Final branding remains unapproved.
+MNEMOTOAD is not yet in the community plugin directory.
 
-`pnpm check` passes449 tests across37 files, typecheck, lint and production build. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and the guarded disposable-vault workflow. The basic musical workflow, cold restart, conflicts and recovery were validated in Linux Obsidian1.15.0; Windows/macOS, physical audio latency and screen-reader behavior remain unverified.
+1. Get the release files `main.js`, `manifest.json` and `styles.css`, or build them with `pnpm install && pnpm build`.
+2. Copy them into `<vault>/.obsidian/plugins/mnemobard/`. The folder name is the plugin ID; see [Compatibility identifiers](#compatibility-identifiers).
+3. In **Settings → Community plugins**, turn off Restricted mode if prompted, then enable **MNEMOTOAD**.
 
-The kickoff’s `/home/troubadour` path was corrected by the user to `~/troubadour` (`/home/jason/troubadour`). The [Milestone 0 audit](docs/TROUBADOUR_AUDIT.md) remains the read-only reference. No legacy source/tests/assets were copied, and no legacy reuse has been authorized. All foundation code was implemented independently.
+**Upgrading from MNEMOBARD 0.1.0:** replace the three files in the same folder and restart Obsidian. Records, settings, recovery checkpoints, hotkeys and open views carry over; nothing is migrated or rewritten. Tabs Obsidian has not loaded yet may show the old title until opened once.
 
-The existing root contained only documentation at the start of 1A. A local Git repository and a marked project-local `dev-vault` were created. Signed commit `70f45df` preserves the completed 1A baseline. See the [Milestone 1B report](docs/MILESTONE_1B_REPORT.md) for native measurements, limitations and proposed production choices. No remote, publication, system install or personal-vault changes occurred. Further implementation requires a separate prompt and review.
+## Basic usage
 
-## Read the proposal
+1. **MNEMOTOAD: Open PATCHBOOK** → Instruments → **New record** → **Save record**. Then create a patch and choose its instrument.
+2. **MNEMOTOAD: Open MOTIF** → **New motif**. Under **PATCHBOOK context**, associate the patch. Add notes, **Play motif**, then **Save motif**.
+3. **MNEMOTOAD: Open CANVAS** → **New composition** → **Add lane** → **Place motif**, and set the repetitions. Then **Compile arrangement**, **Play arrangement** and **Save composition**.
+4. Export with **Export MIDI** (MOTIF) or **Export arrangement MIDI** (CANVAS).
 
-- [Product specification and MVP acceptance criteria](docs/PRODUCT_SPEC.md)
-- [Architecture and service boundaries](docs/ARCHITECTURE.md)
-- [Data model and file examples](docs/DATA_MODEL.md)
-- [Roadmap, dependencies, and approval gates](docs/ROADMAP.md)
-- [Interface and design direction](docs/DESIGN_DIRECTION.md)
-- [Technical research and official references](docs/TECHNICAL_RESEARCH.md)
-- [TROUBADOUR audit status and investigation plan](docs/TROUBADOUR_AUDIT.md)
-- [Engineering risks and feasibility experiments](docs/RISKS.md)
-- [Decision register](docs/DECISIONS.md)
-- [Milestone 0 report](docs/MILESTONE_0_REPORT.md)
+See the [user guide](docs/USER_GUIDE.md) for details.
 
-Future agents must read [AGENTS.md](AGENTS.md). Internal research records are [task_plan.md](task_plan.md), [findings.md](findings.md), and [progress.md](progress.md).
+## Data storage
 
-## Licensing
+Records are Markdown notes with YAML front matter. Motifs and compositions also contain a fenced JSON data block. They live under `MNEMOBARD/` in your vault: `Instruments/`, `Patches/`, `Effects Chains/`, `Motifs/`, `Compositions/`, `Assets/` (imported copies), `Exports/` and `Recovery/`. Your own writing in a note’s body and unknown front-matter fields are kept on every save. MNEMOTOAD never modifies, moves or deletes your audio, presets or imported MIDI.
 
-MNEMOBARD’s distribution license has not been selected. Dependency licenses and TROUBADOUR ownership require review before adopting code or publishing. The presence of these files does not establish redistribution rights for any legacy or third-party material.
+## Backup and recovery
+
+- Saving is explicit (a Save button or Ctrl/Cmd+S) and protected. If a note changed on disk since you opened it, Save is blocked and your edits are kept.
+- Unsaved drafts and pre-save backups are written as checkpoints in `MNEMOBARD/Recovery/`. They are never deleted or pruned automatically.
+- The **recovery register** in each module lets you search and inspect checkpoints read-only. Loading one needs explicit confirmation and only opens an unsaved draft.
+- Your vault remains your backup unit: back it up as you would any other notes.
+
+## MIDI interoperability
+
+- Note data only, with one tempo and one meter per motif or composition, at exact integer ticks (compositions use 960 PPQ).
+- Imports are limited to 2 MiB, 128 tracks and 50,000 events.
+- Exports are always new files. Arrangement exports are Type 1: a conductor track, then note tracks for the lanes that contain notes, keeping the composition’s full length.
+- Verified in **REAPER 7.84 on Linux**: tick *Expand MIDI tracks* and *Import MIDI tempo map* when importing. REAPER trims each item to its last note; the file keeps the full length. Other DAWs have not been tested.
+
+## Known limitations
+
+- MNEMOTOAD is not a DAW. Audition uses sine tones and is not equivalent to an external synthesizer. MIDI export contains no rendered audio.
+- Instrument and patch records are organisational references; sounds are not hosted or loaded.
+- Fixed tempo and meter; no controllers, program changes or pitch bend.
+- Windows, macOS and screen-reader use have not been validated.
+- Internal storage identifiers keep the former name MNEMOBARD for compatibility (below).
+- More in the [user guide](docs/USER_GUIDE.md#known-limitations).
+
+## Privacy and local-first behaviour
+
+No account, telemetry, analytics, network service or synchronisation. MNEMOTOAD reads and writes only inside your vault, and only when you act. Preset and other files are never executed.
+
+## Compatibility identifiers
+
+The product was named MNEMOBARD before 0.2.0. These identifiers keep that spelling so existing vaults keep working:
+
+| Identifier | Reason |
+| --- | --- |
+| Plugin ID `mnemobard` | Keys the plugin folder, settings and enabled state |
+| View types `mnemobard-*` | Saved layouts reopen views by type |
+| Command IDs `mnemobard:open-*` | Hotkeys are bound to them |
+| Folder `MNEMOBARD/` | Existing records live there |
+| Front-matter keys `mnemobard_*`, data blocks `mnemobard-motif` / `mnemobard-composition` | The storage format |
+| Recovery formats `mnemobard-recovery`, `mnemobard-editor-draft` | Existing checkpoints stay readable |
+| MIDI conductor track name `MNEMOBARD conductor` | Part of the exact exported bytes |
+
+## Development
+
+```sh
+pnpm install
+pnpm check          # typecheck + lint + tests + production build
+pnpm dev:vault      # deploy into the marked disposable dev-vault/
+pnpm dev:obsidian   # isolated Obsidian for native checks
+```
+
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [AGENTS.md](AGENTS.md). Brand colours and the mascot: [docs/BRAND.md](docs/BRAND.md). Release notes: [docs/RELEASE_0.2.0.md](docs/RELEASE_0.2.0.md).
+
+## License
+
+[MIT](LICENSE) © 2026 Jason Persinger. Bundled third-party code (`yaml`, ISC; `midi-file`, MIT) is listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Author
+
+Jason Persinger.
