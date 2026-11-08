@@ -55,7 +55,7 @@ it('searches/opens stable UUIDs and reports invalid/future notes without rewriti
 });
 it('loads recoverable musical drafts explicitly without granting PATCHBOOK musical editing',async()=>{
  const{view,services,repository,vault}=await fixture();const base=await repository.create(createEntity('motif','Recoverable phrase'));const path=await repository.saveEditorDraft({...base.entity,title:'Musical recovery'},base);expect((await services.recovery.inspect(path)).draft).toBeUndefined();
- click(view.contentEl,'Motif recovery');await settle();const entry=[...view.contentEl.querySelectorAll<HTMLButtonElement>('.mnemobard-recovery-row button')].find(button=>button.textContent?.startsWith('Musical recovery'));if(!entry)throw Error('No musical checkpoint');entry.click();await settle();click(view.contentEl,'Load draft without saving');await settle();expect(vault.files.get(base.path)).toBe(base.source);expect(view.contentEl.querySelector<HTMLInputElement>('[aria-label="Motif name"]')?.value).toBe('Musical recovery');
+ click(view.contentEl,'Motif recovery');await settle();const entry=[...view.contentEl.querySelectorAll<HTMLButtonElement>('button.mnemobard-recovery-row')].find(button=>button.textContent?.includes('Musical recovery'));if(!entry)throw Error('No musical checkpoint');entry.click();await settle();click(view.contentEl,'Load draft without saving');await settle();expect(vault.files.get(base.path)).toBe(base.source);expect(view.contentEl.querySelector<HTMLInputElement>('[aria-label="Motif name"]')?.value).toBe('Musical recovery');
 });
 
 it('owns a child key scope only inside the editor and preserves native text undo',async()=>{
@@ -99,6 +99,7 @@ it('4H toolbar: every editing operation stays available in labelled groups, and 
  // Operations through the regrouped controls: add, transpose (sealed transform), undo, redo.
  click(view.contentEl,'Add note');const session=services.motifs.drafts()[0];if(!session)throw Error('draft');const pitch=session.snapshot.data.notes[0]?.pitch??-1;
  click(view.contentEl,'Octave up');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch+12);
- click(view.contentEl,'Undo');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch);click(view.contentEl,'Redo');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch+12);
+ const depth=()=>view.contentEl.querySelector('.mnemobard-history-depth')?.textContent;expect(depth()).toBe('2 undo · 0 redo');
+ click(view.contentEl,'Undo');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch);expect(depth()).toBe('1 undo · 1 redo');click(view.contentEl,'Redo');expect(session.snapshot.data.notes[0]?.pitch).toBe(pitch+12);expect(depth()).toBe('2 undo · 0 redo');
  expect(Object.isFrozen(session.snapshot.data.notes[0])).toBe(true);
 });

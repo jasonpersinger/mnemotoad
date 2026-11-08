@@ -13,6 +13,7 @@ import { ModuleView } from '../../ui/module-view';
 import { element, button, renderLibraryForm } from './form';
 import { AssetPanel } from './asset-panel';
 import { RecoveryPanel } from './recovery-panel';
+import { openModuleRecovery } from '../../ui/recovery-inspector';
 import { AssetInspector } from '../../ui/asset-inspector';
 
 const LABELS: Record<LibraryKind, string> = { instrument: 'Instruments', patch: 'Patches', 'effects-chain': 'Effects chains' };
@@ -39,7 +40,17 @@ export class PatchbookView extends ModuleView {
   private draftList?: HTMLElement;
   private saveStatus?: HTMLElement;
   private assetPanel?: AssetPanel;
-  private recoveryPanel?: RecoveryPanel;
+  private recoveryPanel?: RecoveryPanel; private recoveryRoot?: HTMLElement;
+  /** 4I: open the recovery register, optionally with one checkpoint selected (used by the other modules' registers). */
+  openRecovery(path?: string): void { this.recovery(path); }
+  private recovery(path?: string): void {
+    const services = this.available, recoveryRoot = this.recoveryRoot; if (!services || !recoveryRoot) return;
+    this.recoveryPanel?.dispose();
+    this.recoveryPanel = new RecoveryPanel(recoveryRoot, services, session => {
+      if (!this.inactive) { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.attach(session, true); this.say('Recovered draft loaded. Inspect it and explicitly Save record.'); }
+    }, at => this.openNote(at), path, (module, at) => openModuleRecovery(this.app, services.modules, () => this.leaveDraft(), module, at), error => this.fail(error));
+    button(recoveryRoot, 'Close recovery register', () => { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; });
+  }
   private assetInspector?: AssetInspector;
   constructor(leaf: WorkspaceLeaf, private readonly foundation: () => FoundationServices | undefined) {
     super(leaf, 'patchbook', foundation);
@@ -72,14 +83,8 @@ export class PatchbookView extends ModuleView {
     this.filters = element(root, 'div', undefined, 'mnemobard-library-filters');
     this.feedback = element(root, 'p', '', 'mnemobard-feedback'); this.feedback.setAttribute('role', 'status'); this.feedback.setAttribute('aria-live', 'polite');
     this.draftList = element(root, 'div', undefined, 'mnemobard-drafts');
-    const recoveryRoot = element(root, 'section', undefined, 'mnemobard-recovery');
-    button(toolbar, 'Recovery register', () => {
-      this.recoveryPanel?.dispose();
-      this.recoveryPanel = new RecoveryPanel(recoveryRoot, services, session => {
-        if (!this.inactive) { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.attach(session, true); this.say('Recovered draft loaded. Inspect it and explicitly Save record.'); }
-      }, path => this.openNote(path));
-      button(recoveryRoot, 'Close recovery register', () => { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; });
-    });
+    this.recoveryRoot = element(root, 'section', undefined, 'mnemobard-recovery');
+    button(toolbar, 'Recovery register', () => this.recovery());
     const panes = element(root, 'div', undefined, 'mnemobard-library-panes');
     this.browser = element(panes, 'section', undefined, 'mnemobard-library-browser'); this.browser.setAttribute('aria-label', 'Library records');
     this.detail = element(panes, 'section', undefined, 'mnemobard-library-detail'); this.detail.setAttribute('aria-label', 'Record detail');

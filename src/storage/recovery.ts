@@ -7,6 +7,7 @@ import type { EntityIndex } from './index';
 import type { EntityRecord, EntityRepository } from './repository';
 import type { VaultPort } from './vault-port';
 import { parseDocument as parseYaml } from 'yaml';
+import { RecoveryCatalog } from './recovery-catalog';
 
 const MAX_CHECKPOINT_BYTES = 20 * 1024 * 1024;
 export interface RecoveryEntry { path: string; timestamp: string; title?: string; entityId?: string; diagnostic?: string }
@@ -20,6 +21,8 @@ export interface RecoveredDraft<T extends Entity> { draft: T; base?: EntityRecor
 export class CheckpointRecovery<T extends Entity> {
   private closed = false;
   constructor(private readonly vault: VaultPort & AssetPort, private readonly index: EntityIndex, private readonly repository: EntityRepository, private readonly checkpointDraft: (raw: unknown) => T) {}
+  /** 4I: read-only register catalog over the same vault and index (details cache shared by every module's register). */
+  catalog(): RecoveryCatalog { checkActive(undefined, this.closed); return new RecoveryCatalog(this.vault, this.index); }
   paths(): string[] {
     checkActive(undefined, this.closed);
     // Historical creation roots remain discoverable; only the documented Recovery subfolders.

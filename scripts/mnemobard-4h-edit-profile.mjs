@@ -17,7 +17,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { connect } from './obsidian-cdp.mjs';
 
 const label = process.argv[2] ?? 'run', sizes = (process.argv[3] ?? '16,500,5000,10000').split(',').map(Number);
-const directory = 'output/mnemobard/milestone-4h', c = await connect(), stamp = String(Date.now());
+// 4I: MNEMOBARD_PROFILE_DIR redirects output (later milestones must not overwrite 4H evidence); the method is unchanged.
+const directory = process.env.MNEMOBARD_PROFILE_DIR ?? 'output/mnemobard/milestone-4h', c = await connect(), stamp = String(Date.now());
 await mkdir(directory, { recursive: true });
 const prefix = `const plugin=app.plugins.getPlugin('mnemobard'),services=plugin.services,r=services.repository,leaf=t=>app.workspace.getLeavesOfType('mnemobard-'+t)[0],u=()=>crypto.randomUUID(),assert=(v,m)=>{if(!v)throw Error(m);},tick=()=>new Promise(res=>setTimeout(res,0));
 const stats=out=>{const s=[...out].sort((a,b)=>a-b);return{samples:out.length,median:+s[Math.floor(s.length/2)].toFixed(2),p95:+s[Math.min(s.length-1,Math.ceil(s.length*0.95)-1)].toFixed(2),max:+s.at(-1).toFixed(2)};};`;

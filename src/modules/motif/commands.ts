@@ -1,24 +1,34 @@
 import type { Motif, Note } from '../../domain/entities';
 import { FoundationError } from '../../domain/errors';
-import { validateEntity } from '../../domain/validation';
+import { checkEntity, validateEntity } from '../../domain/validation';
 import { freezeDeep } from '../../application/freeze';
 
-export function editableMotif(value: Motif): Motif {
-  const checked = validateEntity({ ...value, title: value.title || 'Untitled motif' });
+/** MOTIF editor rules on top of schema validation (shared by editableMotif and sealedMotif). */
+function motifRules(checked: Motif): void {
   if (checked.kind !== 'motif') throw new FoundationError('wrong-kind', 'Choose a motif record.');
   for (const key of ['tempoMap', 'tempos', 'tempoChanges', 'meterChanges', 'timeSignatures']) if (checked.data[key] !== undefined) throw new FoundationError('unsupported-schema', `This motif contains ${key}. Map editing/playback is not supported in3A; open its Markdown without rewriting it.`);
   if (checked.extra.mnemobard_tempo_map !== undefined || checked.extra.mnemobard_meter_map !== undefined) throw new FoundationError('unsupported-schema', 'Timing-map metadata requires a later editor. The original is retained.');
   if (checked.data.lengthTicks > checked.data.ppq * 4096) throw new FoundationError('invalid', 'The editor supports at most4096 quarter notes. The larger original remains available in Markdown.');
-  checked.title = value.title; return checked;
+}
+export function editableMotif(value: Motif): Motif {
+  const checked = validateEntity({ ...value, title: value.title || 'Untitled motif' }) as Motif;
+  motifRules(checked); checked.title = value.title; return checked;
 }
 /** 4H: how an edit command finishes its candidate: full validation (editableMotif, the default) or sealedMotif. */
 export type Finish = (value: Motif) => Motif;
 const sealed = new WeakSet<Motif>();
 /**
- * 4H: editableMotif, then deep-freeze the validated copy and register it. The only way into the registry, so a
- * registered value has passed editableMotif and cannot have changed since. Session commits pass it as `finish`.
+ * 4H/4I: the same rules as editableMotif (schema checkEntity + motifRules), then deep-freeze and register. The only way
+ * into the registry, so a registered value has passed those rules and cannot have changed since. 4I: no defensive deep
+ * copy — sealedMotif TAKES OWNERSHIP of `value`: the result is a new top-level object that shares nested values with
+ * `value` (for edit commands: the unchanged, already frozen notes of the previous snapshot) and freezes everything
+ * reachable. Session commits pass it as `finish`; never pass a value whose nested objects someone else will mutate.
  */
-export function sealedMotif(value: Motif): Motif { const checked = freezeDeep(editableMotif(value)); sealed.add(checked); return checked; }
+export function sealedMotif(value: Motif): Motif {
+  const checked: Motif = { ...value, title: value.title || 'Untitled motif' };
+  checkEntity(checked); motifRules(checked); checked.title = value.title;
+  freezeDeep(checked); sealed.add(checked); return checked;
+}
 /**
  * 4H: the MOTIF session validator. editableMotif is a pure check, so a sealed value would pass again unchanged: it is
  * accepted as is instead of being validated and copied a second time. Every other value (inline transforms, settings,

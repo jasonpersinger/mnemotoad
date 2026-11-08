@@ -67,12 +67,10 @@
 .mnemobard-asset-section input:not([type="checkbox"]), .mnemobard-asset-section select, .mnemobard-recovery textarea { width: 100%; min-width: 0; max-width: 100%; }
 .mnemobard-asset-section input[type="file"] { height: auto; }
 .mnemobard-asset-choices { max-height: 260px; overflow: auto; }
-.mnemobard-asset-choices button, .mnemobard-recovery-row button { display: block; text-align: left; overflow-wrap: anywhere; width: 100%; white-space: normal; height: auto; min-height: 30px; }
+.mnemobard-asset-choices button { display: block; text-align: left; overflow-wrap: anywhere; width: 100%; white-space: normal; height: auto; min-height: 30px; }
 .mnemobard-audio-preview { background: var(--background-secondary); padding: var(--size-4-3); margin: var(--size-4-3) 0; }
 .mnemobard-audio-preview[hidden] { display: none; }
 .mnemobard-preview-status { overflow-wrap: anywhere; font-family: var(--font-monospace); font-size: var(--font-small); }
-.mnemobard-recovery-list { max-height: 240px; overflow-y: auto; }
-.mnemobard-recovery-row { border-bottom: 1px solid var(--background-modifier-border); padding: var(--size-4-1) 0; }
 .mnemobard-recovery textarea { font-family: var(--font-monospace); font-size: var(--font-smallest); resize: vertical; }
 .mnemobard-recovery details { margin: var(--size-4-2) 0; }
 .mnemobard-recovery-consent { display: flex !important; align-items: start; gap: var(--size-4-2); }
@@ -380,3 +378,38 @@
 .mnemobard-roll-gestures > p { margin: 6px 0 0; }
 @media (max-width: 700px) { .mnemobard-tool-group { border-inline-end: 0; padding-inline-end: 0; flex: 1 1 100%; } }
 @media (max-width: 700px) { .mnemobard-review-clips td::before { content: attr(data-label) ' · '; color: var(--text-muted); } }
+/* ── Milestone 4I: recovery register (search, filters, pagination, read-only inspector). Host theme variables only. ── */
+.mnemobard-recovery-register {
+  --mnemobard-gap: var(--size-4-2, 8px); --mnemobard-gap-l: var(--size-4-3, 12px); --mnemobard-rule: 1px solid var(--background-modifier-border);
+  --mnemobard-radius: var(--radius-s, 4px); --mnemobard-quiet: var(--text-muted); --mnemobard-panel: var(--background-secondary); --mnemobard-accent: var(--interactive-accent);
+  max-width: 100%; min-width: 0;
+}
+.mnemobard-recovery-controls { display: flex; flex-wrap: wrap; align-items: end; gap: var(--mnemobard-gap); margin-block: var(--mnemobard-gap); }
+.mnemobard-recovery-controls label { display: grid; gap: 3px; min-width: 0; font-size: var(--font-ui-small); color: var(--mnemobard-quiet); }
+.mnemobard-recovery-controls label:first-child { flex: 1 1 16em; }
+.mnemobard-recovery-controls input, .mnemobard-recovery-controls select { min-width: 0; max-width: 100%; }
+.mnemobard-recovery-controls select { max-width: 16em; }
+.mnemobard-recovery-count { font-size: var(--font-ui-small); color: var(--mnemobard-quiet); margin-block: 4px var(--mnemobard-gap); overflow-wrap: anywhere; }
+.mnemobard-recovery-panes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: var(--mnemobard-gap-l); align-items: start; }
+.mnemobard-recovery-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.mnemobard-recovery-list > li { margin: 0; min-width: 0; }
+button.mnemobard-recovery-row { display: grid; gap: 2px; justify-content: start; align-content: start; width: 100%; height: auto; min-height: 0; padding: 6px 10px; text-align: start; justify-items: start; white-space: normal; border: var(--mnemobard-rule); border-inline-start: 3px solid transparent; border-radius: var(--mnemobard-radius); background: var(--mnemobard-panel); box-shadow: none; }
+button.mnemobard-recovery-row strong { font-weight: 600; overflow-wrap: anywhere; }
+.mnemobard-recovery-meta { font-size: var(--font-ui-smaller); color: var(--mnemobard-quiet); overflow-wrap: anywhere; }
+button.mnemobard-recovery-row[aria-current="true"] { border-inline-start-color: var(--mnemobard-accent); background: var(--background-modifier-hover); }
+button.mnemobard-recovery-row:not([data-integrity="Readable"])[data-integrity] .mnemobard-recovery-meta { color: var(--text-warning); }
+button.mnemobard-recovery-row:focus-visible, .mnemobard-recovery-register :is(button, summary, input, select):focus-visible { outline: 2px solid var(--mnemobard-accent); outline-offset: 2px; }
+.mnemobard-recovery-pager { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mnemobard-gap); margin-block: var(--mnemobard-gap); font-size: var(--font-ui-small); }
+.mnemobard-recovery-detail:empty { display: none; }
+.mnemobard-recovery-detail { position: sticky; top: var(--mnemobard-gap); max-height: calc(100vh - 140px); overflow-y: auto; min-width: 0; padding: var(--mnemobard-gap) var(--mnemobard-gap-l); border: var(--mnemobard-rule); border-radius: var(--mnemobard-radius); }
+.mnemobard-recovery-detail > h4 { margin-block: 0 6px; overflow-wrap: anywhere; }
+.mnemobard-recovery-summary, .mnemobard-recovery-preview, .mnemobard-recovery-technical dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px var(--mnemobard-gap-l); margin: 0 0 var(--mnemobard-gap); font-size: var(--font-ui-small); }
+.mnemobard-recovery-summary dt, .mnemobard-recovery-preview dt, .mnemobard-recovery-technical dt { color: var(--mnemobard-quiet); }
+.mnemobard-recovery-summary dd, .mnemobard-recovery-preview dd, .mnemobard-recovery-technical dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.mnemobard-recovery-summary dd[data-integrity="problem"] { color: var(--text-warning); }
+.mnemobard-recovery-preview { padding-block-start: var(--mnemobard-gap); border-block-start: var(--mnemobard-rule); }
+.mnemobard-recovery-meaning, .mnemobard-recovery-status { font-size: var(--font-ui-small); }
+.mnemobard-recovery-technical > summary { cursor: pointer; color: var(--mnemobard-quiet); font-size: var(--font-ui-small); font-weight: 600; }
+.mnemobard-recovery-technical textarea { width: 100%; font-family: var(--font-monospace); font-size: var(--font-smallest); }
+@media (max-width: 520px) { .mnemobard-recovery-summary, .mnemobard-recovery-preview, .mnemobard-recovery-technical dl { grid-template-columns: minmax(0, 1fr); } .mnemobard-recovery-controls select { max-width: 100%; } }
+.mnemobard-history-depth { align-self: center; font-size: var(--font-ui-smaller); color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }

@@ -183,8 +183,20 @@ See [MILESTONE_4B_REPORT.md](MILESTONE_4B_REPORT.md) for exact workloads/results
 | Risk | Evidence and mitigation | Remaining work / approval |
 | --- | --- | --- |
 | Frozen drafts and snapshots (4H) | Any code that writes to `session.snapshot`, a history entry or a sealed command result now throws instead of silently corrupting shared state. Audited: no in-repo writer; tests assert the throw. A future caller needing an editable value must use `draft` or the default (unsealed) command path. | Documented in CLAUDE.md invariants. |
-| Undo depth at 10,000 notes (pre-existing, 4H measured) | The unchanged 16 MiB estimate (2 × serialised before+after per entry) keeps about three undo steps at 10,000 notes, although shared frozen snapshots use far less memory. | Deferred (H07): changing the estimate changes established undo behaviour. |
+| Undo depth at 10,000 notes (pre-existing, 4H measured; 4I update: resolved) | 4H kept ~3 entries at 10,000 notes. 4I: shared-snapshot accounting + nested sharing on the sealed MOTIF path retain 30/30 small edits at 5,000 and 10,000 notes and reach the 100-entry cap at 10,000 notes (≈10.5 MiB estimated, budget 16 MiB) (I05–I07). | Resolved for sealed edits; see 4I residual risks. |
 | Large multi-note commits (4H) | 100-note move at 10,000 notes: 45–53 ms median across runs under the conservative harness boundary (includes a harness draft copy); p95 up to ~85 ms with occasional long tasks. | Non-blocking; candidate for profiling if users edit 10,000-note motifs routinely. |
 | `jsonEqual` equivalence (4H) | Exact for plain JSON data (6,000-pair property test); anything else falls back to the canonical strings. | Accepted. |
 | REAPER guidance drift (4H) | Labels quoted from REAPER 7.84 on Linux; other versions may differ (the guidance says so). The menu path to insert media was not captured and is not named. | Re-verify when another DAW/version is evidenced. |
 | Composition end in DAWs (4G/4H) | Explained in the export dialog with exact positions; the file is unchanged (no dummy events). | Product decision on an explicit opt-in end marker remains open. |
+
+## Milestone 4I residual risks
+
+| Risk | Evidence and mitigation | Remaining work / approval |
+| --- | --- | --- |
+| Memory estimate vs real heap (4I) | `historyBytes` is an approximate V8 layout over distinct objects, not a measurement; strings are counted per occurrence (no interning), small integers as heap numbers (conservative). Property-tested to equal a from-scratch recount. | Accepted; documented as an estimate (I05). |
+| MOTIF transforms receive the frozen draft (4I) | A MOTIF transform that writes to its input now throws (atomic, nothing committed) instead of editing a private copy. All in-repo transforms build new values; tests assert the throw. | Documented in CLAUDE.md invariants. |
+| Full-document MOTIF edits (4I) | Inline renames/settings at 10,000 notes copy every note (≈2.7 MB each estimated), so a few of them still evict older entries (native: 30 → 4 entries after 10 renames, 13.7 MiB). | Non-blocking; by design (untrusted inline transforms are fully copied and validated). |
+| Large-checkpoint inspection (4I) | Opening a 5.5 MB checkpoint takes ~0.5 s (full JSON + YAML duplicate-key parse in `inspect()`); small ones ~3 ms. | Deferred (I10). |
+| Unread checkpoint metadata (4I) | Until read, a checkpoint of a document absent from the vault has no name and is positioned by file time; type filters and name searches say how many unread checkpoints they cannot judge. | Accepted; *Read all checkpoint details* (≈0.9 s for 898 files / 490 MB here). |
+| Recovery growth (4I) | No pruning or deletion exists (append-only); the dev vault holds 900+ checkpoints, one of them a disposable malformed fixture from the 4I workflow. | Retention policy is a separate product decision. |
+

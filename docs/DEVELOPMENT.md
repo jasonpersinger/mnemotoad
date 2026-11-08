@@ -313,3 +313,16 @@ node scripts/mnemobard-4h-native.mjs --verify-restart                           
 - `freezeDeep` makes drafts immutable: in harness code read `session.snapshot` (no copy) or `session.draft` (editable copy), never write to a snapshot. Restore instrumented instance fields by assignment (`validate` is an own field), never by `delete`.
 - Both benchmark builds must be measured in the same Obsidian process (build the older commit in a scratch `git worktree`, copy its `main.js`/`styles.css`, disable/enable the plugin).
 
+## Milestone 4I validation
+
+```sh
+node scripts/mnemobard-4i-undo-depth.mjs <label> [16:110,500:30,5000:30,10000:30]   # retained depth / estimate per edit, exact undo-redo
+node scripts/mnemobard-4i-recovery-benchmark.mjs <label>                          # real collection + synthetic sizes (no files written)
+node scripts/mnemobard-4i-native.mjs                                              # §19 part 1, then cold restart and:
+node scripts/mnemobard-4i-native.mjs --verify-restart
+MNEMOBARD_PROFILE_DIR=output/mnemobard/milestone-4i node scripts/mnemobard-4h-edit-profile.mjs <label>
+```
+
+- Never write synthetic checkpoints into a Recovery folder to benchmark: recovery files are never deleted. The register benchmark builds tier-1 entries in the renderer through the catalog's real code instead.
+- The native workflow snapshots path/size/mtime of every `dev-vault/MNEMOBARD` file around browsing and inspection; a MOTIF edit's autosave (500 ms) or a save's pre-save backup legitimately adds checkpoints outside that window.
+

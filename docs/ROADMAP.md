@@ -190,3 +190,9 @@ Implemented on the signed 4G baseline `a473533`: frozen session drafts with owne
 
 **Stop gate:** human review of 4H is required. Proposed next (not started): see `docs/MILESTONE_4H_REPORT.md` §L.
 
+## Milestone 4I — recovery register and large-document undo reliability
+
+Implemented on the signed 4H baseline `c3fbfab`: a searchable, filterable, sortable, paginated recovery register with a read-only, module-aware inspector (two-tier in-memory catalog; nothing persisted, deleted or migrated), and identity-aware undo memory accounting with nested snapshot sharing on the sealed MOTIF path (10,000-note motif: 3 → 30+ retained small edits, 100-entry cap reachable within 16 MiB; 10,000-note drag 44.5 → 21.8 ms).
+
+**Stop gate:** human review of 4I is required. Proposed next (not started): see `docs/MILESTONE_4I_REPORT.md` §M.
+

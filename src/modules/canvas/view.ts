@@ -10,7 +10,7 @@ import { element, button } from '../../ui/dom';
 import type { FoundationServices } from '../../application/services';
 import type { Composition } from '../../domain/entities';
 import { messageOf } from '../../domain/errors';
-import { RecoveryInspector } from '../../ui/recovery-inspector';
+import { RecoveryInspector, openModuleRecovery, recoveryLinks } from '../../ui/recovery-inspector';
 import { diagnosticText, type ArrangementPlan } from '../../arrangement/preflight';
 import { musicalPosition } from '../../music/positions';
 import type { Meter } from '../../domain/entities';
@@ -682,13 +682,16 @@ export class CanvasView extends ModuleView {
         return;
     } // 4E: verified navigation (latest request wins, bounded, displayed UUID checked); failures surface here, CANVAS stays as is.
         await s.navigation.navigate('canvas', 'motif', id, { enabled: () => s.modules.enabled('motif'), open: () => s.modules.open('motif'), view: async () => { const leaf = this.app.workspace.getLeavesOfType('mnemobard-motif')[0]; await leaf?.loadIfDeferred(); return leaf?.view instanceof MotifView ? leaf.view : undefined; } }); }
-    private recovery(): void { const s = this.available, root = this.recoveryRoot; if (!s || !root)
-        return; this.recoveryPanel?.dispose(); this.recoveryPanel = new RecoveryInspector(root, { recovery: s.canvas.recovery, settings: s.settings, recover: v => s.canvas.recover(v) }, session => { if (this.active) {
+    /** 4I: open the recovery register, optionally with one checkpoint selected (used by the other modules' registers). */
+    openRecovery(path?: string): void { this.recovery(path); }
+    private recovery(path?: string): void { const s = this.available, root = this.recoveryRoot; if (!s || !root)
+        return; this.recoveryPanel?.dispose(); this.recoveryPanel = new RecoveryInspector(root, { recovery: s.canvas.recovery, settings: s.settings, recover: v => s.canvas.recover(v), module: 'CANVAS', unsaved: id => s.canvas.drafts().some(d => d.snapshot.id.toLowerCase() === id.toLowerCase()),
+        ...recoveryLinks(s, (module, at) => openModuleRecovery(this.app, s.modules, () => this.leave(), module, at), error => this.fail(error)) }, session => { if (this.active) {
         this.recoveryPanel?.dispose();
         this.recoveryPanel = undefined;
         this.attach(session);
         this.say('Recovered arrangement is unsaved. Review, then explicitly Save composition.');
-    } }, path => this.openMarkdown(path)); button(root, 'Close composition recovery', () => { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; }); }
+    } }, at => this.openMarkdown(at), path); button(root, 'Close composition recovery', () => { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; }); }
     private bindKeys(): void {
         const scope = new Scope(this.scope ?? this.app.scope);
         this.editorScope = scope;

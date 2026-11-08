@@ -43,7 +43,13 @@ function portable(value: unknown, ancestors = new WeakSet<object>(), depth = 0):
   for (const entry of Array.isArray(value) ? value : Object.values(value)) portable(entry, ancestors, depth + 1);
   ancestors.delete(value);
 }
-export function validateEntity(value: unknown): Entity {
+/** Validated, owned copy of `value` (the rules are in checkEntity). */
+export function validateEntity(value: unknown): Entity { checkEntity(value); return structuredClone(value) as Entity; }
+/**
+ * 4I: every schema-1 validation rule, without the defensive copy. Callers that need an owned value use validateEntity;
+ * the sealed MOTIF path (commands.ts#sealedMotif) checks a value it owns and freezes it immediately afterwards.
+ */
+export function checkEntity(value: unknown): asserts value is Entity {
   const e = object(value, 'entity'); version(e.schemaVersion); uuid(e.id); text(e.title, 'title');
   if (!ENTITY_KINDS.includes(e.kind as Entity['kind'])) invalid('kind', 'unknown entity type');
   object(e.extra, 'extra'); portable(e.extra);
@@ -153,6 +159,5 @@ export function validateEntity(value: unknown): Entity {
       }
     }
   }
-  // The cast follows validation of every known field. Unknown fields remain data.
-  return structuredClone(value) as Entity;
+  // Every known field is validated; unknown fields remain data.
 }

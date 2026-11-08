@@ -5,7 +5,7 @@ import type { Motif } from '../../domain/entities';
 import { FoundationError, messageOf } from '../../domain/errors';
 import { ModuleView } from '../../ui/module-view';
 import { element, button } from '../../ui/dom';
-import { RecoveryInspector } from '../../ui/recovery-inspector';
+import { RecoveryInspector, openModuleRecovery, recoveryLinks } from '../../ui/recovery-inspector';
 import { compileSequence } from '../../music/compiler';
 import { TempoMap } from '../../music/timing';
 import { addNote, deleteNotes, duplicateNotes, editableMotif, gridTicks, moveNotes, sealedMotif, type Grid } from './commands';
@@ -25,7 +25,7 @@ export class MotifView extends ModuleView {
   private session?: MotifSession; private unsubscribeSession?: () => void; private roll?: PianoRoll; private inspector?: NoteInspector;
   private search = ''; private selectedId?: string; private page = 0;
   private browser?: HTMLElement; private editor?: HTMLElement; private feedback?: HTMLElement; private drafts?: HTMLElement; private browserDetails?: HTMLDetailsElement;
-  private saveStatus?: HTMLElement; private position?: HTMLElement; private undoButton?: HTMLButtonElement; private redoButton?: HTMLButtonElement;
+  private saveStatus?: HTMLElement; private position?: HTMLElement; private undoButton?: HTMLButtonElement; private redoButton?: HTMLButtonElement; private historyDepth?: HTMLElement;
   private editorScope?: Scope;
   private midiDialog?: MidiImportDialog | MidiExportDialog; private patchAssociation?: PatchAssociation; private links?: MotifLinks;
   private recoveryPanel?: RecoveryInspector<Motif, MotifSession>; private recoveryRoot?: HTMLElement;
@@ -162,6 +162,7 @@ export class MotifView extends ModuleView {
       let id = ''; session.edit('Add note', value => { const next = addNote(value, { pitch: selected?.pitch ?? 60, startTick: tick, durationTicks: value.data.ppq * Number(duration.value), velocity: 96 }, sealedMotif); id = next.data.notes.at(-1)?.id ?? ''; return next; }); session.select([id]);
     }));
     this.undoButton = button(editing, 'Undo', () => this.act(() => session.undo())); this.redoButton = button(editing, 'Redo', () => this.act(() => session.redo()));
+    this.historyDepth = element(editing, 'span', '', 'mnemobard-history-depth'); this.historyDepth.setAttribute('aria-label', 'Undo history'); // 4I: retained depth, read-only
     button(editing, 'Delete selected', () => this.removeNotes());
     const selectionTools=element(editing,'details',undefined,'mnemobard-selection-tools');element(selectionTools,'summary','Selection actions');
     button(selectionTools, 'Duplicate selected', () => this.act(() => { const copy = duplicateNotes(session.snapshot, session.selected, sealedMotif); session.edit('Duplicate notes', () => copy.motif); session.select(copy.ids); }));
@@ -239,6 +240,7 @@ export class MotifView extends ModuleView {
     }
     const settingsSummary = this.editor?.querySelector('.mnemobard-score-settings > summary'); if (settingsSummary) settingsSummary.textContent = `Musical settings · ${(60000000 / motif.data.tempoMicrosecondsPerQuarter).toFixed(1)} BPM · ${motif.data.meter.numerator}/${motif.data.meter.denominator} · PPQ ${motif.data.ppq}`;
     if (this.undoButton) this.undoButton.disabled = !session.canUndo; if (this.redoButton) this.redoButton.disabled = !session.canRedo;
+    if (this.historyDepth) { const redo = session.canRedo ? session.redoSize : 0; this.historyDepth.textContent = `${session.historySize} undo · ${redo} redo`; this.historyDepth.title = `Undo history keeps at most 100 steps within an estimated 16 MiB (now ≈ ${(session.historyBytes / 1048576).toFixed(1)} MiB; shared notes are counted once).`; }
     const values: Record<string, string> = { 'Motif name': motif.title, 'Description': motif.description ?? '', 'Motif tags': motif.tags?.join(', ') ?? '', 'User notes': motif.notes ?? '', 'Tempo BPM': String(60000000 / motif.data.tempoMicrosecondsPerQuarter), 'Meter numerator': String(motif.data.meter.numerator), 'Meter denominator': String(motif.data.meter.denominator), 'PPQ': String(motif.data.ppq), 'Length ticks': String(motif.data.lengthTicks) };
     for (const [label, value] of Object.entries(values)) { const control = this.editor?.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[aria-label="${label}"]`); if (control && control !== this.contentEl.ownerDocument.activeElement && control.closest('form')?.dataset.pending !== 'true') control.value = value; }
     const ppq = this.editor?.querySelector<HTMLInputElement>('[aria-label="PPQ"]'); if (ppq) ppq.disabled = motif.data.notes.length > 0;
@@ -275,9 +277,12 @@ export class MotifView extends ModuleView {
     if (this.position && musical) { const seconds = musical.ownedBy(this) ? musical.position : 0; this.position.textContent = `${musical.ownedBy(this) ? musical.state : 'stopped'} · ${Math.floor(seconds / 60)}:${(seconds % 60).toFixed(2).padStart(5, '0')}${musical.diagnostic ? ' · ' + musical.diagnostic : ''}`; }
     if (musical?.ownedBy(this) && musical.state === 'playing' && this.animation === undefined) this.animation = requestAnimationFrame(() => { this.animation = undefined; this.updateTransport(); });
   }
-  private recovery(): void {
+  /** 4I: open the recovery register, optionally with one checkpoint selected (used by the other modules' registers). */
+  openRecovery(path?: string): void { this.recovery(path); }
+  private recovery(path?: string): void {
     const services = this.available, root = this.recoveryRoot; if (!services || !root) return; this.recoveryPanel?.dispose();
-    this.recoveryPanel = new RecoveryInspector(root, { recovery: services.motifs.recovery, settings: services.settings, recover: value => services.motifs.recover(value) }, session => { if (this.active) { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.attach(session); this.say('Recovered motif loaded as an unsaved draft. Review, then explicitly Save motif.'); } }, path => this.openNote(path));
+    this.recoveryPanel = new RecoveryInspector(root, { recovery: services.motifs.recovery, settings: services.settings, recover: value => services.motifs.recover(value), module: 'MOTIF', unsaved: id => services.motifs.isDirty(id),
+      ...recoveryLinks(services, (module, at) => openModuleRecovery(this.app, services.modules, () => this.leave(), module, at), error => this.fail(error)) }, session => { if (this.active) { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; this.attach(session); this.say('Recovered motif loaded as an unsaved draft. Review, then explicitly Save motif.'); } }, at => this.openNote(at), path);
     button(root, 'Close motif recovery', () => { this.recoveryPanel?.dispose(); this.recoveryPanel = undefined; });
   }
   override getState(): Record<string, unknown> { return { selectedId: this.selectedId, search: this.search }; }

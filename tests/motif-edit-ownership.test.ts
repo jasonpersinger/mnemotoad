@@ -119,10 +119,10 @@ describe.each([16, 500, 5000, 10000])('4H edit commits on a %i-note motif', coun
     expect(() => session.edit('Inline', m => ({ ...m, data: { ...m.data, notes: m.data.notes.map((n, i) => i === 1 ? { ...n, pitch: 200 } : n) } }))).toThrow('pitch');
     expect(() => session.edit('Inline', m => ({ ...m, data: { ...m.data, notes: m.data.notes.map((n, i) => i === 2 ? { ...nth(m, 1), id: n.id } : n) } }))).toThrow('overlapping'); // note count unchanged (10,000 is the schema limit)
     expect(session.snapshot).toBe(current); expect(session.historySize).toBe(historyBefore); expect(published).toBe(0); off();
-    // Undo/redo chain restores every reachable state exactly; earlier snapshots were never mutated. History keeps its
-    // unchanged 16 MiB estimate (2 × serialised before+after per entry), so at 10,000 notes only the latest edits remain.
+    // Undo/redo chain restores every reachable state exactly; earlier snapshots were never mutated. 4I: the 16 MiB budget
+    // counts each shared object once, so all of these edits are retained at every size, within the budget.
     const reachable = session.historySize, last = texts.length - 1;
-    if (count >= 10000) expect(reachable).toBeLessThan(edits.length); else expect(reachable).toBe(edits.length);
+    expect(reachable).toBe(edits.length); expect(session.historyBytes).toBeGreaterThan(0); expect(session.historyBytes).toBeLessThanOrEqual(16 * 1024 * 1024);
     for (let i = last; i > last - reachable; i--) { expect(JSON.stringify(session.snapshot)).toBe(texts[i]); session.undo(); }
     expect(JSON.stringify(session.snapshot)).toBe(texts[last - reachable]); expect(session.canUndo).toBe(false);
     if (reachable === edits.length) { expect(session.dirty).toBe(false); expect(session.status).toBe('Saved'); }

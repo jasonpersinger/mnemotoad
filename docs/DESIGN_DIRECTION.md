@@ -130,3 +130,7 @@ The review is a quiet notebook entry, not an alarm: one compact banner (warning 
 
 Dialogs lead with a short summary and keep provenance, hashes and raw ticks one disclosure away. The review's action row stays reachable at the bottom of the dialog (a sticky footer in normal flow, so nothing is hidden when the dialog is at rest) and always offers an explicit way out. The export dialog states what the file contains in musician terms (bars, beats, BPM, meter, channels) before any technical detail, and DAW advice is collapsed and honest about which version it was checked with. The MOTIF toolbar is one quiet row of labelled groups separated by hairline rules, giving the piano roll more height without hiding operations. Only host theme variables are used; dark and light (Moonstone) were checked natively.
 
+## Milestone 4I recovery register
+
+The register reads like an archive index, not a file browser: each row leads with the document's name, then module, local time, checkpoint type and — in words, never colour alone — any integrity or availability problem. Search and filters sit in one wrapping row; pages of 25 keep the list calm. The inspector stays beside the list on wide panes (sticky) and stacks below it on narrow ones; it answers what the checkpoint is, what it contains and what loading would mean, with identifiers and stored texts behind *Technical details*. MOTIF shows its retained undo depth as quiet secondary text beside Undo/Redo. Host theme variables only; dark and light were checked natively.
+

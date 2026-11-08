@@ -5,6 +5,8 @@ import type { EntityRecord } from '../../storage/repository';
 import { sessionMotif } from './commands';
 const isMotif=(entity:Entity):entity is Motif=>entity.kind==='motif';
 export class MotifSession extends HistorySession<Motif>{
+  /** 4I: every MOTIF transform builds new values (commands spread their input), so they receive the frozen draft; unchanged notes are then shared between snapshots. */
+  protected override readonly shareTransformInput = true;
   private selection=new Set<string>();
   constructor(draft:Motif,base:EntityRecord|undefined,port:DocumentSessionPort<Motif>,checkpointDelay=500){super(draft,base,port,sessionMotif,isMotif,checkpointDelay);}
   get selected():ReadonlySet<string>{return new Set(this.selection);}

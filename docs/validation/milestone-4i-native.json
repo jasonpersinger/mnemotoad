@@ -1,0 +1,147 @@
+{
+  "milestone": "4I",
+  "date": "2026-11-08",
+  "checks": [
+    {
+      "step": "R1–3",
+      "result": "pass",
+      "evidence": "CANVAS › Composition recovery: “Showing 1–25 of 899 checkpoints”; the disk holds 899 checkpoint JSON files in Recovery folders"
+    },
+    {
+      "step": "R4–9",
+      "result": "pass",
+      "evidence": "Search “Night procession” → Showing 1–23 of 23 checkpoints (filtered from 899) · 289 checkpoints of documents that are not in the vault were matched by ID, path and date only (names not read yet); use Read all checkpoint details.; Module CANVAS → Showing 1–25 of 323 checkpoints (filtered from 899) ([\"CANVAS\"]); oldest first “Vesper register 1793969185383. CANVAS, checkpoint Nov 6, 2026, 7:46:28 AM, Unsav…”, newest first “Bench4g 32x1000 1794122351175 2. CANVAS, checkpoint Nov 8, 2026, 2:19:29 AM, Pre…”; next page → Showing 26–50 of 323 checkpoints (filtered from 899) (Previous pagePage 2 of 13Next page); 50 per page → Showing 1–50 of 323 checkpoints (filtered from 899)"
+    },
+    {
+      "step": "R10–13",
+      "result": "pass",
+      "evidence": "Inspector summary {\"Module\":\"CANVAS\",\"Checkpoint time\":\"Nov 8, 2026, 2:15:00 AM\",\"Type\":\"Unsaved draft of a saved record\",\"Original path\":\"MNEMOBARD/Compositions/Night procession-452c1f43.md\",\"Original document\":\"Available · changed after this checkpoint (conflict)\",\"Integrity\":\"Valid checkpoint\"}; content {\"Composition\":\"Night procession\",\"Lanes\":\"2\",\"Clips\":\"3\",\"Referenced motifs\":\"2\",\"Length\":\"32 bars\",\"Tempo\":\"120 BPM\",\"Time signature\":\"4/4\",\"PPQ\":\"960\",\"Unresolved references\":\"None\"}; actions [\"Load draft without saving\",\"Open original document\",\"Open checkpoint file\",\"Close inspector\"]; technical details collapsed, then 8 identifiers; Close returned focus to the row"
+    },
+    {
+      "step": "R15–17",
+      "result": "pass",
+      "evidence": "MOTIF checkpoint from the CANVAS register: {\"Motif\":\"Ascending choir\",\"Notes\":\"9\",\"Length\":\"2 bars\",\"Tempo\":\"120 BPM\",\"Time signature\":\"4/4\",\"PPQ\":\"960\",\"Notes span\":\"1:1:0 – 3:1:0 (bar:beat:tick)\"}, actions [\"Open in MOTIF recovery\",\"Open original document\",\"Open checkpoint file\",\"Close inspector\"]; malformed: “Cannot be safely interpreted — Unterminated string in JSON at position 130 (line 1 column 131)” (row stays listed; cannot be loaded); missing source: “Missing · the original note is unavailable” — “The original document is unavailable. The checkpoint is kept; no replacement document is created. Restore or resolve the original first.”"
+    },
+    {
+      "step": "R14",
+      "result": "pass",
+      "evidence": "Every MNEMOBARD vault file identical (path, size, mtime) before and after browsing and inspecting: 3761 files, digest cd584dc225e2eee3…"
+    },
+    {
+      "step": "R-layout",
+      "result": "pass",
+      "evidence": "No horizontal overflow and every control reachable at 1366/980/680 px (stacked at 680: true); light theme rendered; keyboard: Tab focus visible ({\"label\":\"Module\",\"visible\":true,\"outline\":\"solid\",\"enterOpens\":true}), Enter on a row opens the inspector"
+    },
+    {
+      "step": "R18–19",
+      "result": "pass",
+      "evidence": "“Open in MOTIF recovery” opened MOTIF's register with the same checkpoint selected ([\"Load draft without saving\",\"Open original document\",\"Open checkpoint file\",\"Close inspector\"]); with an unsaved MOTIF draft of “Ascending choir” open, its checkpoint shows “An unsaved draft of this document is open. Save or explicitly discard it first; loading is refused so it is never replaced.” and no load action; draft then undone (clean)"
+    },
+    {
+      "step": "R21",
+      "result": "pass",
+      "evidence": "Refresh list: Showing 1–25 of 899 checkpoints (disk 899 checkpoint files)"
+    },
+    {
+      "step": "U1–4",
+      "result": "pass",
+      "evidence": "“Ascending choir”: 3 velocity edits (3 undo · 0 redo), undo ×3 / redo ×3 exact; saved; reopened from a fresh leaf identical and clean"
+    },
+    {
+      "step": "U5–15",
+      "result": "pass",
+      "evidence": "5,000 notes: {\"edits\":30,\"retained\":30,\"indicator\":\"30 undo · 0 redo\",\"historyMiB\":2.54,\"exact\":true}; 10,000 notes: {\"edits\":30,\"retained\":30,\"indicator\":\"30 undo · 0 redo\",\"historyMiB\":5.06,\"exact\":true} (budget 16 MiB, 100 entries); eviction with unshared full-document edits: {\"retainedBefore\":30,\"retainedAfter\":4,\"historyMiB\":13.74,\"budgetMiB\":16,\"intact\":true,\"title\":true}; saved and reopened 10,000 notes identical and clean"
+    },
+    {
+      "step": "exceptions",
+      "result": "pass",
+      "evidence": "Renderer exceptions during this phase: 0"
+    },
+    {
+      "step": "R20 / U16–17",
+      "result": "pass",
+      "evidence": "After a cold restart: Showing 1–25 of 903 checkpoints (disk 903), malformed fixture still listed; “Ascending choir” edits and the 10,000-note save intact (notes SHA-256 db042d3ee3c5…)"
+    },
+    {
+      "step": "exceptions",
+      "result": "pass",
+      "evidence": "Renderer exceptions during this phase: 0"
+    }
+  ],
+  "screenshots": [
+    "01-recovery-register-overview.png",
+    "02-recovery-search.png",
+    "03-recovery-module-filter.png",
+    "04-recovery-pagination.png",
+    "05-recovery-motif-inspector.png",
+    "06-recovery-canvas-inspector.png",
+    "07-recovery-missing-source.png",
+    "08-recovery-malformed-checkpoint.png",
+    "09-recovery-narrow-980.png",
+    "10-recovery-narrow-680.png",
+    "11-recovery-light-theme.png",
+    "12-motif-large-document.png",
+    "13-motif-undo-depth.png",
+    "14-recovery-after-restart.png"
+  ],
+  "rendererExceptions": {
+    "part1": 0,
+    "restart": 0
+  },
+  "register": {
+    "atStart": {
+      "count": "Showing 1–25 of 899 checkpoints",
+      "diskRecoveryFiles": 899
+    },
+    "afterRestart": {
+      "count": "Showing 1–25 of 903 checkpoints",
+      "disk": 903,
+      "malformedListed": true
+    }
+  },
+  "readOnly": {
+    "before": "cd584dc225e2eee37e93dcb761ed53343b9ccec0d624551e081e108e464cf95e",
+    "after": "cd584dc225e2eee37e93dcb761ed53343b9ccec0d624551e081e108e464cf95e",
+    "files": 3761
+  },
+  "undo": {
+    "large": {
+      "5000": {
+        "edits": 30,
+        "retained": 30,
+        "indicator": "30 undo · 0 redo",
+        "historyMiB": 2.54,
+        "exact": true
+      },
+      "10000": {
+        "edits": 30,
+        "retained": 30,
+        "indicator": "30 undo · 0 redo",
+        "historyMiB": 5.06,
+        "exact": true
+      }
+    },
+    "eviction": {
+      "retainedBefore": 30,
+      "retainedAfter": 4,
+      "historyMiB": 13.74,
+      "budgetMiB": 16,
+      "intact": true,
+      "title": true
+    },
+    "saved10000": {
+      "notes": 10000,
+      "exact": true,
+      "clean": true,
+      "sha": "db042d3ee3c5c052cae07cd886038d8280b871286b41dcb81c0f95a0293d5c38"
+    }
+  },
+  "regressions": {
+    "4E CANVAS": "18 + 2",
+    "MOTIF": "7 + 12",
+    "MOTIF-MIDI": "11 + 5",
+    "PATCHBOOK assets": "6 + 6",
+    "Foundation": "11"
+  },
+  "evidence": "output/mnemobard/milestone-4i/"
+}

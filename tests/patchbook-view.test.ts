@@ -122,7 +122,7 @@ it('discovers and loads recovery only by explicit action before normal Save', as
   const { view, vault, repository } = await fixture(); const base = await repository.create(createEntity('instrument', 'Recovery owner'));
   await repository.saveEditorDraft({ ...base.entity, title: 'Recovered through UI' }, base);
   await settle(); click(view.contentEl, 'Recovery register'); await settle();
-  const checkpoint = [...view.contentEl.querySelectorAll<HTMLButtonElement>('.mnemobard-recovery-row button')].find(button => button.textContent?.startsWith('Recovered through UI'));
+  const checkpoint = [...view.contentEl.querySelectorAll<HTMLButtonElement>('button.mnemobard-recovery-row')].find(button => button.textContent?.includes('Recovered through UI'));
   if (!checkpoint) throw Error('Recovery checkpoint missing'); checkpoint.click(); await settle();
   expect(view.contentEl.textContent).toContain('Authoritative source unchanged'); expect(vault.files.get(base.path)).toBe(base.source);
   click(view.contentEl, 'Load draft without saving'); await settle(); expect(view.contentEl.querySelector<HTMLInputElement>('[aria-label="Name"]')?.value).toBe('Recovered through UI'); expect(vault.files.get(base.path)).toBe(base.source);
