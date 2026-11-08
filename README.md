@@ -6,6 +6,8 @@ MNEMOTOAD is a local-first Obsidian plugin for organising instrument patches, co
 
 MNEMOTOAD works alongside a DAW; it is not one. It does not host instrument plugins and does not render audio. Version **0.2.0**, by **Jason Persinger**, MIT License.
 
+![CANVAS arranging two saved motifs](docs/screenshots/canvas.png)
+
 ## Features
 
 ### PATCHBOOK — sound and patch library
@@ -43,11 +45,17 @@ MNEMOTOAD works alongside a DAW; it is not one. It does not host instrument plug
 
 MNEMOTOAD is not yet in the community plugin directory.
 
-1. Get the release files `main.js`, `manifest.json` and `styles.css`, or build them with `pnpm install && pnpm build`.
+1. Download `main.js`, `manifest.json` and `styles.css` from the latest release on this repository’s **Releases** page (each release lists SHA-256 checksums), or build them with `pnpm install && pnpm build`.
 2. Copy them into `<vault>/.obsidian/plugins/mnemobard/`. The folder name is the plugin ID; see [Compatibility identifiers](#compatibility-identifiers).
 3. In **Settings → Community plugins**, turn off Restricted mode if prompted, then enable **MNEMOTOAD**.
 
 **Upgrading from MNEMOBARD 0.1.0:** replace the three files in the same folder and restart Obsidian. Records, settings, recovery checkpoints, hotkeys and open views carry over; nothing is migrated or rewritten. Tabs Obsidian has not loaded yet may show the old title until opened once.
+
+## Screenshots
+
+| PATCHBOOK | MOTIF |
+| --- | --- |
+| ![PATCHBOOK showing a patch, its instrument and the motif that uses it](docs/screenshots/patchbook.png) | ![MOTIF piano roll with a saved phrase](docs/screenshots/motif.png) |
 
 ## Basic usage
 
@@ -83,11 +91,18 @@ Records are Markdown notes with YAML front matter. Motifs and compositions also 
 - Fixed tempo and meter; no controllers, program changes or pitch bend.
 - Windows, macOS and screen-reader use have not been validated.
 - Internal storage identifiers keep the former name MNEMOBARD for compatibility (below).
-- More in the [user guide](docs/USER_GUIDE.md#known-limitations).
+- More in the [user guide](docs/USER_GUIDE.md#known-limitations) and [known issues](docs/KNOWN_ISSUES.md).
 
 ## Privacy and local-first behaviour
 
-No account, telemetry, analytics, network service or synchronisation. MNEMOTOAD reads and writes only inside your vault, and only when you act. Preset and other files are never executed.
+No account, telemetry, analytics, network access or synchronisation. MNEMOTOAD makes no network requests.
+
+MNEMOTOAD reads and writes inside your vault, and only when you act. **Files outside the vault** are read in exactly two cases, and only for a file you choose yourself in the system file picker:
+
+- **PATCHBOOK → Manage assets → import a local file:** the chosen file is read once and a copy is written into your vault after you confirm the destination.
+- **MOTIF → Import MIDI → choose a local MIDI file:** the chosen file is read for preview and import.
+
+The original file is never modified, moved or deleted, and nothing outside the vault is ever written. Preset and other files are never executed.
 
 ## Compatibility identifiers
 
