@@ -89,10 +89,13 @@ try {
     const themes = {};
     for (const t of ['obsidian', 'moonstone']) {
       await run(`app.changeTheme(${q(t)});`); await pause(400); await activate('canvas');
-      themes[t] = await run(`const v=cv.contentEl,cta=[...v.querySelectorAll('button.mod-cta')].find(b=>!b.disabled),b=[...v.querySelectorAll('button')].find(b=>!b.classList.contains('mod-cta')&&!b.disabled);b.focus();const cs=e=>getComputedStyle(e);return{body:document.body.classList.contains('theme-dark')?'dark':'light',primary:cs(cta).backgroundColor+' / '+cs(cta).color,focus:cs(b).outlineColor,play:cs([...v.querySelectorAll('button')].find(x=>x.textContent==='Play arrangement')).backgroundColor};`);
+      // Focus ring measured as a keyboard user sees it: a real Tab key press (programmatic focus may not match :focus-visible).
+      await run(`[...cv.contentEl.querySelectorAll('button')].find(b=>!b.disabled).focus();`);
+      for (const type of ['keyDown', 'keyUp']) await c.command('Input.dispatchKeyEvent', { type, key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9 }); await pause(150);
+      themes[t] = await run(`const v=cv.contentEl,cta=[...v.querySelectorAll('button.mod-cta')].find(b=>!b.disabled),f=document.activeElement;const cs=e=>getComputedStyle(e);return{body:document.body.classList.contains('theme-dark')?'dark':'light',primary:cs(cta).backgroundColor+' / '+cs(cta).color,focusVisible:f.matches(':focus-visible'),focus:cs(f).outlineColor,play:cs([...v.querySelectorAll('button')].find(x=>x.textContent==='Play arrangement')).backgroundColor};`);
     }
     await run(`app.changeTheme(${q(theme0)});`);
-    if (themes.obsidian.focus !== 'rgb(244, 228, 9)' || themes.moonstone.focus !== 'rgb(128, 26, 134)' || !themes.obsidian.primary.startsWith('rgb(128, 26, 134) / rgb(255, 255, 255)')) throw Error('themes ' + q(themes));
+    if (!themes.obsidian.focusVisible || !themes.moonstone.focusVisible || themes.obsidian.focus !== 'rgb(244, 228, 9)' || themes.moonstone.focus !== 'rgb(128, 26, 134)' || !themes.obsidian.primary.startsWith('rgb(128, 26, 134) / rgb(255, 255, 255)')) throw Error('themes ' + q(themes));
     await step('28–29', 'Dark and light themes: violet primary with white label; focus yellow (dark) / violet (light)', themes);
     // 30–32: settings About (popout window in Obsidian 1.15)
     await run(`app.setting.open();`); await pause(1000); await run(`app.setting.openTabById('mnemobard');`); await pause(1000);
